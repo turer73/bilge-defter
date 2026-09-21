@@ -27,6 +27,10 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
   for(const name of await caches.keys())if(name.startsWith(PREFIX)&&name!==CACHE)await caches.delete(name);
   // No clients.claim: existing pages keep their current lifecycle.
 })()));
+// Explicit user consent (Güncellemeyi yükle) may activate the integrity-checked
+// worker immediately. Without this message the worker still waits for every old
+// window to close, so an open notebook is never replaced underneath itself.
+self.addEventListener('message',event=>{if(event.data==='SKIP_WAITING')self.skipWaiting()});
 self.addEventListener('fetch',event=>{
   const url=new URL(event.request.url);
   if(event.request.method!=='GET'||url.origin!==root.origin)return;

@@ -21,7 +21,14 @@
   document.querySelector('#pwaInstall').onclick=async()=>{if(!prompt)return;const event=prompt;prompt=null;document.querySelector('#pwaInstall').hidden=true;await event.prompt();await event.userChoice;refresh()};
   addEventListener('appinstalled',()=>{prompt=null;document.querySelector('#pwaInstall').hidden=true;refresh()});
   document.querySelector('#pwaCheck').onclick=async()=>{
-    if(registration?.waiting){location.reload();return;}
+    if(registration?.waiting){
+      // Explicit user action: the integrity-checked worker may activate now.
+      // It never takes over an open notebook on its own; this click is the consent.
+      const worker=registration.waiting;
+      worker.addEventListener('statechange',()=>{if(worker.state==='activated')location.reload()});
+      worker.postMessage('SKIP_WAITING');
+      return;
+    }
     if(!registration||checking)return;checking=true;document.querySelector('#pwaCheck').disabled=true;update.textContent='Denetleniyor…';let timer;const controller=new AbortController();
     try{
       await Promise.race([(async()=>{
@@ -38,5 +45,5 @@
   navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{
     registration=reg;document.querySelector('#pwaCheck').disabled=false;
     const watch=()=>{const worker=reg.installing;if(!worker)return;update.textContent='Çevrim dışı dosyalar doğrulanıyor…';worker.addEventListener('statechange',()=>{if(worker.state==='redundant'){update.textContent='Yeni paket hazırlanamadı. Mevcut notlar korunuyor; bağlantıyla tekrar denetleyin.';if(!reg.active)status.textContent='Çevrim dışı paket hazır değil.'}else if(worker.state==='activated'){update.textContent='';refresh()}else refresh()})};reg.addEventListener('updatefound',watch);watch();refresh();navigator.serviceWorker.ready.then(()=>refresh());
-  }).catch(()=>{status.textContent='Çevrim dışı paket hazırlanamadı. Bağlantıyı kontrol edip yeniden açın; mevcut notlar değişmedi.'});
+    }).catch(()=>{status.textContent='Çevrim dışı paket hazırlanamadı. Bağlantıyı kontrol edip yeniden açın; mevcut notlar değişmedi.'});
 })();
