@@ -2,7 +2,16 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v29 — sürüm yayılımı ve tek tık güncelleme
+## Güncel dilim: v30 — haftalık tekrar ve haftalık görünüm
+
+- Formda "Haftalık tekrar" ve "her N hafta" (1–52). Tekrar seçilen tarihten başlar; her görünüm ayrı kayıttır ve gün bazlı tamamlanır/atlanır. Düzenle seriyi günceller; Seriyi sil tümünü Silinenler'e taşır; tekrar kaldırılırsa kayıt tek seferlik olur.
+- Haftalık görünüm: yedi gün sütunu (tamamlanan/toplam, planlanan dk, ilk kayıtlar), ‹ › ile hafta gezinme, sütuna dokunarak gün seçme; aylık görünüm korunur.
+- İlk tekrar kaydı veri sürümü 6 / planlayıcı 2 / yedek biçimi 8 yapar. Tekrar içermeyen defterler 5/7 kalır; tekrar kaldırılırsa 5'e döner. v29 ve öncesi sürüm 6 verisini fail-closed reddeder.
+- İki gerçek kusur kapatıldı: build betiği release.json'u hash'lerden sonra yazdığı için her sürüm bump'ında SW kurulumu bütünlük kontrolünde düşüyordu; plannerOccurrenceDone tekrar olmayanlarda gün özetini 0 gösteriyordu. Gün listesi saat/isim sıralı.
+- 19 uygulama paketi 217 kontrol + güncelleme fixture'ları geçti. Canlı iki origin v30: releases/20260921-v30-repeat-week; rollback-before-v30 tutuldu. SHA256SUMS 4de1800d0bdbd671961fb3e1895560c423d0f05d0a3e5acaf8bcc9967a30d92f. Ayrıntı: outputs/BILGE_DEFTER_V30.md.
+- Sıradaki iş: bildirim altyapısı / hesap-eşitleme önceliği kullanıcı kabulüne göre. Fiziksel tablet kabulü bekliyor.
+
+## Önceki dilim: v29 — sürüm yayılımı ve tek tık güncelleme
 
 - İşlev dilimi değil, kusur kapatma dilimi. Veri sürümü 5 / yedek biçimi 7 değişmedi.
 - build-invited.cjs artık sw.js VERSION değişince index.html rozetini ve exportNotebook appVersion'ini otomatik eşitler; BOM'lu JSON'u okur, BOM üretmez. v28 yayınının rozet v27 kalma ve yanlış sürüm uyumsuzluğu mesajı kapatıldı (discovery #1842).
