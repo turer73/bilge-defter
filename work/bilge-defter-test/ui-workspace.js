@@ -1,0 +1,26 @@
+// Device-only appearance preferences never modify notebook data.
+const FRAME_KEY='bilge-defter-frame-v1',framePresets=[['Orman','#183e38'],['Gece','#243c5a'],['Grafit','#343b42'],['Mürdüm','#5b3c59'],['Kum','#d8c8ae']];
+const quickUndo=document.createElement('button');quickUndo.id='quickUndo';quickUndo.className='btn';quickUndo.setAttribute('aria-label','Son işlemi geri al');quickUndo.title='Geri al (Ctrl/⌘+Z)';quickUndo.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 10l5 5M4 10h9a6 6 0 0 1 0 12" transform="translate(0 -2)"/></svg><span>Geri al</span>';document.querySelector('.edge-actions').prepend(quickUndo);
+quickUndo.onclick=()=>{if(canEdit()&&!drawing&&!pan&&page())document.querySelector('#undo').click()};
+const documentTitle=document.createElement('span');documentTitle.id='documentTitle';document.querySelector('#currentNotebook').after(documentTitle);
+function refreshChrome(){const p=page();documentTitle.textContent=p?.title||'Boş defter';documentTitle.title=p?.title||'';quickUndo.disabled=!canEdit()||drawing||!!pan||!p||(!p.strokes.length&&!clearedPages.has(p.id)&&!mediaUndo.get(activeId)?.length)}
+const actionGroups=[['EKLE VE DÜZENLE',['textAdd','imageAdd','pdfOpen','mediaEdit']],['ÇALIŞMA PLANI',['plannerOpen']],['SAYFA İŞLEMLERİ',['undo','clearPage','scrollToTop','searchBtn']],['YEDEK VE KURULUM',['pdfExportOpen','exportBtn','importBtn','restorePrevious','pwaOpen']]];
+const actions=document.querySelector('.tool-actions');document.querySelector('#actionsTitle').hidden=true;
+for(const [name,ids] of actionGroups){const section=document.createElement('div');section.className='action-group';const heading=document.createElement('h3');heading.textContent=name;section.append(heading);for(const id of ids){const b=document.getElementById(id);if(b)section.append(b)}actions.append(section)}
+const icons={textAdd:['Metin ekle','M4 5h16M12 5v15M8 20h8'],imageAdd:['Görsel ekle','M4 4h16v16H4zM4 16l5-5 4 4 3-3 4 4M15 8h.01'],pdfOpen:['PDF aç','M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6'],mediaEdit:['Öğeyi düzenle','m15 4 5 5M5 19l4-1L20 7l-4-4L5 15z']};
+for(const [id,[label,d]] of Object.entries(icons)){const b=document.getElementById(id);b.replaceChildren();const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',d);svg.append(path);const text=document.createElement('span');text.textContent=label;b.append(svg,text)}
+const appearance=document.createElement('section');appearance.id='appearanceSection';appearance.className='tool-section';appearance.innerHTML='<h3>DIŞ ÇERÇEVE</h3><div class="frame-presets" role="group" aria-label="Dış çerçeve renkleri"></div><label class="frame-color-row">Özel çerçeve rengi<input id="frameColor" type="color" value="#183e38"></label><p id="appearanceStatus" role="status">Kâğıt rengi ve notlar değişmez. Tercih yalnız bu tarayıcıda saklanır.</p>';
+document.querySelector('#toolsDone').before(appearance);
+function applyFrame(color,persist=false){
+ if(typeof color!=='string'||!/^#[0-9a-f]{6}$/i.test(color))return false;color=color.toLowerCase();
+ const rgb=[1,3,5].map(i=>parseInt(color.slice(i,i+2),16)),linear=rgb.map(c=>{c/=255;return c<=.04045?c/12.92:((c+.055)/1.055)**2.4}),l=.2126*linear[0]+.7152*linear[1]+.0722*linear[2];
+ const ink=l>.179?'#000000':'#ffffff',stage='#'+rgb.map(c=>Math.round(c*.10+255*.90).toString(16).padStart(2,'0')).join('');
+ const style=document.documentElement.style;style.setProperty('--chrome',color);style.setProperty('--chrome-ink',ink);style.setProperty('--stage',stage);document.querySelector('meta[name=theme-color]').content=color;
+ document.querySelector('#frameColor').value=color;document.querySelectorAll('[data-frame-color]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.frameColor===color)));
+ if(persist){try{localStorage.setItem(FRAME_KEY,color);document.querySelector('#appearanceStatus').textContent='Çerçeve rengi bu tarayıcıda saklandı. Kâğıt ve notlar değişmedi.'}catch{document.querySelector('#appearanceStatus').textContent='Renk bu oturumda uygulandı; tarayıcı tercihi kaydedemedi. Notlar değişmedi.'}}return true;
+}
+for(const [name,color] of framePresets){const b=document.createElement('button');b.type='button';b.className='frame-choice';b.dataset.frameColor=color;b.setAttribute('aria-label',name+' çerçeve');b.style.setProperty('--frame',color);const swatch=document.createElement('i');swatch.setAttribute('aria-hidden','true');const label=document.createElement('span');label.textContent=name;b.append(swatch,label);b.onclick=()=>applyFrame(color,true);appearance.querySelector('.frame-presets').append(b)}
+document.querySelector('#frameColor').oninput=e=>applyFrame(e.target.value,true);
+let storedFrame=null;try{storedFrame=localStorage.getItem(FRAME_KEY)}catch{}if(!applyFrame(storedFrame))applyFrame(framePresets[0][1]);
+new MutationObserver(()=>{if(ready)refreshChrome()}).observe(saveEl,{childList:true,subtree:true});
+if(ready)refreshChrome();else quickUndo.disabled=true;
