@@ -9,12 +9,14 @@ if(prevBadge!==version)html=html.replace(/<span class="badge">v\d+<\/span>/,`<sp
 if(prevApp!==version)html=html.replace(/appVersion:'v\d+'/,`appVersion:'${version}'`);
 if(html!==fs.readFileSync(indexFile,'utf8').replace(/^\uFEFF/,''))fs.writeFileSync(indexFile,html);
 if(prevBadge!==version||prevApp!==version)console.log(`index.html surum esitlendi: badge ${prevBadge}->${version}, appVersion ${prevApp}->${version}`);
+// release.json must be current before hashing, otherwise the offline manifest would
+// certify the previous version's bytes and every install would fail integrity checks.
+fs.writeFileSync(path.join(src,'release.json'),JSON.stringify({version}));
 const manifest=readJson(path.join(src,'offline-assets.json'));manifest.version=version;
 for(const name of ['media-workspace.js','planner-workspace.js','ui-workspace.js','ui.css'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
 const hash=(dir,file)=>crypto.createHash('sha256').update(fs.readFileSync(path.join(dir,file))).digest('hex');
 for(const f of manifest.files)f.sha256=hash(src,f.path);
 fs.writeFileSync(path.join(src,'offline-assets.json'),JSON.stringify(manifest));
-fs.writeFileSync(path.join(src,'release.json'),JSON.stringify({version}));
 function walk(dir,prefix=''){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name),prefix+e.name+'/'):[prefix+e.name])}
 fs.writeFileSync(path.join(src,'SHA256SUMS'),walk(src).filter(f=>f!=='SHA256SUMS').sort().map(f=>hash(src,f)+'  '+f).join('\n')+'\n');
 const files=[...manifest.files.map(x=>x.path),'sw.js','release.json','offline-assets.json','THIRD_PARTY.md'];
