@@ -2,7 +2,13 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v39 — yazı tanıma (mürekkep → metin, sunucu OCR)
+## Güncel dilim: v40 — PDF pinch-zoom (iki parmakla büyütme)
+
+- PDF'te iki parmakla sürekli %100–%300 zoom, orta nokta sabit; pan ile birlikte çalışır; hareket sonunda tek kayıt. Pinch dokunma olaylarıyla ölçülür (pointer olayları parmak parmak geldiğinden pan ile karışıyordu — gerçek hata kapatıldı).
+- 28 uygulama paketi 266 kontrol + fixture'lar geçti. Canlı iki origin v40: releases/20260921-v40-pinch; rollback-before-v40. SHA256SUMS 97da87f275d2024a6fa8f95ee567ca00cc194891274cd9dc5f8fb59513453880. Ayrıntı: outputs/BILGE_DEFTER_V40.md.
+- Sıradaki iş: özgün PDF/vektör saklama (keskin zoom + aranabilir metin), kaynaklı AI. Fiziksel tablet + el yazısı tanıma kalitesi + iki cihaz push/eşitleme kabulü bekliyor.
+
+## Önceki dilim: v39 — yazı tanıma (mürekkep → metin, sunucu OCR)
 
 - Araçlar → Yazıyı tanı: sayfadaki kalem/fosforlu çizimler PNG'ye çevrilir, sunucudaki yerel tesseract (tur, psm 6) tanır; sonuç düzenlenir ve "Metin olarak ekle" ile ilk yerleşim akışına girer. Görüntü sunucuda saklanmaz; defter verisi bu uçtan geçmez; özel adreste kapalı.
 - Sunucu: POST /api/v1/bilge-defter/ocr; tesseract 5.5 + tur kuruldu. Codex-server commit e7d95ff; 26 pytest.
