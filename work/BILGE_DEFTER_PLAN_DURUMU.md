@@ -2,7 +2,13 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v35 — otomatik uçtan uca şifreli eşitleme
+## Güncel dilim: v36 — kâğıt düzeni, basınçlı kalem, parola onayı
+
+- Sayfa bazlı desen: Çizgili/Kareli/Noktalı/Çizgisiz (yalnız açık sayfa; kopya/taşıma/yedek korunur; eski sayfalar Çizgili; bilinmeyen değer fail-closed). Kalem basınca duyarlı: genişlik × (0.4 + 1.2×basınç), basınçsız cihazlar eski davranışta. Yedekleme parolası iki kez sorulur (boş onay atlama boşluğu kapatıldı). Görsel ön doğrulama önek denetimine gevşetildi (güvenlik başlık+IHDR'de korunur).
+- 26 uygulama paketi 258 kontrol + fixture'lar geçti. Canlı iki origin v36: releases/20260921-v36-paper-patterns; rollback-before-v36. SHA256SUMS c194d58bb5ece6d960c8a82693540322848d9261f171bc32dde3a1c9dbe56c35. Ayrıntı: outputs/BILGE_DEFTER_V36.md.
+- Sıradaki iş: push bildirimi, el yazısı tanıma / Türkçe-tıbbi sözlük, AI (kullanıcı önceliğine göre). Fiziksel tablet (kalem basıncı, kamera, eşitleme) kabulü bekliyor.
+
+## Önceki dilim: v35 — otomatik uçtan uca şifreli eşitleme
 
 - "Eşitlemeyi aç" oturum kilidi (parola sunucu yedeğiyle doğrulanır, saklanmaz). 5 sn denetim: temiz+yerel değişiklik → otomatik push; sunucu yeni+temiz → otomatik pull; iki taraf değişti → çakışma bandı (sunucu/yerel/30 dk ertele) manuel seçim. Zaman damgası localStorage'da; özel adreste kapalı.
 - keyFor parola+tuz anahtarlı cache (farklı tuzlu yedekte yanlış anahtar bugı kapatıldı).
