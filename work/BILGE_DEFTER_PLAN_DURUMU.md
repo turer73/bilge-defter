@@ -2,7 +2,14 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v38 — Türkçe/tıbbi sözlük (çevrim dışı)
+## Güncel dilim: v39 — yazı tanıma (mürekkep → metin, sunucu OCR)
+
+- Araçlar → Yazıyı tanı: sayfadaki kalem/fosforlu çizimler PNG'ye çevrilir, sunucudaki yerel tesseract (tur, psm 6) tanır; sonuç düzenlenir ve "Metin olarak ekle" ile ilk yerleşim akışına girer. Görüntü sunucuda saklanmaz; defter verisi bu uçtan geçmez; özel adreste kapalı.
+- Sunucu: POST /api/v1/bilge-defter/ocr; tesseract 5.5 + tur kuruldu. Codex-server commit e7d95ff; 26 pytest.
+- 27 uygulama paketi 264 kontrol + fixture'lar geçti. Canlı iki origin v39: releases/20260921-v39-ocr; rollback-before-v39. SHA256SUMS 7823cd65f7fdf7fb17d2ee9c39722ada413f11b8091676d0ee1a8e87a0f29327. Ayrıntı: outputs/BILGE_DEFTER_V39.md.
+- Sıradaki iş: özgün PDF/vektör saklama, pinch-zoom, kaynaklı AI. Fiziksel tablet + el yazısı tanıma kalitesi + iki cihaz push/eşitleme kabulü bekliyor.
+
+## Önceki dilim: v38 — Türkçe/tıbbi sözlük (çevrim dışı)
 
 - Araçlar → Sözlük: ~130 terimlik eğitim amaçlı başlangıç sözlüğü; Türkçe harf duyarsız arama (terim+tanım, ön ek öncelikli), bulunamayınca Web'de ara. Çevrim dışı pakete dahil. "Tanı/tedavi önerisi değildir" notu arayüzde.
 - 26 uygulama paketi 260 kontrol + fixture'lar geçti. Canlı iki origin v38: releases/20260921-v38-dictionary; rollback-before-v38. SHA256SUMS 00d23488b8b494d8aba2f88d4b6abf4433f2f2e4d9b8a231d0cb260a863ae6cd. Ayrıntı: outputs/BILGE_DEFTER_V38.md.
