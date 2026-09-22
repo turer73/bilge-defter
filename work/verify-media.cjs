@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const root=path.join(__dirname,'bilge-defter-invited-v39'),results=[];let server,browser;
+const root=path.join(__dirname,'bilge-defter-invited-v40'),results=[];let server,browser;
 const types={'.html':'text/html','.css':'text/css','.js':'application/javascript','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml','.wasm':'application/wasm'};
 async function saved(p){await p.waitForFunction(()=>document.querySelector('#saveState').textContent==='Bu cihazda kaydedildi')}
 async function tools(p){if(!await p.locator('#toolsDialog').evaluate(d=>d.open))await p.locator('#toolsToggle').click()}
