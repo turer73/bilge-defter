@@ -2,7 +2,14 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v32 — hesap/kimlik altyapısı
+## Güncel dilim: v33 — manuel uçtan uca şifreli sunucu yedeği
+
+- Yedek penceresinde "Sunucuya yedekle / Sunucudan yükle" (yalnız davetli adres; özel adreste gizli + açıklama). PBKDF2-SHA256 250k + AES-256-GCM; parola saklanmaz; sunucu yalnız şifreli yığın görür (başlıksız istek 401 fail-closed). Yükleme mevcut önizleme/onay akışını kullanır; yanlış parola/404 dürüst mesaj.
+- Sunucu: POST/GET /api/v1/bilge-defter/backup, bilge_defter_backups (upsert, 5 MB sınır). Codex-server commit 219e0d2; 14 pytest.
+- 22 uygulama paketi 235 kontrol + fixture'lar geçti. Canlı iki origin v33: releases/20260921-v33-server-backup; rollback-before-v33. SHA256SUMS 745d8e568971e63135a673cb0c4594847b31705beb686173c66a4f21bda28828. Ayrıntı: outputs/BILGE_DEFTER_V33.md.
+- Sıradaki iş: otomatik cihazlar arası eşitleme (açılışta şifreli push/pull, zaman damgası, çakışmada manuel seçim). Fiziksel tablet kabulü bekliyor.
+
+## Önceki dilim: v32 — hesap/kimlik altyapısı
 
 - Sunucu (linux-ai-server): GET /api/v1/bilge-defter/whoami — Cloudflare Access JWT doğrulaması (RS256 + aud/iss, JWKS önbellekli), e-posta döner, bilge_defter_users'a upsert; başlıksız istekte cihaz kimliği; eksik env fail-closed. 7 pytest. Codex-server commit bf5846b; env: BILGE_DEFTER_ACCESS_TEAM/AUD.
 - Uygulama: Kurulum ekranında hesap satırı (davetli adreste doğrulanmış e-posta, özel adreste cihaz kimliği, hatada dürüst açıklama). Not verisi sunucuya GÖNDERİLMEZ.
