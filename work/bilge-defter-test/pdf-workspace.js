@@ -73,11 +73,11 @@ async function validatePdfImages(book){
   const images=new Set([...book.pages,...(book.trash||[]).map(t=>t.page)].filter(p=>p.pdf).map(p=>p.pdf.image));
   for(const src of images){const image=new Image();let timer;try{image.src=src;await Promise.race([image.decode(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error()),10000)})])}catch{throw new Error('Yedekteki PDF görüntüsü okunamadı. Mevcut notlar değiştirilmedi.')}finally{clearTimeout(timer);image.src=''}}
 }
-function validPdfView(p){return (p.pdfZoom===undefined||(!!p.pdf&&Number.isFinite(p.pdfZoom)&&p.pdfZoom>=1&&p.pdfZoom<=3))&&(p.viewX===undefined||(!!p.pdf&&Number.isFinite(p.viewX)&&p.viewX>=0&&p.viewX<=1000*(1-1/(p.pdfZoom??1))+1e-7))}
+function validPdfView(p){return (p.fitScale===undefined||(!p.pdf&&Number.isFinite(p.fitScale)&&p.fitScale>=0.2&&p.fitScale<=1))&&(p.pdfZoom===undefined||(!!p.pdf&&Number.isFinite(p.pdfZoom)&&p.pdfZoom>=1&&p.pdfZoom<=3))&&(p.viewX===undefined||(!!p.pdf&&Number.isFinite(p.viewX)&&p.viewX>=0&&p.viewX<=1000*(1-1/(p.pdfZoom??1))+1e-7))}
 function pdfZoom(){return page()?.pdf?(page().pdfZoom??1):1}
 function maxViewX(){return page()?.pdf?page().pdf.width*(1-1/pdfZoom()):0}
 function viewX(){return Math.min(maxViewX(),Math.max(0,page()?.viewX||0))}
-function paperScale(){return page()?.pdf?Math.max(1,canvas.getBoundingClientRect().width)/page().pdf.width*pdfZoom():1}
+function paperScale(){return page()?.pdf?Math.max(1,canvas.getBoundingClientRect().width)/page().pdf.width*pdfZoom():(page()?.fitScale||1)}
 function updatePdfZoom(){const zoom=pdfZoom();document.querySelector('#pdfZoomValue').textContent=`%${Math.round(zoom*100)}`;document.querySelector('#pdfZoomOut').disabled=zoom<=1;document.querySelector('#pdfZoomIn').disabled=zoom>=3}
 function setPdfZoom(value){
   if(!canEdit()||drawing||pan||!page()?.pdf||!Number.isFinite(value))return;

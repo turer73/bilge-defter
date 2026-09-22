@@ -324,7 +324,9 @@ function flushOnLeave(){if(!ready)return;if(drawing)finishStroke();pan=null;pinc
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushOnLeave()});
 window.addEventListener('pagehide',flushOnLeave);
 window.addEventListener('beforeunload',e=>{if(!allowLeave&&(isDirty()||drawing||importing||pdfBusy||mediaPending||plannerDirty)){e.preventDefault();e.returnValue=''}});
-function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(r.width*d));canvas.height=Math.max(1,Math.round(r.height*d));ctx.setTransform(d,0,0,d,0,0);drawAll()}
+function pageContentWidth(p){let max=0;for(const s of p?.strokes||[]){if(isMedia(s)){max=Math.max(max,mediaBounds(s).right)}else{let m=0;for(const pt of s.points)m=Math.max(m,pt.x);max=Math.max(max,m+(s.width||2)/2)}}return max}
+function fitPageToWidth(){const p=page();if(!p||p.pdf)return false;const w=canvas.getBoundingClientRect().width;if(!Number.isFinite(w)||w<60)return false;const content=pageContentWidth(p),target=Math.max(1,w-16);const next=content>target?Math.max(0.2,Math.min(1,target/content)):1;if(Math.abs((p.fitScale||1)-next)<1e-4)return false;p.fitScale=next;markChanged();if(typeof scheduleSave==='function')scheduleSave();drawAll();return true}
+function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(r.width*d));canvas.height=Math.max(1,Math.round(r.height*d));ctx.setTransform(d,0,0,d,0,0);if(!fitPageToWidth())drawAll()}
 function drawStroke(s,target=ctx,images=mediaImages){
   if(isMedia(s)){drawMediaStroke(s,target,images);return}
   if(!s.points.length)return;
