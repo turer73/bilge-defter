@@ -55,7 +55,7 @@ async function importFile(p,book=imported){await p.locator('#importFile').setInp
   assert.deepEqual(await data(f),baseline);
   const emergency=await download(f,'#emergencyExport');assert.equal(emergency.pages[0].strokes[0].points[0].x,150);
   assert.equal(await f.evaluate(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented}),true);
-  await f.screenshot({path:path.join(__dirname,live?'bilge-defter-v31-save-error-live.png':'bilge-defter-v31-save-error-local.png'),fullPage:true});
+  await f.screenshot({path:path.join(__dirname,live?'bilge-defter-v32-save-error-live.png':'bilge-defter-v32-save-error-local.png'),fullPage:true});
   await restoreWrites(f);await f.locator('#retrySave').click();await saved(f);
   assert.equal(await f.locator('#saveRecovery').isVisible(),false);assert.equal((await data(f)).pages[0].strokes.length,1);
   assert.equal(await f.evaluate(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented}),false);
