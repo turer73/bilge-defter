@@ -1,0 +1,20 @@
+const fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+let browser,server;const results=[],pass=s=>{results.push(s);console.log('PASS '+s)};
+(async()=>{try{
+ server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v39',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'0.0.0.0',r));
+ const port=server.address().port;let ocrBody=null,ocrCalls=0;
+ browser=await chromium.launch({headless:true});const errors=[];
+ const dc=await browser.newContext({viewport:{width:1180,height:820}}),d=await dc.newPage();d.on('pageerror',e=>errors.push(e.message));await d.goto(`http://127.0.0.1:${port}/`);await d.waitForFunction(()=>ready);
+ await d.locator('#toolsToggle').click();await d.locator('#ocrOpen').click();await d.locator('#ocrDialog').waitFor({state:'visible'});assert.match(await d.locator('#ocrStatus').textContent(),/yalnız defter\.bilgearena\.com/);assert.equal(await d.locator('#ocrInsert').isDisabled(),true);await d.locator('#ocrClose').click();await dc.close();pass('Private origin disables recognition with an honest explanation');
+ const ic=await browser.newContext({viewport:{width:1180,height:820}});const p=await ic.newPage();p.on('pageerror',e=>errors.push(e.message));
+ await p.route('**/api/v1/bilge-defter/ocr',async r=>{ocrCalls++;ocrBody=JSON.parse(r.request().postData());await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({text:'ANATOMI\nDERS NOTU'})})});
+ await p.goto(`http://127.0.0.1:${port}/`);await p.waitForFunction(()=>ready);await p.evaluate(()=>window.__syncInvited=true);
+ await p.locator('#toolsToggle').click();await p.locator('#ocrOpen').click();await p.locator('#ocrDialog').waitFor({state:'visible'});assert.match(await p.locator('#ocrStatus').textContent(),/kalem çizimi yok/);await p.locator('#ocrClose').click();pass('Empty ink is reported before any request is made');
+ const r=await p.locator('#canvas').boundingBox();await p.mouse.move(r.x+60,r.y+80);await p.mouse.down();await p.mouse.move(r.x+320,r.y+90,{steps:12});await p.mouse.up();await p.waitForFunction(()=>!isDirty()&&!savePromise);
+ await p.locator('#toolsToggle').click();await p.locator('#ocrOpen').click();await p.waitForFunction(()=>document.querySelector('#ocrResult').value.length>0);
+ assert.equal(ocrCalls,1);assert.ok(ocrBody.image);const buf=Buffer.from(ocrBody.image,'base64');assert.equal(buf.subarray(0,4).toString('latin1'),'\x89PNG');assert.equal(JSON.stringify(ocrBody).includes('"pages"'),false);assert.equal(await p.locator('#ocrResult').inputValue(),'ANATOMI\nDERS NOTU');pass('Ink is rendered to PNG, sent without notebook data and the recognized text is shown');
+ await p.locator('#ocrInsert').click();await p.locator('#layoutBar').waitFor({state:'visible'});assert.match(await p.locator('#layoutText').inputValue(),/ANATOMI/);await p.locator('#layoutDone').click();await p.waitForFunction(()=>!isDirty()&&!savePromise);assert.equal(await p.evaluate(()=>page().strokes.at(-1).tool),'text');pass('The recognized text is inserted as an editable text object through the placement flow');
+ await ic.close();
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:results.length,results,physicalDevice:'pending'},null,2));
+ }finally{await browser?.close();if(server)await new Promise(r=>server.close(r))}})().catch(e=>{console.error(e);process.exitCode=1});
