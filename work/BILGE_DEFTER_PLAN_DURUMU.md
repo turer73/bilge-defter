@@ -2,7 +2,13 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v37 — push bildirimi (eşitleme habercisi)
+## Güncel dilim: v38 — Türkçe/tıbbi sözlük (çevrim dışı)
+
+- Araçlar → Sözlük: ~130 terimlik eğitim amaçlı başlangıç sözlüğü; Türkçe harf duyarsız arama (terim+tanım, ön ek öncelikli), bulunamayınca Web'de ara. Çevrim dışı pakete dahil. "Tanı/tedavi önerisi değildir" notu arayüzde.
+- 26 uygulama paketi 260 kontrol + fixture'lar geçti. Canlı iki origin v38: releases/20260921-v38-dictionary; rollback-before-v38. SHA256SUMS 00d23488b8b494d8aba2f88d4b6abf4433f2f2e4d9b8a231d0cb260a863ae6cd. Ayrıntı: outputs/BILGE_DEFTER_V38.md.
+- Sıradaki iş: el yazısı tanıma (ink → metin) + kaynaklı AI; özgün PDF/vektör saklama; pinch-zoom. Fiziksel tablet + iki cihaz push/eşitleme kabulü bekliyor.
+
+## Önceki dilim: v37 — push bildirimi (eşitleme habercisi)
 
 - Kilit açılınca bildirim izni + VAPID abonelik; başka cihaz yedek yükleyince "Bilge Defter güncellendi" bildirimi; dokununca SYNC_PULL ile otomatik çekme. Yükleyen cihaz kendi bildirimini almaz (device_id kalıcı). Push yalnız zaman damgası taşır; içerik şifreli kalır. iOS yalnız 16.4+ kurulu PWA'da.
 - Sunucu: vapid-key / push-subscription / diğer cihazlara pywebpush (2.0.3); ölü abonelik temizliği. Codex-server commit 689aaac; 21 pytest.
