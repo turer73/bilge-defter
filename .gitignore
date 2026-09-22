@@ -1,0 +1,14 @@
+# Derleme ciktisi ve kanit yapitlari — git'e girmez (yeniden uretilir)
+work/*.png
+work/*.pdf
+work/*.tar.gz
+work/*.log
+work/bilge-defter-invited/
+work/bilge-defter-invited-*/
+work/pdf-dependency/
+work/defter-cache-*.json
+work/invited-baseline.json
+work/invited-public-verification.json
+work/invited-resources.json
+work/update-check*.html
+work/v*-regression-summary.txt
