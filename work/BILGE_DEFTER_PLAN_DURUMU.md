@@ -2,7 +2,13 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v33 — manuel uçtan uca şifreli sunucu yedeği
+## Güncel dilim: v34 — kamerayla fotoğraf çekme ve üzerine not alma
+
+- Araçlar → Fotoğraf çek (mobilde capture=environment ile doğrudan kamera, masaüstünde seçici). Fotoğraf ilk yerleşim akışıyla sayfaya girer; kalem/fosforlu/silgi not katmanında çalışır, fotoğraf bozulmaz. Ortak processMediaFile (EXIF + sınırlar). Şema değişmedi.
+- 23 uygulama paketi 239 kontrol + fixture'lar geçti. Canlı iki origin v34: releases/20260921-v34-camera; rollback-before-v34. SHA256SUMS 0ab65c22c83620934de5cfebcac97b380f91bd803bc3276ee972b8335a601dd0. Ayrıntı: outputs/BILGE_DEFTER_V34.md.
+- Sıradaki iş: otomatik cihazlar arası eşitleme (şifreli push/pull, oturum kilidi, zaman damgası, çakışmada manuel seçim). Fiziksel tablet kabulü (kamera dahil) bekliyor.
+
+## Önceki dilim: v33 — manuel uçtan uca şifreli sunucu yedeği
 
 - Yedek penceresinde "Sunucuya yedekle / Sunucudan yükle" (yalnız davetli adres; özel adreste gizli + açıklama). PBKDF2-SHA256 250k + AES-256-GCM; parola saklanmaz; sunucu yalnız şifreli yığın görür (başlıksız istek 401 fail-closed). Yükleme mevcut önizleme/onay akışını kullanır; yanlış parola/404 dürüst mesaj.
 - Sunucu: POST/GET /api/v1/bilge-defter/backup, bilge_defter_backups (upsert, 5 MB sınır). Codex-server commit 219e0d2; 14 pytest.
