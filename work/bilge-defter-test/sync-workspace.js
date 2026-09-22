@@ -47,7 +47,7 @@
       }catch(e){if(e?.message&&!e.message.includes('404')&&!e.message.includes('Sunucuda yedek yok'))throw e}
       const snapshot=notebookSnapshot();
       const payload=await encryptPayload(pass,JSON.stringify(snapshot));
-      await syncApi('./api/v1/bilge-defter/backup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,updated_at:snapshot.exportedAt})});
+      await syncApi('./api/v1/bilge-defter/backup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,updated_at:snapshot.exportedAt,device_id:deviceId()})});
       setSyncStatus(`Sunucuda şifreli yedek var · ${new Date(snapshot.exportedAt).toLocaleString('tr-TR')}. Yalnız en son kopya saklanır.`);
     }catch(error){setSyncStatus(error.message==='cancelled'?'':`Yedek alınamadı. ${error.message} Notlar değişmedi.`)}
   };
@@ -66,7 +66,26 @@
   window.renderSyncActions=renderSyncActions;
   // --- Otomatik esitleme: oturum kilidi + 5 sn denetim + cakisma secimi ---
   const SYNC_META_KEY='bilge-defter-sync-meta-v1';
-  let syncPass=null,syncEnabled=false,localDirty=false,lastSyncAt=(()=>{try{return JSON.parse(localStorage.getItem(SYNC_META_KEY)||'null')?.lastSyncAt||null}catch{return null}})(),conflictHold=0,conflictPayload=null;
+  const DEVICE_KEY='bilge-defter-device-id';
+  let syncPass=null,syncEnabled=false,localDirty=false,pushState='',lastSyncAt=(()=>{try{return JSON.parse(localStorage.getItem(SYNC_META_KEY)||'null')?.lastSyncAt||null}catch{return null}})(),conflictHold=0,conflictPayload=null;
+  function deviceId(){let d=null;try{d=localStorage.getItem(DEVICE_KEY)}catch{}if(!d){d=(globalThis.crypto?.randomUUID?.()||'dev-'+Date.now()+'-'+Math.random().toString(36).slice(2));try{localStorage.setItem(DEVICE_KEY,d)}catch{}}return d}
+  function b64UrlToBytes(s){const pad=s.length%4?s+'='.repeat(4-s.length%4):s;const bin=atob(pad.replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(bin,c=>c.charCodeAt(0))}
+  async function subscribePush(){
+    if(typeof Notification==='undefined'||!('serviceWorker' in navigator)||!('PushManager' in window))return 'desteklenmiyor';
+    let perm=Notification.permission;
+    if(perm==='default'){try{perm=await Notification.requestPermission()}catch{return 'izin-yok'}}
+    if(perm!=='granted')return 'izin-yok';
+    try{
+      const reg=await navigator.serviceWorker.ready;
+      const pub=(await (await syncApi('./api/v1/bilge-defter/vapid-key')).json()).public_key;
+      let sub=await reg.pushManager.getSubscription();
+      if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64UrlToBytes(pub)});
+      const json=sub.toJSON?sub.toJSON():sub;
+      await syncApi('./api/v1/bilge-defter/push-subscription',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device_id:deviceId(),subscription:{endpoint:json.endpoint,keys:json.keys}})});
+      return 'acik';
+    }catch{return 'kurulamadi'}
+  }
+  if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{if(event.data&&event.data.type==='SYNC_PULL')void syncTick()});
   function writeSyncMeta(){try{localStorage.setItem(SYNC_META_KEY,JSON.stringify({lastSyncAt}))}catch{}}
   window.markSyncDirty=()=>{localDirty=true;renderSyncUi()};
   const conflictBanner=document.createElement('div');conflictBanner.id='syncConflictBanner';conflictBanner.hidden=true;conflictBanner.setAttribute('role','alert');
@@ -80,22 +99,23 @@
     const invitedNow=invited();
     document.querySelector('#syncUnlock').hidden=!invitedNow||syncEnabled;
     document.querySelector('#syncAutoNote').hidden=invitedNow;
+    const pushNote=pushState==='acik'?' · bildirimler açık':pushState==='izin-yok'?' · bildirim izni yok':pushState==='desteklenmiyor'?' · bildirim desteklenmiyor':'';
     if(!invitedNow){document.querySelector('#syncAutoStatus').textContent='Otomatik eşitleme yalnız defter.bilgearena.com adresinde.';return}
-    document.querySelector('#syncAutoStatus').textContent=syncEnabled?(lastSyncAt?`Eşitleme açık · son: ${new Date(lastSyncAt).toLocaleString('tr-TR')}${localDirty?' · değişiklikler var':''}`:'Eşitleme açık · henüz eşitlenmedi'):'Eşitleme kapalı; açmak için parolayı girin.';
+    document.querySelector('#syncAutoStatus').textContent=syncEnabled?(lastSyncAt?`Eşitleme açık · son: ${new Date(lastSyncAt).toLocaleString('tr-TR')}${localDirty?' · değişiklikler var':''}${pushNote}`:`Eşitleme açık · henüz eşitlenmedi${pushNote}`):'Eşitleme kapalı; açmak için parolayı girin.';
   }
   document.querySelector('#syncUnlock').onclick=async()=>{
     if(!invited())return;
     let pass;try{pass=await askPassphrase('sync')}catch{return}
     try{
       try{const data=await (await syncApi('./api/v1/bilge-defter/backup')).json();try{await decryptPayload(data,pass)}catch{document.querySelector('#syncAutoStatus').textContent='Parola yanlış; sunucudaki yedek bu parolayla açılamıyor.';return}}catch(error){if(error?.message&&error.message.includes('404')){}else if(error?.message&&error.message.includes('Sunucuda yedek yok')){}else{throw error}}
-      syncPass=pass;syncEnabled=true;renderSyncUi();void syncTick();
+      syncPass=pass;syncEnabled=true;renderSyncUi();pushState=await subscribePush();renderSyncUi();void syncTick();
     }catch(error){document.querySelector('#syncAutoStatus').textContent=`Eşitleme açılamadı. ${error.message}`}
   };
   async function syncPush(){
     if(!syncEnabled||!invited()||!ready)return;
     const snapshot=notebookSnapshot();
     const payload=await encryptPayload(syncPass,JSON.stringify(snapshot));
-    await syncApi('./api/v1/bilge-defter/backup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,updated_at:snapshot.exportedAt})});
+    await syncApi('./api/v1/bilge-defter/backup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,updated_at:snapshot.exportedAt,device_id:deviceId()})});
     localDirty=false;lastSyncAt=snapshot.exportedAt;writeSyncMeta();renderSyncUi();
   }
   async function syncApply(data){

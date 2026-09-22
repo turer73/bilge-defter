@@ -1,5 +1,5 @@
 // Each release is installed completely before it can replace the previous one.
-const VERSION='v36',PREFIX='bilge-defter-test-',CACHE=PREFIX+VERSION;
+const VERSION='v37',PREFIX='bilge-defter-test-',CACHE=PREFIX+VERSION;
 const root=new URL('./',self.location.href);
 self.addEventListener('install',event=>event.waitUntil((async()=>{
   try{
@@ -31,6 +31,19 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
 // worker immediately. Without this message the worker still waits for every old
 // window to close, so an open notebook is never replaced underneath itself.
 self.addEventListener('message',event=>{if(event.data==='SKIP_WAITING')self.skipWaiting()});
+self.addEventListener('push',event=>{
+  let data={};try{data=event.data?event.data.json():{}}catch{}
+  event.waitUntil(self.registration.showNotification(data.title||'Bilge Defter',{body:data.body||'Yeni yedek geldi.',tag:'bilge-defter-sync',renotify:true,data:{url:new URL('./',self.location.href).href}}));
+});
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+  const url=(event.notification.data&&event.notification.data.url)||new URL('./',self.location.href).href;
+  event.waitUntil((async()=>{
+    const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    for(const client of clients){client.postMessage({type:'SYNC_PULL'});if(client.focus)await client.focus();return}
+    await self.clients.openWindow(url);
+  })());
+});
 self.addEventListener('fetch',event=>{
   const url=new URL(event.request.url);
   if(event.request.method!=='GET'||url.origin!==root.origin)return;

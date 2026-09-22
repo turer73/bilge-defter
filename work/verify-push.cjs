@@ -1,0 +1,29 @@
+const fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+let browser,server;const results=[],pass=s=>{results.push(s);console.log('PASS '+s)};
+const PASS='test-parola-123';
+(async()=>{try{
+ server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v37',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'0.0.0.0',r));
+ const port=server.address().port;
+ browser=await chromium.launch({headless:true});const errors=[];
+ const ic=await browser.newContext({viewport:{width:1180,height:820}}); const p=await ic.newPage();p.on('pageerror',e=>{errors.push(e.message);console.log('PAGEERR:',e.message)});p.on('console',m=>{console.log('KONSOL:',m.text().slice(0,120))});
+ let subPosted=null,backupState=null,uploads=0;
+ const mockSub=()=>({endpoint:'https://mock-push.test/s/abc',getKey:name=>btoa(name==='p256dh'?'A'.repeat(65):'B'.repeat(16)),toJSON:()=>({endpoint:'https://mock-push.test/s/abc',keys:{p256dh:btoa('A'.repeat(65)),auth:btoa('B'.repeat(16))}})});
+ await p.route('**/api/v1/bilge-defter/whoami',async r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({identity:{type:'access',email:'user@example.com'},sync:{status:'hazirlik',detail:'x'}})}));
+ await p.route('**/api/v1/bilge-defter/vapid-key',async r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({public_key:btoa('A'.repeat(65))})}));
+ await p.route('**/api/v1/bilge-defter/push-subscription',async r=>{subPosted=JSON.parse(r.request().postData());await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:'ok'})})});
+ await p.route('**/api/v1/bilge-defter/backup',async r=>{if(r.request().method()==='POST'){uploads++;backupState=JSON.parse(r.request().postData());await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:'ok',bytes:1,stored_at:'x'})})}else{if(backupState){await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(backupState)})}else{await r.fulfill({status:404,contentType:'application/json',body:JSON.stringify({detail:'Sunucuda yedek yok'})})}}});
+ await p.goto(`http://127.0.0.1:${port}/`);await p.waitForFunction(()=>ready);console.log('SAYFA-DIAG='+JSON.stringify(await p.evaluate(async()=> {const r=await fetch('./sync-workspace.js',{cache:'no-store'});const t=await r.text();return {status:r.status,len:t.length,has:t.includes('SUB-DIAG'),sw:navigator.serviceWorker.controller?navigator.serviceWorker.controller.scriptURL:null,caches:await caches.keys()}})));await p.evaluate(()=>window.__syncInvited=true);
+ await p.evaluate(()=>{
+   const makeSub=()=>({endpoint:'https://mock-push.test/s/abc',getKey:name=>btoa(name==='p256dh'?'A'.repeat(65):'B'.repeat(16)),toJSON:()=>({endpoint:'https://mock-push.test/s/abc',keys:{p256dh:btoa('A'.repeat(65)),auth:btoa('B'.repeat(16))}})});
+   Object.defineProperty(ServiceWorkerRegistration.prototype,'pushManager',{configurable:true,get:function(){const sub=makeSub();return {getSubscription:async()=>null,subscribe:async()=>sub}}});
+ });
+ await p.evaluate(()=>{window.Notification=class{static permission='granted';static requestPermission(){return Promise.resolve('granted')}}});
+ await p.locator('#importFile').setInputFiles({name:'b.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({version:1,pages:[{id:'p1',title:'Birinci',strokes:[],updated:'x'}],active:'p1'}))});await p.locator('#backupDialog').waitFor({state:'visible'});await p.locator('#syncUnlock').click();await p.locator('#syncPassDialog').waitFor({state:'visible'});await p.locator('#syncPassInput').fill(PASS);await p.locator('#syncPassSubmit').click();
+ await p.waitForFunction(()=>document.querySelector('#syncAutoStatus').textContent.includes('Eşitleme açık')).catch(async()=>{console.log('TO durum=['+await p.locator('#syncAutoStatus').textContent()+'] unlockVisible='+await p.locator('#syncUnlock').isVisible().catch(()=>false)+' errors='+JSON.stringify(errors));throw Error('durum timeout')});
+ assert.ok(await (async()=>{for(let i=0;i<30;i++){if(subPosted)return true;await new Promise(r=>setTimeout(r,300))}return false})());
+ assert.equal(subPosted.subscription.endpoint,'https://mock-push.test/s/abc');assert.ok(subPosted.subscription.keys.p256dh&&subPosted.subscription.keys.auth);assert.ok(subPosted.device_id);const devA=subPosted.device_id;for(let i=0;i<30;i++){if((await p.locator('#syncAutoStatus').textContent()).includes('bildirimler a'))break;await new Promise(r=>setTimeout(r,300))}await p.waitForFunction(()=>document.querySelector('#syncAutoStatus').textContent.includes('bildirimler a'));await p.locator('#backupCancel').click();pass('Unlock subscribes push with VAPID and reports the notification state');
+ await p.reload();await p.waitForFunction(()=>ready);await p.evaluate(()=>window.__syncInvited=true);const devB=await p.evaluate(()=>localStorage.getItem('bilge-defter-device-id'));assert.equal(devB,devA);pass('The device id persists across reloads for stable push deduplication');
+ await ic.close();
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:results.length,results,physicalDevice:'pending'},null,2));
+ }finally{await browser?.close();if(server)await new Promise(r=>server.close(r))}})().catch(e=>{console.error(e);process.exitCode=1});
