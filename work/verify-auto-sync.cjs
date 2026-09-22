@@ -14,7 +14,7 @@ async function encryptNode(obj,updatedAt){
   return {ciphertext:b64(new Uint8Array(ct)),iv:b64(iv),salt:b64(salt),kdf:'pbkdf2-sha256-250000',updated_at:updatedAt};
 }
 (async()=>{try{
- server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v35',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'0.0.0.0',r));
+ server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v36',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'0.0.0.0',r));
  const port=server.address().port;
  async function saved(p){await p.waitForFunction(()=>!isDirty()&&!savePromise&&!saveFailed&&!saveConflict)}
  async function waitNode(cond,ms=20000){const end=Date.now()+ms;while(Date.now()<end){if(await cond())return true;await new Promise(r=>setTimeout(r,400))}return false}
