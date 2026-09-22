@@ -13,7 +13,7 @@ if(prevBadge!==version||prevApp!==version)console.log(`index.html surum esitlend
 // certify the previous version's bytes and every install would fail integrity checks.
 fs.writeFileSync(path.join(src,'release.json'),JSON.stringify({version}));
 const manifest=readJson(path.join(src,'offline-assets.json'));manifest.version=version;
-for(const name of ['media-workspace.js','planner-workspace.js','ui-workspace.js','ui.css','sync-workspace.js','dictionary-data.js','dictionary-workspace.js','ocr-workspace.js'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
+for(const name of ['media-workspace.js','planner-workspace.js','ui-workspace.js','ui.css','sync-workspace.js','dictionary-data.js','dictionary-workspace.js','ocr-workspace.js','button-theme.css','button-theme.js','button-theme-workspace.js'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
 const hash=(dir,file)=>crypto.createHash('sha256').update(fs.readFileSync(path.join(dir,file))).digest('hex');
 for(const f of manifest.files)f.sha256=hash(src,f.path);
 fs.writeFileSync(path.join(src,'offline-assets.json'),JSON.stringify(manifest));

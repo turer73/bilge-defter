@@ -4,7 +4,7 @@ const {chromium,request}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-pri
  const origin='https://defter.bilgearena.com';const api=await request.newContext({ignoreHTTPSErrors:false,timeout:30000});let browser;
  try{
   const results=[];
-  for(const path of ['/','/index.html','/ui.css','/ui-workspace.js','/media-workspace.js','/planner-workspace.js','/release.json','/sw.js','/pwa.js','/offline-assets.json','/manifest.webmanifest','/vendor/pdfjs/pdf.min.js','/README.md','/?bypass=1']){
+  for(const path of ['/','/index.html','/ui.css','/ui-workspace.js','/media-workspace.js','/planner-workspace.js','/button-theme.css','/button-theme.js','/button-theme-workspace.js','/release.json','/sw.js','/pwa.js','/offline-assets.json','/manifest.webmanifest','/vendor/pdfjs/pdf.min.js','/README.md','/?bypass=1']){
    const r=await api.get(origin+path,{maxRedirects:0});const location=r.headers().location||'';
    assert.equal(r.status(),302,`${path} must be gated`);assert.ok(location.startsWith('https://noisy-butterfly-321d.cloudflareaccess.com/cdn-cgi/access/login/'),`${path}: correct gate`);
    results.push(`${path}: unauthenticated request redirected to Access`);
