@@ -57,7 +57,7 @@ const legacy={version:1,pages:[{id:'old-1',title:'Eski Anatomi',strokes:[ink],vi
   results.push('Duplicate/reserved notebook IDs, missing memberships, null membership, invalid names and invalid selected notebook are rejected without overwriting notes or recovery copy');
 
   await select(p,anatomy);await p.setViewportSize({width:390,height:844});await sidebar(p);const side=await p.locator('#pageSidebar').boundingBox();assert.ok(side.x>=0&&side.x+side.width<=390);assert.equal(await p.locator('#pageSidebar').evaluate(e=>e.scrollWidth<=e.clientWidth),true);
-  await p.screenshot({path:path.join(__dirname,`bilge-defter-v44-notebooks-${live?'live':'local'}.png`),fullPage:true});await menu(p,anatomyPage);const dialog=await p.locator('#pageDialog').boundingBox();assert.ok(dialog.x>=0&&dialog.x+dialog.width<=390);await p.locator('#targetNotebook').selectOption('general');await p.locator('#moveToNotebook').tap();await saved(p);assert.equal((await data(p)).activeNotebook,'general');assert.equal((await data(p)).active,anatomyPage);
+  await p.screenshot({path:path.join(__dirname,`bilge-defter-v45-notebooks-${live?'live':'local'}.png`),fullPage:true});await menu(p,anatomyPage);const dialog=await p.locator('#pageDialog').boundingBox();assert.ok(dialog.x>=0&&dialog.x+dialog.width<=390);await p.locator('#targetNotebook').selectOption('general');await p.locator('#moveToNotebook').tap();await saved(p);assert.equal((await data(p)).activeNotebook,'general');assert.equal((await data(p)).active,anatomyPage);
   await p.setViewportSize({width:1180,height:820});
   results.push('Narrow touch layout fits notebook controls and page-move dialog; actual taps move the chosen page to its destination without horizontal overflow');
 
