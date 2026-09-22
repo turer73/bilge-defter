@@ -2,7 +2,14 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v36 — kâğıt düzeni, basınçlı kalem, parola onayı
+## Güncel dilim: v37 — push bildirimi (eşitleme habercisi)
+
+- Kilit açılınca bildirim izni + VAPID abonelik; başka cihaz yedek yükleyince "Bilge Defter güncellendi" bildirimi; dokununca SYNC_PULL ile otomatik çekme. Yükleyen cihaz kendi bildirimini almaz (device_id kalıcı). Push yalnız zaman damgası taşır; içerik şifreli kalır. iOS yalnız 16.4+ kurulu PWA'da.
+- Sunucu: vapid-key / push-subscription / diğer cihazlara pywebpush (2.0.3); ölü abonelik temizliği. Codex-server commit 689aaac; 21 pytest.
+- 25 uygulama paketi 254 kontrol + fixture'lar geçti. Canlı iki origin v37: releases/20260921-v37-push; rollback-before-v37. SHA256SUMS c37245bdf00b68dd8789d84c65c66b1a30a7abdf7765593b1905f4f85c044b44. Ayrıntı: outputs/BILGE_DEFTER_V37.md.
+- Sıradaki iş: el yazısı tanıma / Türkçe-tıbbi sözlük, AI; özgün PDF/vektör saklama; pinch-zoom. Fiziksel tablet + iki cihaz push/eşitleme kabulü bekliyor.
+
+## Önceki dilim: v36 — kâğıt düzeni, basınçlı kalem, parola onayı
 
 - Sayfa bazlı desen: Çizgili/Kareli/Noktalı/Çizgisiz (yalnız açık sayfa; kopya/taşıma/yedek korunur; eski sayfalar Çizgili; bilinmeyen değer fail-closed). Kalem basınca duyarlı: genişlik × (0.4 + 1.2×basınç), basınçsız cihazlar eski davranışta. Yedekleme parolası iki kez sorulur (boş onay atlama boşluğu kapatıldı). Görsel ön doğrulama önek denetimine gevşetildi (güvenlik başlık+IHDR'de korunur).
 - 26 uygulama paketi 258 kontrol + fixture'lar geçti. Canlı iki origin v36: releases/20260921-v36-paper-patterns; rollback-before-v36. SHA256SUMS c194d58bb5ece6d960c8a82693540322848d9261f171bc32dde3a1c9dbe56c35. Ayrıntı: outputs/BILGE_DEFTER_V36.md.
