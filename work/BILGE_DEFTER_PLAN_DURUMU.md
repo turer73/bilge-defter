@@ -2,7 +2,15 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v31 — planlayıcı hatırlatma (açık uygulama) ve izin akışı
+## Güncel dilim: v32 — hesap/kimlik altyapısı
+
+- Sunucu (linux-ai-server): GET /api/v1/bilge-defter/whoami — Cloudflare Access JWT doğrulaması (RS256 + aud/iss, JWKS önbellekli), e-posta döner, bilge_defter_users'a upsert; başlıksız istekte cihaz kimliği; eksik env fail-closed. 7 pytest. Codex-server commit bf5846b; env: BILGE_DEFTER_ACCESS_TEAM/AUD.
+- Uygulama: Kurulum ekranında hesap satırı (davetli adreste doğrulanmış e-posta, özel adreste cihaz kimliği, hatada dürüst açıklama). Not verisi sunucuya GÖNDERİLMEZ.
+- Rota: /api/v1/bilge-defter/* → 172.17.0.1:8420 (nginx her iki profile); CORS'a davetli adres eklendi.
+- 21 uygulama paketi 230 kontrol + fixture'lar geçti. Canlı iki origin v32: releases/20260921-v32-identity; rollback-before-v32. SHA256SUMS ef7738d630cc38b6d7f233cd136a53dda77103da8de340b76c2b38f6bab76302. Ayrıntı: outputs/BILGE_DEFTER_V32.md.
+- Sıradaki iş: manuel uçtan uca şifreli sunucu yedeği (Sunucuya yedekle/yükle), ardından otomatik eşitleme. Fiziksel tablet kabulü bekliyor.
+
+## Önceki dilim: v31 — planlayıcı hatırlatma (açık uygulama) ve izin akışı
 
 - Kayıt bazlı "Hatırlatma" (saat şartı), izin durumu satırı ve izin butonu, 60 s zamanlayıcı, uygulama içi balon + desteklenen cihazlarda sistem bildirimi (gün bazlı etiket, aynı dakikada tekrar yok). Tekrarlı kayıtlarda done/skip günler hatırlatmaz.
 - Dürüst sınır: uygulama kapalıyken bildirim yok (sunucu/push yok); iOS desteklemiyor — arayüzde açıkça yazılı. Hatırlatma cihazın yerel saatinden hesaplanır.
