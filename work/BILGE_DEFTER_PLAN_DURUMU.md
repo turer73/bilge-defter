@@ -2,7 +2,15 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v30 — haftalık tekrar ve haftalık görünüm
+## Güncel dilim: v31 — planlayıcı hatırlatma (açık uygulama) ve izin akışı
+
+- Kayıt bazlı "Hatırlatma" (saat şartı), izin durumu satırı ve izin butonu, 60 s zamanlayıcı, uygulama içi balon + desteklenen cihazlarda sistem bildirimi (gün bazlı etiket, aynı dakikada tekrar yok). Tekrarlı kayıtlarda done/skip günler hatırlatmaz.
+- Dürüst sınır: uygulama kapalıyken bildirim yok (sunucu/push yok); iOS desteklemiyor — arayüzde açıkça yazılı. Hatırlatma cihazın yerel saatinden hesaplanır.
+- Şema sürümü değişmedi (v6/8); remind booleandır, eski uygulamalar alanı zararsız korur.
+- 20 uygulama paketi 228 kontrol + fixture'lar geçti. Canlı iki origin v31: releases/20260921-v31-reminders; rollback-before-v31 tutuldu. SHA256SUMS 49272e9b139326a08e7e211cd2899a41f1484fac5ed33940295c755ca7f4e1e1. Ayrıntı: outputs/BILGE_DEFTER_V31.md.
+- Sıradaki iş: hesap + cihazlar arası eşitleme (push bildirimi ancak onunla anlamlı). Fiziksel tablet kabulü bekliyor.
+
+## Önceki dilim: v30 — haftalık tekrar ve haftalık görünüm
 
 - Formda "Haftalık tekrar" ve "her N hafta" (1–52). Tekrar seçilen tarihten başlar; her görünüm ayrı kayıttır ve gün bazlı tamamlanır/atlanır. Düzenle seriyi günceller; Seriyi sil tümünü Silinenler'e taşır; tekrar kaldırılırsa kayıt tek seferlik olur.
 - Haftalık görünüm: yedi gün sütunu (tamamlanan/toplam, planlanan dk, ilk kayıtlar), ‹ › ile hafta gezinme, sütuna dokunarak gün seçme; aylık görünüm korunur.
