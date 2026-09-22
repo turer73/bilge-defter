@@ -2,7 +2,13 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v40 — PDF pinch-zoom (iki parmakla büyütme)
+## Güncel dilim: v41 — TDK Güncel Türkçe Sözlük verisine geçiş
+
+- Sözlük verisi TDK GTS 12. baskıdan (ogun/guncel-turkce-sozluk, NDJSON) seçilen tıp ağırlıklı 13.161 terimle değiştirildi (tıp etiketli + tıbbi anahtar kelimeli; yönlendirme maddeleri ayıklandı; TDK atfı arayüzde). build-dictionary.cjs ile tekrar üretilebilir.
+- 28 uygulama paketi 266 kontrol + fixture'lar geçti. Canlı iki origin v41: releases/20260921-v41-tdk-sozluk; rollback-before-v41. SHA256SUMS 523bdaa4ca50b8f5a78f848cdc43b347d13107cf6c51e29537cc7e64b958b8ba. Ayrıntı: outputs/BILGE_DEFTER_V41.md.
+- Sıradaki iş: özgün PDF/vektör saklama, kaynaklı AI; sözlüğün tamamını isteğe bağlı yükleme. Fiziksel tablet + el yazısı tanıma kalitesi + iki cihaz push/eşitleme kabulü bekliyor. GitHub yedeği: github.com/turer73/bilge-defter (private).
+
+## Önceki dilim: v40 — PDF pinch-zoom (iki parmakla büyütme)
 
 - PDF'te iki parmakla sürekli %100–%300 zoom, orta nokta sabit; pan ile birlikte çalışır; hareket sonunda tek kayıt. Pinch dokunma olaylarıyla ölçülür (pointer olayları parmak parmak geldiğinden pan ile karışıyordu — gerçek hata kapatıldı).
 - 28 uygulama paketi 266 kontrol + fixture'lar geçti. Canlı iki origin v40: releases/20260921-v40-pinch; rollback-before-v40. SHA256SUMS 97da87f275d2024a6fa8f95ee567ca00cc194891274cd9dc5f8fb59513453880. Ayrıntı: outputs/BILGE_DEFTER_V40.md.
