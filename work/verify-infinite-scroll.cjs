@@ -46,7 +46,7 @@ await panBy(p,1000);await p.locator('#toolsToggle').tap();const dp=p.waitForEven
 await tool(p,'#scrollToTop');await saved(p);await p.locator('#importFile').setInputFiles({name:'scroll-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});await p.locator('#backupApply').click();await p.waitForFunction(()=>document.querySelector('#saveState').textContent==='Yedek geri yüklendi');
 assert.equal(await p.evaluate(()=>viewY()),1000);assert.deepEqual((await data(p)).pages,backup.pages);await p.reload();await saved(p);assert.equal(await p.evaluate(()=>viewY()),1000);
 const invalid=JSON.parse(JSON.stringify(backup));invalid.pages[0].viewY=-20;const beforeBad=await data(p);p.once('dialog',d=>d.accept());await p.locator('#importFile').setInputFiles({name:'invalid-scroll.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(invalid))});await p.waitForFunction(()=>!document.querySelector('#importFile').value);assert.deepEqual(await data(p),beforeBad);
-await p.screenshot({path:path.join(__dirname,live?'bilge-defter-v42-scrolled-live.png':'bilge-defter-v42-scrolled-local.png'),fullPage:true});
+await p.screenshot({path:path.join(__dirname,live?'bilge-defter-v43-scrolled-live.png':'bilge-defter-v43-scrolled-local.png'),fullPage:true});
 results.push('Backup restores page positions and world-coordinate ink; invalid negative scroll position cannot replace existing notes');
 assert.deepEqual(errors,[]);await c.close();console.log(JSON.stringify({mode:live?'live':'local',passed:results.length,results,physicalTabletTest:'pending'},null,2));
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{if(browser)await browser.close()});
