@@ -2,7 +2,14 @@
 
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v34 — kamerayla fotoğraf çekme ve üzerine not alma
+## Güncel dilim: v35 — otomatik uçtan uca şifreli eşitleme
+
+- "Eşitlemeyi aç" oturum kilidi (parola sunucu yedeğiyle doğrulanır, saklanmaz). 5 sn denetim: temiz+yerel değişiklik → otomatik push; sunucu yeni+temiz → otomatik pull; iki taraf değişti → çakışma bandı (sunucu/yerel/30 dk ertele) manuel seçim. Zaman damgası localStorage'da; özel adreste kapalı.
+- keyFor parola+tuz anahtarlı cache (farklı tuzlu yedekte yanlış anahtar bugı kapatıldı).
+- 24 uygulama paketi 245 kontrol + fixture'lar geçti. Canlı iki origin v35: releases/20260921-v35-auto-sync; rollback-before-v35. SHA256SUMS 0d3b42720dda0f7c4e328ea0cbf844f620269322c6d28aef097222244c9c331b. Ayrıntı: outputs/BILGE_DEFTER_V35.md.
+- Sıradaki iş: push bildirimi veya el yazısı tanıma/Türkçe-tıbbi sözlük (kullanıcı önceliğine göre). Fiziksel iki cihaz eşitleme kabulü + tablet kabulü bekliyor.
+
+## Önceki dilim: v34 — kamerayla fotoğraf çekme ve üzerine not alma
 
 - Araçlar → Fotoğraf çek (mobilde capture=environment ile doğrudan kamera, masaüstünde seçici). Fotoğraf ilk yerleşim akışıyla sayfaya girer; kalem/fosforlu/silgi not katmanında çalışır, fotoğraf bozulmaz. Ortak processMediaFile (EXIF + sınırlar). Şema değişmedi.
 - 23 uygulama paketi 239 kontrol + fixture'lar geçti. Canlı iki origin v34: releases/20260921-v34-camera; rollback-before-v34. SHA256SUMS 0ab65c22c83620934de5cfebcac97b380f91bd803bc3276ee972b8335a601dd0. Ayrıntı: outputs/BILGE_DEFTER_V34.md.
