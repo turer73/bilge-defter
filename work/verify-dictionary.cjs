@@ -1,0 +1,15 @@
+const fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+let browser,server;const results=[],pass=s=>{results.push(s);console.log('PASS '+s)};
+(async()=>{try{
+ server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v38',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const origin=process.env.BILGE_TEST_ORIGIN||`http://127.0.0.1:${server.address().port}`;browser=await chromium.launch({headless:true});const c=await browser.newContext({viewport:{width:1180,height:900}}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(origin);await p.waitForFunction(()=>ready);
+ await p.locator('#toolsToggle').click();assert.equal(await p.locator('#dictOpen').isVisible(),true);await p.locator('#dictOpen').click();await p.locator('#dictDialog').waitFor({state:'visible'});
+ assert.match(await p.locator('#dictCount').textContent(),/terim hazır/);pass('The dictionary opens from the tools with the offline glossary loaded');
+ await p.locator('#dictQuery').fill('dispne');assert.match(await p.locator('#dictResults').textContent(),/Nefes darlığı/);assert.match(await p.locator('#dictCount').textContent(),/1 sonuç/);pass('A prefix search finds the term and shows its definition');
+ await p.locator('#dictQuery').fill('kalp');const titles=await p.locator('#dictResults .dict-entry strong').allTextContents();assert.ok(titles.length>=2);assert.ok(titles.includes('Miyokard'));pass('A substring search returns several related terms');
+ await p.locator('#dictQuery').fill('BİYopsi');assert.match(await p.locator('#dictResults').textContent(),/Biyopsi/);pass('Turkish case-insensitive matching finds terms regardless of casing');
+ await p.locator('#dictQuery').fill('xyzabc');assert.match(await p.locator('#dictResults').textContent(),/bulunamadı/);assert.equal(await p.locator('#dictWeb').isDisabled(),false);pass('Missing terms fall back to an explicit web search hint');
+ await p.locator('#dictClose').click();await c.setOffline(true);await p.locator('#toolsToggle').click();await p.locator('#dictOpen').click();await p.locator('#dictQuery').fill('ülser');assert.match(await p.locator('#dictResults').textContent(),/Mide/);await p.locator('#dictClose').click();await c.setOffline(false);pass('The dictionary keeps working offline with the cached glossary');
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:results.length,results,physicalTablet:'pending'},null,2));
+ }finally{await browser?.close();if(server)await new Promise(r=>server.close(r))}})().catch(e=>{console.error(e);process.exitCode=1});

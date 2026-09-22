@@ -11,7 +11,7 @@ async function decryptNode(data,pass){
   return dec.decode(plain);
 }
 (async()=>{try{
- server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v37',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'0.0.0.0',r));
+ server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v38',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'0.0.0.0',r));
  const port=server.address().port;
  async function importBook(p,obj){await p.locator('#importFile').setInputFiles({name:'book.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(obj))});await p.locator('#backupDialog').waitFor({state:'visible'})}
  async function passphrase(p,value,confirm){await p.locator('#syncPassInput').fill(value);if(confirm!==undefined)await p.locator('#syncPassConfirm').fill(confirm);await p.locator('#syncPassSubmit').click()}

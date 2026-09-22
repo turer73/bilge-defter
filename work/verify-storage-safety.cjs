@@ -11,7 +11,7 @@ async function session() {
   c.on('page', p => p.on('pageerror', e => errors.push(e.message)));
   if (!live) await c.route(origin+'/**', async r => {
     const name = new URL(r.request().url()).pathname.split('/').pop() || 'index.html';
-    const types = {'index.html':'text/html','media-workspace.js':'application/javascript','planner-workspace.js':'application/javascript','ui-workspace.js':'application/javascript','ui.css':'text/css','pwa.js':'application/javascript','pdf-workspace.js':'application/javascript','sw.js':'application/javascript','manifest.webmanifest':'application/manifest+json'};
+    const types = {'index.html':'text/html','media-workspace.js':'application/javascript','planner-workspace.js':'application/javascript','ui-workspace.js':'application/javascript','ui.css':'text/css','pwa.js':'application/javascript','dictionary-data.js':'application/javascript','dictionary-workspace.js':'application/javascript','pdf-workspace.js':'application/javascript','sw.js':'application/javascript','manifest.webmanifest':'application/manifest+json'};
     if (!types[name]) return r.fulfill({status:404,body:''});
     await r.fulfill({body:await fs.readFile(path.join(__dirname,'bilge-defter-test',name)),contentType:types[name]});
   });
@@ -55,7 +55,7 @@ async function importFile(p,book=imported){await p.locator('#importFile').setInp
   assert.deepEqual(await data(f),baseline);
   const emergency=await download(f,'#emergencyExport');assert.equal(emergency.pages[0].strokes[0].points[0].x,150);
   assert.equal(await f.evaluate(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented}),true);
-  await f.screenshot({path:path.join(__dirname,live?'bilge-defter-v37-save-error-live.png':'bilge-defter-v37-save-error-local.png'),fullPage:true});
+  await f.screenshot({path:path.join(__dirname,live?'bilge-defter-v38-save-error-live.png':'bilge-defter-v38-save-error-local.png'),fullPage:true});
   await restoreWrites(f);await f.locator('#retrySave').click();await saved(f);
   assert.equal(await f.locator('#saveRecovery').isVisible(),false);assert.equal((await data(f)).pages[0].strokes.length,1);
   assert.equal(await f.evaluate(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented}),false);
