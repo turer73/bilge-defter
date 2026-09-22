@@ -95,8 +95,10 @@ function pendingCandidate(draft){return {...state,version:Math.max(state.version
 function beginPendingMedia(draft){if(!mediaAvailable())return;const check=draft.tool==='text'?{...draft,text:draft.text||'x'}:draft;if(!validState(pendingCandidate(check))){alert('Görsel sınırı: sayfada 12 adet, tüm defter ve Çöp Kutusunda toplam 24 MB. Mevcut notlar değişmedi.');return}closeTools();setSidebarOpen(false);mediaPending={pageId:activeId,draft:constrainMedia(structuredClone(draft)),history:[]};mediaSelecting=true;mediaSelection=null;document.querySelector('#layoutMessage').textContent='';drawAll();document.querySelector('#inputState').textContent='İlk yerleşim: taşıyın, boyutlandırın, döndürün. Bitti kaydeder; Vazgeç eklemeyi iptal eder.';if(draft.tool==='text')document.querySelector('#layoutText').focus({preventScroll:true})}
 function drawPendingMedia(){if(!mediaPending||mediaPending.pageId!==activeId)return;const s=mediaVisualStroke(mediaPending.draft);drawMediaStroke(s.tool==='text'&&!s.text?{...s,text:'Metninizi yazın…'}:s)}
 function finishPendingMedia(){if(!mediaPending||mediaGesture||!ready||saveConflict||importing||mediaPending.pageId!==activeId||!pdfBackgroundReady())return;for(const el of draftControls.querySelectorAll('input,textarea'))if(!el.disabled&&!el.reportValidity())return;const draft=structuredClone(mediaPending.draft);if(!validMediaStroke(draft)){document.querySelector('#layoutMessage').textContent='Metninizi yazın; boş metin eklenmez.';return}const candidate=pendingCandidate(draft);if(!validState(candidate)){document.querySelector('#layoutMessage').textContent='Öğe sınırları aşıldı; mevcut notlar değişmedi.';return}const before=page().strokes.slice(),after=[...before,draft],history=mediaUndo.get(activeId)||[];history.push({before,after:after.slice()});if(history.length>10)history.shift();mediaUndo.set(activeId,history);state.version=candidate.version;page().strokes=after;cancelMediaMode();scheduleSave()}
-for(const [id,label] of [['textAdd','⌨ Metin ekle'],['imageAdd','▧ Görsel ekle'],['mediaEdit','Metin / görsel düzenle']]){const b=document.createElement('button');b.id=id;b.className='btn';b.textContent=label;mediaActions.prepend(b)}
+for(const [id,label] of [['textAdd','⌨ Metin ekle'],['imageAdd','▧ Görsel ekle'],['cameraAdd','📷 Fotoğraf çek'],['mediaEdit','Metin / görsel düzenle']]){const b=document.createElement('button');b.id=id;b.className='btn';b.textContent=label;mediaActions.prepend(b)}
+document.querySelector('#cameraAdd').onclick=()=>{if(mediaAvailable())cameraFile.click()};
 const mediaFile=document.createElement('input');mediaFile.type='file';mediaFile.accept='image/png,image/jpeg,image/webp';mediaFile.id='imageFile';mediaFile.hidden=true;document.body.append(mediaFile);
+const cameraFile=document.createElement('input');cameraFile.type='file';cameraFile.accept='image/*';cameraFile.capture='environment';cameraFile.setAttribute('capture','environment');cameraFile.id='cameraFile';cameraFile.hidden=true;document.body.append(cameraFile);
 const mediaCancelMode=document.createElement('button');mediaCancelMode.id='mediaCancelMode';mediaCancelMode.className='btn';mediaCancelMode.hidden=true;mediaCancelMode.textContent='Seçimi iptal et';document.querySelector('.workspace').append(mediaCancelMode);
 function isMedia(s){return s?.tool==='text'||s?.tool==='image'}
 function validMediaStroke(s){
@@ -129,8 +131,8 @@ document.querySelector('#textAdd').onclick=()=>{if(!mediaAvailable())return;begi
 document.querySelector('#imageAdd').onclick=()=>{if(mediaAvailable())mediaFile.click()};
 document.querySelector('#mediaClose').onclick=()=>mediaDialog.close();
 mediaDialog.addEventListener('close',()=>{if(!mediaPlacement&&!mediaDialog.open){mediaDraft=null;mediaTarget=null;document.querySelector('#mediaPreview').removeAttribute('src')}});
-mediaFile.onchange=async()=>{
- const file=mediaFile.files[0];mediaFile.value='';if(!file||!mediaAvailable())return;const id=activeId,request=++mediaRequest;mediaBusy=true;let bmp;
+async function processMediaFile(file){
+ if(!file||!mediaAvailable())return;const id=activeId,request=++mediaRequest;mediaBusy=true;let bmp;
  try{if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>10*1024*1024)throw Error('En fazla 10 MB PNG, JPEG veya WebP seçin. HEIC fotoğrafı önce JPEG olarak dışa aktarın.');
   bmp=await createImageBitmap(file,{imageOrientation:'from-image'});if(bmp.width*bmp.height>40000000||!bmp.width||!bmp.height)throw Error('Görsel çok büyük veya okunamadı.');
   const ratio=Math.min(1,1000/Math.max(bmp.width,bmp.height)),surface=document.createElement('canvas');surface.width=Math.max(1,Math.round(bmp.width*ratio));surface.height=Math.max(1,Math.round(bmp.height*ratio));surface.getContext('2d').drawImage(bmp,0,0,surface.width,surface.height);
@@ -138,7 +140,9 @@ mediaFile.onchange=async()=>{
   if(draft.image.length>MEDIA_IMAGE_LIMIT)throw Error('Küçültülmüş görsel 2 MB sınırını aşıyor. Daha sade/küçük bir görsel seçin.');
   mediaBusy=false;if(request!==mediaRequest||id!==activeId||!mediaAvailable())return;beginPendingMedia(draft);
  }catch(e){alert(e.message||'Görsel eklenemedi; mevcut notlar değiştirilmedi.')}finally{mediaBusy=false;if(bmp)bmp.close()}
-};
+}
+mediaFile.onchange=async()=>{const file=mediaFile.files[0];mediaFile.value='';await processMediaFile(file)};
+cameraFile.onchange=async()=>{const file=cameraFile.files[0];cameraFile.value='';await processMediaFile(file)};
 function commitMedia(remove=false){
  if(!mediaAvailable()||activeId!==mediaPage||!mediaDraft)return;syncMediaDraft();if(!remove&&!validMediaStroke(mediaDraft)){mediaMessage('Metni ve boyutları kontrol edin. Metin boş bırakılamaz.');return}
  const target=page(),index=mediaTarget?target.strokes.indexOf(mediaTarget):-1;if(mediaTarget&&index<0){mediaMessage('Öğe değişti; yeniden açın.');return}

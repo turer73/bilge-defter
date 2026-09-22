@@ -92,7 +92,7 @@ async function pointer(p, events) {
   assert.equal(await p.evaluate(() => isSecureContext), origin.startsWith('https:'));
   assert.equal(await p.evaluate(() => typeof crypto.randomUUID), origin.startsWith('https:') ? 'function' : 'undefined');
   assert.equal(await p.locator('#pages .page-item').count(), 1);
-  assert.match(await p.locator('.badge').innerText(), /v33/);
+  assert.match(await p.locator('.badge').innerText(), /v34/);
   assert.equal((await data(p)).pages.length, 1);
   results.push(origin.startsWith('https:') ? 'HTTPS secure context and randomUUID: first page created and committed' : 'HTTP + missing randomUUID: first page created and committed');
   const beforeTools = await p.locator('#canvas').boundingBox();
@@ -151,7 +151,7 @@ async function pointer(p, events) {
   await p.getByRole('button', { name: 'Kalem', exact: true }).tap();
   await p.locator('#color').fill('#173b36');
   await p.locator('[data-width="4"]').tap();
-  await p.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v33-tools-live.png' : 'bilge-defter-v33-tools-local.png'), fullPage: true });
+  await p.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v34-tools-live.png' : 'bilge-defter-v34-tools-local.png'), fullPage: true });
   await p.keyboard.press('Escape');
   await p.waitForFunction(() => document.querySelector('#toolsToggle').getAttribute('aria-expanded') === 'false');
   assert.equal(await p.locator('#toolsToggle').evaluate(e => e === document.activeElement), true);
@@ -377,9 +377,9 @@ async function pointer(p, events) {
   assert.deepEqual(errors, []);
   results.push('Browser touch held for 1.2 seconds still draws and saves, with no selected text');
 
-  await p.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v33-live.png' : 'bilge-defter-v33-local.png'), fullPage: true });
+  await p.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v34-live.png' : 'bilge-defter-v34-local.png'), fullPage: true });
   await p.locator('#sidebarToggle').click();
-  await p.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v33-panel-live.png' : 'bilge-defter-v33-panel-local.png'), fullPage: true });
+  await p.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v34-panel-live.png' : 'bilge-defter-v34-panel-local.png'), fullPage: true });
   await p.locator('#sidebarClose').click();
   // A commit that aborts must not be reported as a successful save.
   await p.evaluate(() => {
@@ -409,9 +409,9 @@ async function pointer(p, events) {
   await mobile.p.locator('#searchBtn').tap();
   assert.equal(await mobile.p.locator('#webSearch').evaluate(d => d.open), true);
   await mobile.p.locator('#cancelSearch').tap();
-  await mobile.p.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v33-narrow-live.png' : 'bilge-defter-v33-narrow-local.png'), fullPage: true });
+  await mobile.p.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v34-narrow-live.png' : 'bilge-defter-v34-narrow-local.png'), fullPage: true });
   await openTools(mobile.p);
-  await mobile.p.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v33-narrow-tools-live.png' : 'bilge-defter-v33-narrow-tools-local.png'), fullPage: true });
+  await mobile.p.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v34-narrow-tools-live.png' : 'bilge-defter-v34-narrow-tools-local.png'), fullPage: true });
   await mobile.p.setViewportSize({ width: 844, height: 390 });
   const rotatedBox = await mobile.p.locator('#toolsDialog').boundingBox();
   assert.ok(rotatedBox.y >= 0 && rotatedBox.y + rotatedBox.height <= 390);
@@ -548,12 +548,12 @@ async function pointer(p, events) {
   assert.equal((await data(q)).active, managed.active);
   results.push('Real import button file chooser restores renamed/reordered/copied pages and strokes from downloaded JSON backup');
   await q.locator('#sidebarToggle').tap();
-  await q.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v33-management-live.png' : 'bilge-defter-v33-management-local.png'), fullPage: true });
+  await q.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v34-management-live.png' : 'bilge-defter-v34-management-local.png'), fullPage: true });
   await pageActions(q, 0);
   await q.setViewportSize({ width: 390, height: 844 });
   const pageDialogBox = await q.locator('#pageDialog').boundingBox();
   assert.ok(pageDialogBox.x >= 0 && pageDialogBox.x + pageDialogBox.width <= 390);
-  await q.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v33-page-dialog-live.png' : 'bilge-defter-v33-page-dialog-local.png'), fullPage: true });
+  await q.screenshot({ path: path.join(__dirname, live ? 'bilge-defter-v34-page-dialog-live.png' : 'bilge-defter-v34-page-dialog-local.png'), fullPage: true });
   await q.locator('#pageDialogClose').tap();
   await q.locator('#sidebarClose').tap();
   const quickBox = await quick.boundingBox();
