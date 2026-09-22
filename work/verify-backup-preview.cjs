@@ -17,7 +17,7 @@ async function reject(p,book,pattern){const baseline=await data(p),history=await
   const p=await c.newPage();await p.goto(origin+'/?v=20');await saved(p);await stroke(p);await saved(p);
   await p.evaluate(()=>{scrollPaper(1900);return flushSave()});await tools(p);
   const first=await readDownload(p,'#exportBtn'),second=await readDownload(p,'#exportBtn');
-  assert.equal(first.book.backupFormat,'bilge-defter');assert.equal(first.book.backupVersion,1);assert.equal(first.book.appVersion,'v30');assert.equal(first.book.version,1);
+  assert.equal(first.book.backupFormat,'bilge-defter');assert.equal(first.book.backupVersion,1);assert.equal(first.book.appVersion,'v31');assert.equal(first.book.version,1);
   assert.ok(Number.isFinite(Date.parse(first.book.exportedAt)));assert.notEqual(first.name,second.name);assert.match(first.name,/bilge-defter-yedek-\d{4}-\d\d-\d\dT.*Z\.json/);
   assert.deepEqual(first.book.pages,(await data(p)).pages);assert.equal(first.book.pages[0].viewY,1900);assert.match(await p.locator('#inputState').innerText(),/başlatıldı/);
   results.push('Versioned exports keep legacy top-level pages, include timestamp/app version and distinct filenames, preserving scroll position and ink');
@@ -37,7 +37,7 @@ async function reject(p,book,pattern){const baseline=await data(p),history=await
   await preview(p,first.book);assert.match(await p.locator('#backupFormat').innerText(),/biçimi 1/);assert.notEqual(await p.locator('#backupDate').innerText(),'Tarih bilgisi yok');
   const protectedBackup=await readDownload(p,'#backupCurrent');assert.deepEqual(protectedBackup.book.pages,baseline.pages);assert.match(await p.locator('#backupDownloadStatus').innerText(),/İndirme başlatıldı/);assert.equal(await p.locator('#backupDialog').isVisible(),true);
   await p.setViewportSize({width:390,height:844});const narrow=await p.locator('#backupDialog').boundingBox();assert.ok(narrow.x>=0&&narrow.x+narrow.width<=390);assert.equal(await p.locator('#backupDialog').evaluate(d=>d.scrollWidth<=d.clientWidth),true);
-  await p.screenshot({path:path.join(__dirname,`bilge-defter-v30-backup-${live?'live':'local'}.png`),fullPage:true});await p.locator('#backupCancel').tap();
+  await p.screenshot({path:path.join(__dirname,`bilge-defter-v31-backup-${live?'live':'local'}.png`),fullPage:true});await p.locator('#backupCancel').tap();
   await p.setViewportSize({width:844,height:390});await preview(p,legacy);await p.locator('#backupCancel').tap();await p.setViewportSize({width:1180,height:820});
   results.push('Preview can download current notebook before replacement; 390px portrait and short landscape dialogs stay usable without horizontal overflow');
 
