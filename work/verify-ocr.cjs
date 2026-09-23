@@ -2,7 +2,7 @@ const fs=require('node:fs/promises'),path=require('node:path'),http=require('nod
 const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 let browser,server;const results=[],pass=s=>{results.push(s);console.log('PASS '+s)};
 (async()=>{try{
- server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v45',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'0.0.0.0',r));
+ server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v46',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'0.0.0.0',r));
  const port=server.address().port;let ocrBody=null,ocrCalls=0;
  browser=await chromium.launch({headless:true});const errors=[];
  const dc=await browser.newContext({viewport:{width:1180,height:820}}),d=await dc.newPage();d.on('pageerror',e=>errors.push(e.message));await d.goto(`http://127.0.0.1:${port}/`);await d.waitForFunction(()=>ready);

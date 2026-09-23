@@ -3,7 +3,7 @@ const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-run
 let browser,server;const results=[],pass=s=>{results.push(s);console.log('PASS '+s)};
 const PASS='test-parola-123';
 (async()=>{try{
- server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v45',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'0.0.0.0',r));
+ server=http.createServer(async(req,res)=>{try{const n=new URL(req.url,'http://local').pathname.slice(1)||'index.html',data=await fs.readFile(path.join(__dirname,'bilge-defter-invited-v46',n));res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[path.extname(n)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end()}});await new Promise(r=>server.listen(0,'0.0.0.0',r));
  const port=server.address().port;
  browser=await chromium.launch({headless:true});const errors=[];
  const ic=await browser.newContext({viewport:{width:1180,height:820}}); const p=await ic.newPage();p.on('pageerror',e=>{errors.push(e.message);console.log('PAGEERR:',e.message)});p.on('console',m=>{console.log('KONSOL:',m.text().slice(0,120))});
