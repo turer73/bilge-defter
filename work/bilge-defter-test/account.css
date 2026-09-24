@@ -1,0 +1,15 @@
+body.account-locked>.app,body.account-locked>bilge-defter-ui,body.account-locked>#syncConflictBanner,body.account-locked>#accessSession{visibility:hidden!important;pointer-events:none!important}
+#accountGate{box-sizing:border-box;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;border:1px solid #ceded7;border-radius:20px;padding:26px;color:#183c35;background:#fffef9;font:16px/1.55 system-ui,sans-serif}
+#accountGate::backdrop{background:#edf1ee}#accountGate h1{margin:0 0 18px;font-size:28px}#accountGate .btn{display:inline-flex;margin:5px 4px 5px 0;text-decoration:none}#accountGate [hidden]{display:none!important}#accountEmail{overflow-wrap:anywhere;font-weight:600}#accountMessage{font-weight:600}#accountMembers section{border-top:1px solid #dce6e1;padding:12px 0;overflow-wrap:anywhere}#accountMembers .btn{margin:4px;padding:9px}#accountManager .tools-content{overflow:auto}
+.account-brand{display:block;width:100%;max-width:360px;height:auto;margin:0 auto 22px;object-fit:contain}
+#accountGate{padding:30px;width:min(520px,calc(100vw - 24px));box-shadow:0 18px 70px #183c3510}
+#accountGate h1{font-size:25px;letter-spacing:-.6px;margin-bottom:12px}
+#accountMessage{min-height:3.1em;font-size:16px;line-height:1.55}
+.account-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+#accountGate .account-actions .btn{box-sizing:border-box;justify-content:center;align-items:center;min-height:48px;margin:0;border:1px solid #cadbd2;border-radius:12px;padding:12px 16px;font:600 14px/1.35 system-ui;background:#eef4ef;color:#173b36;cursor:pointer}
+#accountGate .account-actions .primary{flex-basis:100%;background:#175b4c;color:#fff;border-color:#175b4c}
+#accountGate .btn:focus-visible,.account-help summary:focus-visible{outline:3px solid #156fbe;outline-offset:3px}
+.account-steps{color:#50685f;font-size:14px;line-height:1.6;margin:16px 0}
+.account-safe{padding:13px 15px;background:#eaf3ed;border-radius:12px;font-size:13px;line-height:1.6;color:#295645}
+.account-help{border-top:1px solid #dce6e1;margin-top:20px;padding-top:16px;font-size:13px;color:#52675f}.account-help summary{cursor:pointer;min-height:32px}
+@media(max-width:380px){#accountGate{padding:22px}#accountGate h1{font-size:23px}.account-brand{margin-bottom:14px}}

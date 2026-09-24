@@ -12,3 +12,24 @@ work/invited-public-verification.json
 work/invited-resources.json
 work/update-check*.html
 work/v*-regression-summary.txt
+
+# Credentials, local databases, environments and generated evidence.
+.env
+.env.*
+*.env
+!.env.*.example
+*.key
+*.pem
+*.p12
+*.sqlite
+*.sqlite3
+*.db
+node_modules/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+outputs/*
+!outputs/*.md
+Bilge-Defter-Buton-Temasi-V2.1/
+private-data/

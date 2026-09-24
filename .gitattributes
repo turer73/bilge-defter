@@ -1,0 +1,5 @@
+# The published PWA is a byte-hashed artifact. Do not normalize its source
+# bytes on Windows/Linux checkout; clean builds must match the live package.
+work/bilge-defter-test/** -text
+fixtures/** -text
+*.sh text eol=lf

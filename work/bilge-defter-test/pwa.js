@@ -5,7 +5,14 @@
   const dialog=document.createElement('dialog');dialog.id='pwaDialog';dialog.className='tools-dialog';dialog.setAttribute('aria-labelledby','pwaTitle');
   dialog.innerHTML='<div class="tools-heading"><h2 id="pwaTitle">Uygulama kurulumu</h2><button class="btn" id="pwaClose">× Kapat</button></div><div class="tools-content"><p id="pwaStatus" role="status" class="recovery-note"></p><p id="pwaMode" class="recovery-note"></p><p id="pwaVersion" class="backup-warning"></p><p id="pwaAccount" class="recovery-note" role="status"></p><button class="btn primary" id="pwaInstall" hidden>Uygulamayı yükle</button><button class="btn primary" id="pwaLogin" hidden>Giriş sayfasını aç</button><p class="recovery-note">iPad / iPhone: Safari → Paylaş → Ana Ekrana Ekle. Android ve bilgisayar: tarayıcının Uygulamayı yükle / Ana ekrana ekle menüsünü kullanın. Menü cihaz ve tarayıcıya göre değişebilir.</p><p class="backup-warning">Farklı adresler ayrı depolama kullanır. Eski adreste Yedek al, yeni adreste Yedek yükle ile kontrollü aktarın. Notlar kendiliğinden taşınmaz; yükleme mevcut defterlerin yerine geçer. Güncelleme için tarayıcı verilerini silmeyin.</p><p class="recovery-note">Çevrim dışı paket hazır olduktan sonra notlar ve cihazdan PDF açma internetsiz kullanılabilir. İlk kurulum ve güncelleme bu adrese erişim gerektirir: özel adreste Tailscale, davetli adreste internet ve e-posta girişi. Davet iptali indirilmiş çevrim dışı kopyayı veya yerel notları uzaktan silmez. Ortak cihazda ayrı tarayıcı profili kullanın; bağımsız JSON yedeğini koruyun. Uygulama eski sürümde kaldıysa önce giriş sayfasını açıp e-posta girişini yenileyin.</p><button class="btn" id="pwaCheck">Güncellemeyi denetle</button><p id="pwaUpdate" class="recovery-note" role="status"></p></div>';
   document.body.append(dialog);let registration=null,prompt=null,checking=false,serverVersion=null;
+  if(window.BilgeAccount?.required){
+    button.textContent='Kurulum ve hesap';
+    for(const p of dialog.querySelectorAll('p'))if(p.textContent.startsWith('Çevrim dışı paket hazır olduktan sonra'))p.textContent='Sınıf sürümünde her yeni açılışta internetle hesap doğrulaması gerekir. Açık oturumda bağlantı kesilirse notlar yerelde kaydedilir. Çıkış yapmak yerel notları silmez; ortak cihazlarda ayrı tarayıcı profili kullanın. Erişimin kaldırılması önceden indirilmiş notları uzaktan silmez. Şifreli yedek parolası e-posta giriş kodundan farklıdır; JSON yedeğinizi koruyun.';
+  }
   const status=document.querySelector('#pwaStatus'),update=document.querySelector('#pwaUpdate');
+  if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{
+    if(event.data?.type==='UPDATE_DEFERRED')update.textContent='Güncelleme bekliyor. Diğer Bilge Defter sekme ve uygulama pencerelerini kaydedip kapatın, sonra tekrar deneyin. Açık notlar ve taslaklar korunuyor.';
+  });
   // Oturum kapandiginda gorunen kalici uyari: notlar yerinde kalir, giris yenilenir.
   const sessionBanner=document.createElement('div');sessionBanner.id='accessSession';sessionBanner.hidden=true;sessionBanner.setAttribute('role','alert');
   sessionBanner.innerHTML='<strong>Oturum kapandı.</strong><span>Notlarınız bu cihazda kaldı. Giriş sayfasını açıp e-posta ile yeniden giriş yapın.</span><button type="button" class="btn primary" id="accessLoginBtn">Giriş yap</button>';
@@ -22,6 +29,7 @@
   };
   let sessionTimer=null;
   async function checkSession(){
+    if(window.BilgeAccount?.required){setSessionBanner(false);await window.BilgeAccount.check();return}
     if(!sessionInvalid()){setSessionBanner(false);return}
     try{
       const response=await fetch('./api/v1/bilge-defter/whoami',{cache:'no-store'});
@@ -60,10 +68,15 @@
   addEventListener('appinstalled',()=>{prompt=null;document.querySelector('#pwaInstall').hidden=true;refresh()});
   document.querySelector('#pwaCheck').onclick=async()=>{
     if(registration?.waiting){
-      // Explicit user action: the integrity-checked worker may activate now.
-      // It never takes over an open notebook on its own; this click is the consent.
+      const unsafe=()=>!ready||saveConflict||saveFailed||importing||drawing||pan||pdfBusy||mediaBusy||mediaPending||mediaGesture||plannerDirty||!!document.querySelector('dialog[open]:not(#pwaDialog)');
+      if(unsafe()||!await flushSave()||unsafe()||isDirty()){
+        update.textContent='Önce açık düzenlemeyi bitirin ve kaydın tamamlanmasını bekleyin. Güncelleme notları veya taslakları kapatmadı.';return;
+      }
       const worker=registration.waiting;
-      worker.addEventListener('statechange',()=>{if(worker.state==='activated')location.reload()});
+      worker.addEventListener('statechange',()=>{if(worker.state==='activated'){
+        if(!unsafe()&&!isDirty())location.reload();
+        else update.textContent='Yeni sürüm hazır. Açık düzenleme korundu; kaydettikten sonra uygulamayı kapatıp açın.';
+      }});
       worker.postMessage('SKIP_WAITING');
       return;
     }
