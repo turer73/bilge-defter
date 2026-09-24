@@ -1,4 +1,19 @@
-# Yerel sunucu adayı
+# Bilge Defter bağımsız hesap servisi
+
+24 Eylül 2026 düzeltmesi: klasörün `v49` adı tarihseldir. Buradaki uygulama
+kodundan üretilen `bilge-defter-accounts:v50` canlıdadır; web paketi v52'dir.
+Kaynak Git kaydı `bilge-defter` deposunun teslim dalındadır. Bu, tam
+`Codex-server` deposunun kopyası veya monolite birleştirme değildir.
+
+Servis `app.main:app` ile başlar; gerçek SQLite adaptörü, JWT doğrulaması,
+hesap/izin listesi ve yedek sürüm kontrolü içerir. `tests/browser_server.py`
+yalnız yerel sentetik test sunucusudur, production Docker katmanına kopyalanmaz.
+
+Canlı DB `/opt/bilge-defter-classroom-v49/data`, sırlar salt-okunur ayrı
+mount üzerindedir. Repo bu verileri içermez. Canlıdan tekrar kurulum ancak
+ayrı kapsamlı onay ve geri dönüş/yedek doğrulamasıyla yapılır.
+
+## İlk kaynak alımının tarihsel kaydı
 
 Kaynak: klipperos@100.84.251.49:/opt/linux-ai-server/app/api/bilge_defter.py
 
@@ -7,4 +22,5 @@ Başlangıç dosyası SHA-256: d5e0480a5bd2d12417836c40808ffae291c5c53518b5ec040
 Sunucudaki mevcut infra/monitoring/prometheus.yml değişikliği alınmadı/değiştirilmedi.
 
 Bu klasör tam sunucu checkout'u değildir: yalnız Bilge Defter modülü ve bağımsız test adayıdır.
-Canlıya kopyalanmadı. `.venv` ve test verileri dağıtım girdisi değildir.
+İlk alımda canlıya kopyalanmamıştı; sonraki v49/v50 yayınları üstte belirtilmiştir.
+`.venv` ve test verileri dağıtım girdisi değildir.

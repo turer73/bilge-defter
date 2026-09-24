@@ -1,5 +1,5 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'bilge-defter-invited-v48'),origin='http://127.0.0.1:49205';let browser;const results=[];
 const pass=name=>{results.push(name);console.log('PASS '+name)};
 async function context(){const c=await browser.newContext({serviceWorkers:'block',viewport:{width:1440,height:1000}});await c.route('**/*',route=>{const url=new URL(route.request().url());if(url.origin!==origin)return route.abort();const file=path.resolve(root,'.'+(url.pathname==='/'?'/index.html':url.pathname));if(!file.startsWith(root+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png'})[path.extname(file)]||'application/octet-stream'})});return c}

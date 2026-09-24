@@ -2,7 +2,7 @@
 // their UI contract still applies; no old release can silently count as v50.
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process'),crypto=require('node:crypto'),vm=require('node:vm');
 const repo=path.resolve(__dirname,'..'),root=path.join(__dirname,'bilge-defter-invited-v50'),out=path.join(repo,'outputs/v50');fs.mkdirSync(out,{recursive:true});
-const python=path.join(repo,'server-candidate/v49/.venv/Scripts/python.exe'),env={...process.env,BILGE_TEST_ROOT:root},results=[];
+const python=process.env.BILGE_PYTHON||path.join(repo,process.platform==='win32'?'server-candidate/v49/.venv/Scripts/python.exe':'server-candidate/v49/.venv/bin/python'),env={...process.env,BILGE_TEST_ROOT:root},results=[];
 async function run(name,cmd,args){
  console.log('START '+name);const started=Date.now();
  const r=await new Promise(resolve=>{const p=spawn(cmd,args,{cwd:repo,env,windowsHide:true,stdio:['ignore','pipe','pipe']});let stdout='',stderr='';const timer=setTimeout(()=>p.kill(),180000);p.stdout.on('data',b=>stdout+=b);p.stderr.on('data',b=>stderr+=b);p.on('error',e=>stderr+=e.message);p.on('close',code=>{clearTimeout(timer);resolve({code,stdout,stderr})})});

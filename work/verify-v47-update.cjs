@@ -1,6 +1,6 @@
 // Actual Chromium service-worker lifecycle, isolated loopback server and synthetic notes.
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto'),assert=require('node:assert/strict');
-const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require('playwright');
 let version='v46',broken=false,server,browser;const results=[];
 const pass=s=>{results.push(s);console.log('PASS '+s)};
 const root=v=>path.resolve(__dirname,'bilge-defter-invited-'+v);

@@ -1,7 +1,7 @@
 // Isolated browser regression checks. Only synthetic notes and a mocked API.
 // No production origin, real account, passphrase or service is contacted.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require('playwright');
 const root=path.resolve(process.env.BILGE_TEST_ROOT||path.join(__dirname,'bilge-defter-test'));
 const origin='http://127.0.0.1:49201',password='synthetic-only-pass';
 const results=[];let browser;

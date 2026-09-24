@@ -1,6 +1,6 @@
 // Isolated synthetic notebooks only. Desktop timings are not an iPad benchmark.
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require('playwright');
 const out=path.resolve(__dirname,'../outputs/v52');fs.mkdirSync(out,{recursive:true});
 const results=[],measurements=[],origin='http://127.0.0.1:49232';let browser;
 function pass(name){results.push(name);console.log('PASS '+name)}

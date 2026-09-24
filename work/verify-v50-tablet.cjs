@@ -1,6 +1,6 @@
 // Synthetic, isolated Chromium contexts only. No real notebooks or live requests.
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require('playwright');
 const root=path.resolve(process.env.BILGE_TEST_ROOT||path.join(__dirname,'bilge-defter-invited-v50'));
 const output=path.resolve(__dirname,'../outputs/v50');fs.mkdirSync(output,{recursive:true});
 const origin='http://127.0.0.1:49230',results=[],errors=[];let browser;

@@ -1,0 +1,12 @@
+{
+  "name": "bilge-defter",
+  "private": true,
+  "version": "0.52.0",
+  "scripts": {
+    "build": "node work/build-invited.cjs",
+    "prepare:baselines": "node work/prepare-clean-baselines.cjs",
+    "test": "node work/verify-clean-release.cjs"
+  },
+  "devDependencies": { "playwright": "1.62.1" },
+  "engines": { "node": ">=22" }
+}

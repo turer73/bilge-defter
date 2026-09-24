@@ -1,12 +1,12 @@
 const assert=require('node:assert/strict'),path=require('node:path'),{spawn}=require('node:child_process');
-const {chromium}=require('C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),results=[],errors=[];let server,browser;
 const pass=name=>{results.push(name);console.log('PASS '+name)};
 async function ready(p){await p.waitForFunction(()=>typeof ready!=='undefined'&&ready&&window.__v2UI)}
 async function accountPanel(p){const ui=p.locator('bilge-defter-ui');await ui.locator('button[data-panel="settings"]').click();await ui.locator('[data-command="settings.install"]').click();await p.locator('#accountOpen').click()}
 async function insert(p,text){const ui=p.locator('bilge-defter-ui');await ui.locator('button[data-panel="insert"]').click();await ui.locator('[data-command="insert.text"]').click();await p.locator('#layoutText').fill(text);await p.locator('#layoutDone').click();assert.equal(await p.evaluate(()=>flushSave()),true)}
 (async()=>{try{
- const origin=await new Promise((resolve,reject)=>{server=spawn(path.join(root,'server-candidate/v49/.venv/Scripts/python.exe'),[path.join(root,'server-candidate/v49/tests/browser_server.py')],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe']});let out='';server.stdout.on('data',x=>{out+=x;const match=out.match(/TEST_ORIGIN=(http[^\s]+)/);if(match)resolve(match[1])});server.stderr.on('data',x=>process.stderr.write(x));server.on('error',reject);server.on('exit',code=>reject(Error('test server exit '+code)))});
+ const origin=await new Promise((resolve,reject)=>{server=spawn((process.env.BILGE_PYTHON||path.join(root,process.platform==='win32'?'server-candidate/v49/.venv/Scripts/python.exe':'server-candidate/v49/.venv/bin/python')),[path.join(root,'server-candidate/v49/tests/browser_server.py')],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe']});let out='';server.stdout.on('data',x=>{out+=x;const match=out.match(/TEST_ORIGIN=(http[^\s]+)/);if(match)resolve(match[1])});server.stderr.on('data',x=>process.stderr.write(x));server.on('error',reject);server.on('exit',code=>reject(Error('test server exit '+code)))});
  for(let i=0;i<30;i++){try{await fetch(origin+'/release.json');break}catch{await new Promise(r=>setTimeout(r,100))}}
  browser=await chromium.launch({headless:true});
  async function context(user){const c=await browser.newContext({serviceWorkers:'block',viewport:{width:1280,height:900}});await c.addInitScript(()=>{window.__accountRequired=true;window.__syncInvited=true});c.on('page',p=>p.on('pageerror',e=>errors.push(e.message)));await c.request.post(origin+'/_test/login/'+user);return c}

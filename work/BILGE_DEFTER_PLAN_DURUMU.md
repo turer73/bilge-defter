@@ -1,5 +1,26 @@
 # Bilge Defter — uygulama sırası ve kanıt durumu
 
+## Güncel durum — 24 Eylül 2026, v52 teslimi
+
+Bu bölüm aşağıdaki tarihsel aday/yayın açıklamalarından önceliklidir.
+
+- Canlı davetli web v52, bağımsız hesap servisi v50; `server-candidate/v49`
+  ve canlı veri dizinindeki v49 adı sürüm göstergesi değildir. Özel adres v46.
+- UI kararı: mevcut v48 köprüsünün v52'ye geliştirilmiş hali tek kaynak.
+  Eski `ui-v2` dalı doğrudan birleştirilmez; ayrı motor/köprü çalıştırılmaz.
+- V52 kaynak teslimi: önce korumalı yerel yedek, ardından ayrı dalda
+  `e09142b` kontrol noktası commit'i. Temiz üretim ve test kanıtı
+  `docs/DELIVERY_V52.md` altında izlenir. Commit, push/merge/yayın değildir.
+- Gerçek OCR kalite kabulü AÇIK: RapidOCR/Tesseract aynı anonim veri seti ve
+  sabit model/sürümle kıyaslanacak. Sentetik testler kalite puanı sayılmaz.
+- Gerçek hesap/cihaz/sınıf kabulü AÇIK: önce küçük pilot; ardından 48 öğrenci
+  + 2 yönetici. İzinli test e-postaları ve fiziksel cihaz kullanıcıları gerekir.
+- Bağımsız yedek zamanlaması, PDF ağırlıklı sunucu kotası, saklama/silme
+  işletimi ve güvenli push tekrar açılışı ayrı açık işlerdir.
+- Güncel kabul listesi: `docs/ACCEPTANCE.md`; OCR: `docs/OCR_BENCHMARK.md`.
+
+## Tarihsel kayıtlar — aşağıdaki durumlar yazıldıkları tarihe aittir
+
 ## Son yerel aday: v50 — 23 Eylül 2026 tablet düzeltmeleri ve denetim
 
 - **Canlıya yayınlanmadı.** Ayarlar düğmesi kesilmesi, gereksiz yüksek defter penceresi, dokunmayla başlık odak çerçevesi ve takvim tarih/düğme çakışması yerelde düzeltildi.
