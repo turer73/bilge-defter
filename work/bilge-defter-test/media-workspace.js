@@ -166,9 +166,12 @@ document.querySelector('#canvas').addEventListener('pointerdown',e=>{
 },{capture:true});
 document.addEventListener('keydown',e=>{
  if(e.isComposing)return;
+ const typing=e.composedPath().some(node=>node instanceof Element&&node.matches('input,textarea,select,[contenteditable=true]'));
+ const uiDialog=document.querySelector('bilge-defter-ui')?.shadowRoot?.querySelector('dialog[open]');
+ if(uiDialog)return;
  if(e.key==='Escape'&&(mediaPlacement||mediaSelecting)){e.preventDefault();cancelMediaMode();return}
- if(mediaSelecting&&(e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&e.key.toLowerCase()==='z'&&!e.target.closest?.('input,textarea,select,[contenteditable=true]')){e.preventDefault();document.querySelector('#layoutUndo').click();return}
- if(e.isComposing||e.target.closest?.('input,textarea,select,[contenteditable=true]')||document.querySelector('dialog[open]')||!mediaAvailable())return;
+ if(mediaSelecting&&(e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&e.key.toLowerCase()==='z'&&!typing){e.preventDefault();document.querySelector('#layoutUndo').click();return}
+ if(typing||document.querySelector('dialog[open]')||!mediaAvailable())return;
  if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&e.key.toLowerCase()==='z'){e.preventDefault();document.querySelector('#undo').click();return}
  if(e.ctrlKey||e.metaKey||e.altKey)return;const key=e.key.toLowerCase();if(key==='t'){e.preventDefault();document.querySelector('#textAdd').click()}else if(key==='p'||key==='e'){e.preventDefault();selectTool(key==='p'?'pen':'eraser')}
 });

@@ -1,5 +1,5 @@
 // Each release is installed completely before it can replace the previous one.
-const VERSION='v46',PREFIX='bilge-defter-test-',CACHE=PREFIX+VERSION;
+const VERSION='v52',PREFIX='bilge-defter-test-',CACHE=PREFIX+VERSION;
 const root=new URL('./',self.location.href);
 self.addEventListener('install',event=>event.waitUntil((async()=>{
   try{
@@ -30,7 +30,15 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
 // Explicit user consent (Güncellemeyi yükle) may activate the integrity-checked
 // worker immediately. Without this message the worker still waits for every old
 // window to close, so an open notebook is never replaced underneath itself.
-self.addEventListener('message',event=>{if(event.data==='SKIP_WAITING')self.skipWaiting()});
+self.addEventListener('message',event=>{
+  if(event.data!=='SKIP_WAITING')return;
+  event.waitUntil((async()=>{
+    const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    const scoped=windows.filter(client=>{const url=new URL(client.url);return url.origin===root.origin&&url.pathname.startsWith(root.pathname)});
+    if(scoped.length>1){event.source?.postMessage({type:'UPDATE_DEFERRED',reason:'other-windows'});return}
+    await self.skipWaiting();
+  })());
+});
 self.addEventListener('push',event=>{
   let data={};try{data=event.data?event.data.json():{}}catch{}
   event.waitUntil(self.registration.showNotification(data.title||'Bilge Defter',{body:data.body||'Yeni yedek geldi.',tag:'bilge-defter-sync',renotify:true,data:{url:new URL('./',self.location.href).href}}));
@@ -47,7 +55,8 @@ self.addEventListener('notificationclick',event=>{
 self.addEventListener('fetch',event=>{
   const url=new URL(event.request.url);
   if(event.request.method!=='GET'||url.origin!==root.origin)return;
-  if(url.pathname===new URL('release.json',root).pathname){event.respondWith(fetch(event.request,{cache:'no-store'}));return}
+  const relative=url.pathname.slice(root.pathname.length);
+  if(['release.json','auth-continue.html','auth-continue.js'].includes(relative)||url.pathname.startsWith('/cdn-cgi/')||relative.startsWith('api/')){event.respondWith(fetch(event.request,{cache:'no-store'}));return}
   event.respondWith((async()=>{
     const cache=await caches.open(CACHE);
     if(event.request.mode==='navigate'&&(url.pathname===root.pathname||url.pathname===root.pathname+'index.html')){

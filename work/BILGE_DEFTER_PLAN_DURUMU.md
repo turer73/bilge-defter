@@ -1,8 +1,81 @@
 # Bilge Defter — uygulama sırası ve kanıt durumu
 
+## Güncel durum — 24 Eylül 2026, v52 teslimi
+
+Bu bölüm aşağıdaki tarihsel aday/yayın açıklamalarından önceliklidir.
+
+- Canlı davetli web v52, bağımsız hesap servisi v50; `server-candidate/v49`
+  ve canlı veri dizinindeki v49 adı sürüm göstergesi değildir. Özel adres v46.
+- UI kararı: mevcut v48 köprüsünün v52'ye geliştirilmiş hali tek kaynak.
+  Eski `ui-v2` dalı doğrudan birleştirilmez; ayrı motor/köprü çalıştırılmaz.
+- V52 kaynak teslimi: önce korumalı yerel yedek, ardından ayrı dalda
+  `e09142b` kontrol noktası commit'i. Temiz üretim ve test kanıtı
+  `docs/DELIVERY_V52.md` altında izlenir. Commit, push/merge/yayın değildir.
+- Gerçek OCR kalite kabulü AÇIK: RapidOCR/Tesseract aynı anonim veri seti ve
+  sabit model/sürümle kıyaslanacak. Sentetik testler kalite puanı sayılmaz.
+- Gerçek hesap/cihaz/sınıf kabulü AÇIK: önce küçük pilot; ardından 48 öğrenci
+  + 2 yönetici. İzinli test e-postaları ve fiziksel cihaz kullanıcıları gerekir.
+- Bağımsız yedek zamanlaması, PDF ağırlıklı sunucu kotası, saklama/silme
+  işletimi ve güvenli push tekrar açılışı ayrı açık işlerdir.
+- Güncel kabul listesi: `docs/ACCEPTANCE.md`; OCR: `docs/OCR_BENCHMARK.md`.
+
+## Tarihsel kayıtlar — aşağıdaki durumlar yazıldıkları tarihe aittir
+
+## Son yerel aday: v50 — 23 Eylül 2026 tablet düzeltmeleri ve denetim
+
+- **Canlıya yayınlanmadı.** Ayarlar düğmesi kesilmesi, gereksiz yüksek defter penceresi, dokunmayla başlık odak çerçevesi ve takvim tarih/düğme çakışması yerelde düzeltildi.
+- Yazı tanımaya otomatik yazı bölümü seçimi ve yalnız geçici önizlemede koyulaştırma eklendi. Motor aynı; gerçek Türkçe el yazısı doğruluğu hâlâ açık kabul maddesi.
+- OCR piksel/eşzamanlılık/yanıt sınırları; sözlükte geciken yanıt koruması; gerçek yerel/çevrim dışı/sunucu davranışına uygun açıklamalar eklendi.
+- **169/169 kontrol geçti:** 72 sunucu, 31 tablet/dosya/sözlük/OCR, 29 veri koruma, 13 hesap, 8 elle öğrenci, 10 tema/arayüz, 6 v49→v50 güncelleme. 228 varlığın özeti ve 18 betik sözdizimi doğrulandı. Chromium; fiziksel Safari ve gerçek öğrenci pilotu değil.
+- Zorunlu sıradaki işler: kaynakları kontrollü Git kaydı/temiz üretim; gerçek el yazısı kalite seti; ayrı sunucuda eksik tam sözlük hizmeti; bağımsız sunucu yedek işletimi; onaylı yayın ve gerçek cihaz/sınıf kabulü.
+- Ayrıntı ve kanıt: `outputs/BILGE_DEFTER_V50_DENETIM.md`, `outputs/v50/audit-results.json`. Aşağıdaki canlı v49 ve eski hazırlık bölümleri tarihsel kayıttır.
+
 Bu not, 20 Eylül 2026 tarihli Not Alma Programı konuşmasında görünen aşama sırasına dayanır. Özgün 37 iş kalemi / 36 test içeren ZIP bu çalışma alanında ve kontrol edilen İndirilenler konumunda bulunmadı; bu belge o paketin yerine geçtiği iddiasını taşımaz.
 
-## Güncel dilim: v41 — TDK Güncel Türkçe Sözlük verisine geçiş
+## Güncel yerel aday: v49 — 23 Eylül 2026 onaylı öğrenci hesapları
+
+**CANLI GÜNCELLEME:** Kullanıcının açık yetki onayı sonrası yalnız `defter.bilgearena.com` v49'a geçirildi. Ayrı bir yıllık, dar yetkili Cloudflare anahtarı korumalı sunucu dosyasında; gerçek politika okuma/yazma ve aynı iki-yönetici kuralı doğrulandı. Otomatik giriş izni eşitlemesi açık. Sunucuda önceki şifreli yedek sayısı 0; kaynak DB değiştirilmedi, yeni DB yedeği ve geri açma testi başarılı. HTTP ile 229/229 dosya özeti eşleşti. Genel HTTPS girişsiz ziyaretçiyi e-posta koduna yönlendiriyor. Özel adres v46, Bilge Arena ve monolit değişmedi. Gerçek yönetici/öğrenci oturum kabulü ve sınıf kullanım sınırları devam ediyor. Ayrıntı: `outputs/BILGE_DEFTER_V49_CANLI_GECIS.md`. Aşağıdaki hazırlık dilimleri tarihsel kayıttır.
+
+**Son devam turu:** Klipper'da ayrı `bilge-defter-accounts` ve yalnız localhost:18791 üzerinden `bilge-defter-classroom-preview` çalışıyor. Gerçek Linux bağımlılıklarıyla 61 sunucu testi, 21 tarayıcı hesabı, 29 regresyon, 3 yedek/aktarım ve 1 üretim tarayıcı kontrolü: 115 ayrı kontrol geçti. Cloudflare'da `teams_free` 50 kullanıcı planı ve 2 kullanılan koltuk canlıdan okundu. Dar hedefli giriş politikası eşitleme kodu eklendi, henüz anahtar oluşturulmadığından çalışan deneme servisinde devre dışı. Genel adres v46'da; mevcut anahtar sunucuya taşınmadı. Son durum ve kalan zorunlu yayın kapıları: `outputs/BILGE_DEFTER_V49_CANLI_GECIS.md`. Aşağıdaki önceki yerel aday maddeleri tarihsel aşamadır.
+
+- Son kullanıcı kararı: ücretsiz sınır için **48 öğrenci + 2 yönetici**, öğrencileri sonradan tek tek yönetici ekranından ekleme. Önceki herkese açık başvuru yerine varsayılan davetli liste modu uygulanır. Yöneticiler: turgut.urer@gmail.com, sevdilurer@gmail.com. Yerel dağıtım örneği `server-candidate/v49/.env.classroom.example` içinde; canlı yetki atanmadı ve kayıt politikası genişletilmedi.
+- Sunucu kaynağı SSH üzerinden `/opt/linux-ai-server/app/api/bilge_defter.py` dosyasında doğrulandı (HEAD `911f07f6f42b889ecf3cf367b28e40185afcf7ec`). Önceki kaynak erişimi engeli SSH ile aşıldı; GitHub erişimi hâlâ ayrı bir sınırdır.
+- `server-candidate/v49` altında yalnız Bilge Defter kaynak kopyası üzerinde başvuru/onay/askıya alma, yönetici yetkisi, işlem günlüğü, hesaba bağlı istekler ve atomik yedek sürüm koşulu uygulandı. Tam sunucu deposu klonu veya canlı kurulum değildir.
+- İstemci hesabı doğrulamadan defter veritabanını açmaz; her hesap ayrı veritabanı kullanır. Hesap değişikliği/askıya alma/çıkışta erişim kilitlenir. Eski hesapsız notlar otomatik taşınmaz/silinmez.
+- Sınıf adayı yeniden açılışta internetle kimlik doğrulaması ister. Açık oturumda çevrimdışı yerel kayıt sürer. Ortak tarayıcı profili fiziksel veri izolasyonu sağlamaz; ayrı profil önerilir.
+- Eski push adres doğrulaması yetersiz bulundu; v49 sunucu adayında push kayıt ve gönderimleri kapalı. Açık uygulama eşitlemesi sürer. Canlı sunucu değiştirilmedi.
+- Yönetici ekranında e-posta ile **Öğrenci ekle**, tekrar kayıt önleme ve onaylı giriş listesi indirme hazır. Bekleyen/ret/askıdaki adresler de 48 kayıt sınırına dahildir; iki eşzamanlı ekleme sınırı aşamaz. Listede olmayan öğrenci kendi kaydını açamaz. Öğrenciye yönetici formu ve liste API yetkisi verilmez.
+- Son paket üzerinde yeniden çalıştırıldı: 47 yerel sunucu/JWT/SQLite + 13 hesap tarayıcı akışı + 8 elle ekleme tarayıcı akışı + 29 güvenlik/PWA kontrolü: **97/97 geçti**. **228/228** dosya özeti eşleşti. Gerçek e-posta teslimi, Cloudflare canlı kuralı, fiziksel tablet, tam sunucu uygulaması ve gerçek sınıf yük testi yapılmadı.
+- **Cloudflare izin listesi otomatik eşitlenmez.** İndirilen dosya yalnız taslaktır; giriş izni açılmış sayılmaz. Gerçek kuruluş kotası başka uygulamalardan etkilenebilir. Yeni ücret veya satın alma yoktur.
+- Sıradaki adım: gerçek kuruluş kullanıcı kotası ve mevcut Access politikası; onaylı listenin güvenli uygulanması; eski notların yedeği; tam sunucu entegrasyonu ve yayın/geri dönüş planı. Bunlardan sonra ayrıca onaylı sınırlı pilot, ardından sınıfa açılış. Ayrıntı: `outputs/BILGE_DEFTER_V49_HESAPLAR.md`.
+
+## Önceki yerel aday: v48 — 23 Eylül 2026 ZIP arayüz uyarlaması
+
+- Kullanıcının Bilge-Defter-Buton-Temasi-Guncelleme.zip paketindeki V2.1 görünümü mevcut uygulama motoruna uyarlandı. Demodaki defter motoru kopyalanmadı; paket betikleri çalıştırılmadı. Zaten eşleşen altı tema varlığı yeniden kullanıldı.
+- Masaüstünde ortalanmış 840 px yazı alanı, dar ekranda altta kalem araçları; görünmez eski düğme katmanları kaldırıldı. PDF ve öğe yerleşiminin geniş çalışma alanı korunur.
+- Tema tercihi yeni arayüz ile mevcut PDF/yerleşim pencerelerinde ortak çalışır; yeniden açılışta ve ikinci sekmede korunur. Kâğıt, mürekkep ve dış çerçeve renkleri bağımsızdır.
+- Sözlük menüsü doğru pencereye bağlandı. Panelde yazarken çizim kısayollarının tetiklenmesi engellendi; yerel pencere kapanınca odak görünür menüye döner. Not biçimi değiştirilmedi.
+- Son v48 paketinde 29 güvenlik/çevrim dışı + 10 ZIP arayüz kontrolü: **39/39 geçti**, 226/226 dosya özeti eşleşti. 320/390 px tarayıcı görünümü ve masaüstü görüntüleri incelendi. Fiziksel cihaz ve canlı profil kabulü yapılmadı.
+- Canlı yayın, commit ve push yapılmadı. v47 sunucu eşitleme sözleşmesi, temiz klondan üretim ve tanıma pilotu eksikleri devam eder; yeni görünüm bu eksikleri çözmüş sayılmaz. Ayrıntı: `outputs/BILGE_DEFTER_V48_ARAYUZ.md`.
+
+## Önceki yerel aday: v47 — 23 Eylül 2026 güvenlik ve tanıma hazırlığı
+
+Bu bölüm canlı sürüm bildirimi değildir. Yerel kaynak v46 + mevcut V2.1 arayüz değişikliklerinden ilerletildi; canlı sunucu bu turda değiştirilmedi veya sürümü yeniden ölçülmedi. Kullanıcının onayı Bilge Defter için Codex yerel kod uygulama istisnası olarak alındı.
+
+- Kalıcı eşitleme değişiklik işareti; gönderim sırasında yeni düzenlemeyi yanlışlıkla eşitlenmiş saymama; eşzamanlı istekleri sıraya alma; ağ/giriş hatasında gönderimi durdurma.
+- Yeni istemci sunucudan `cas-v1` ve güçlü ETag sözleşmesi ister; destek doğrulanmadığında otomatik eşitleme ve sunucuya gönderme kapalıdır. Sunucu uygulaması ve iki gerçek cihaz doğrulaması **bekliyor**. Mevcut sunucunun bu sözleşmeyi desteklediği iddia edilmiyor.
+- PDF genişliğe sığdırma geçersiz kaydırma konumu bırakmaz; geçersiz defter sağlam IndexedDB kaydının üzerine yazılmaz. V2 metin/kamera/PDF/yerleşim girişleri, sayfa seçimi ve geri dönüş göstergesi düzeltildi.
+- Güncelleme, açık taslak veya kayıt sorunu varken etkinleştirilmez; etkinleşme sırasında başlayan düzenleme zorla yeniden yüklenmez.
+- Yazıyı tanı artık önce yerel önizleme hazırlar; silgi ve uzun sayfa sınırları korunur, gönderme ayrı açık eylemdir. Eski/geciken sonuç reddedilir. Mevcut özel OCR uç noktası korunur; MyScript/ML Kit/Cloud Vision entegrasyonu yapılmadı.
+- İkinci yerel turda 29 güvenlik/arayüz/çevrim dışı kontrolü ve 6 gerçek service-worker güncelleme kontrolü geçti: toplam **35/35**. 226/226 dosya SHA-256 eşleşmesi doğrulandı. Tam eski regresyon paketi yeniden çalıştırılmadı.
+- Önceki test bekleme kusuru giderildi ve yeniden doğrulandı. Gerçek Chromium kurulumu, internet kapalıyken sentetik notla açılış, bozuk paketin reddi, iki pencere açıkken güncellemeyi erteleme ve v46'dan v47'ye notları koruyarak geçiş geçti. Bunlar fiziksel tablet veya kullanıcının kurulu profili üzerinde test değildir.
+- Yeni koruma: bekleyen service worker aynı uygulama kapsamındaki birden çok pencere açıkken SKIP_WAITING isteğini reddeder. v47 arayüzü diğer pencereleri kaydedip kapatma açıklamasını gösterir. v46 arayüzü bu yeni açıklamayı göstermeyebilir; tüm pencereler kapatılınca normal güncelleme yaşam döngüsü çalışır.
+- Sıradaki sıra: (1) doğru sunucu kaynağını doğrulama ve atomik sürüm koşulu + iki cihaz testleri, (2) temiz klondan bağımlılık üretimi, (3) el yazısı alan seçimi ve sağlayıcıdan bağımsız nokta/zaman verisi, (4) ayrıca onaylanmış sağlayıcı pilotu ve gerçek tablet/Türkçe örnekleri. Ücretli hizmet, gerçek not aktarımı ve canlı dağıtım ayrı onay kapsamıdır.
+- Sunucu kaynağı sınırı: 23 Eylül incelemesinde yönergedeki `turer73/Codex-server` GitHub erişimi 404 döndü. İki yerel checkout `turer73/claude-server` kaynağına bağlı; yerel ve erişilebilir uzak ağaçta Bilge Defter modülü bulunmadı. Bu, sunucuda kod olmadığı anlamına gelmez; doğru kaynak/erişim netleşmeden sunucu sözleşmesi uygulanmadı. Ayrıntı: `outputs/BILGE_DEFTER_V47_KABUL_2026-09-23.md`.
+
+Ayrıntılı kanıt ve sunucu sözleşmesi: `outputs/BILGE_DEFTER_YEREL_DUZELTMELER_2026-09-23.md`.
+
+## Tarihsel dilim: v41 — TDK Güncel Türkçe Sözlük verisine geçiş
 
 - Sözlük verisi TDK GTS 12. baskıdan (ogun/guncel-turkce-sozluk, NDJSON) seçilen tıp ağırlıklı 13.161 terimle değiştirildi (tıp etiketli + tıbbi anahtar kelimeli; yönlendirme maddeleri ayıklandı; TDK atfı arayüzde). build-dictionary.cjs ile tekrar üretilebilir.
 - 28 uygulama paketi 266 kontrol + fixture'lar geçti. Canlı iki origin v41: releases/20260921-v41-tdk-sozluk; rollback-before-v41. SHA256SUMS 523bdaa4ca50b8f5a78f848cdc43b347d13107cf6c51e29537cc7e64b958b8ba. Ayrıntı: outputs/BILGE_DEFTER_V41.md.
