@@ -56,5 +56,37 @@ yapılmaz. Sınıf/gerçek OCR kabulü için `ACCEPTANCE.md` geçerlidir.
 
 ## Temiz kopya sonucu
 
-Henüz bu belgeye sonuç işlenmedi. Başarılı komut ve hash kanıtı olmadan
-tamamlandı sayılmaz; teslim sonunda bu bölüm ölçülen sonuçla güncellenir.
+2026-09-24: e09142b kontrol noktasından sonra d25b716 test altyapısı ve
+f91ed0c PDF bayt koruma düzeltmesi temiz klona aktarıldı.
+Test kökü: D:/Projelerim/bilge-defter-v52-clean.
+
+- npm ci ve Playwright Chromium kurulumu başarılı.
+- Kilitli Python ortamı: Windows, Python 3.14; Linux üretim Python 3.12 değildir.
+- npm test: 192 kontrol başarılı (72 backend, 31 tablet boyutu, 29 güvenlik,
+  13 hesap, 8 izin listesi, 10 tema, 6 güncelleme, 14 giriş, 9 kalem regresyonu).
+- OCR ölçüm aracı: 8 birim testi; sınıf geçiş/yedek yardımcıları: 3 test başarılı.
+- Toplam 203 kontrol; gerçek el yazısı model ölçümü ve fiziksel cihaz testi yok.
+- 232 çevrimdışı varlık ve 18 script denetlendi. Temiz v52 paket hash'i yukarıdaki
+  canlı hash ile birebir aynı; gerçek v51 eski paket hash'leri de doğrulandı.
+- Chromium sentetik 4x CPU yavaşlatmada 120 kalem hareketi: araç yenileme sayısı
+  120 -> 1; ölçülen süre 76.2 -> 0.8 ms; 121 nokta/revizyon korundu.
+  Bu sayılar gerçek iPad gecikmesi veya kullanıcı hissi ölçümü değildir.
+- Üretilen 1180px üst araç, 390px giriş ve tema paneli ekranları görsel incelendi;
+  incelenen görüntülerde yatay taşma veya ayarlar düğmesi kesilmesi görülmedi.
+
+İlk temiz üretim başarısızdı: önceden kaydedilmiş PDF dosyasında Git LF dönüşümü
+vardı. Mevcut canlı CRLF baytları kayda alınarak düzeltildi; beklenen hash
+değiştirilmedi. Yayına girmeyen kaynak README'sinin tek CRLF satırı da korundu.
+Playwright kurulumu kullanılmayan chromium-1217 cache'ini otomatik kaldırdı;
+gerekirse ilgili Playwright sürümüyle yeniden indirilebilir. Kullanıcı verisi silinmedi.
+
+Canlı salt-okunur doğrulama: web SHA256SUMS eşleşti; hesap konteyneri hâlâ
+bilge-defter-accounts:v50, başlangıç 2026-09-23T19:24:15.128690167Z.
+Yedi Python kaynak dosyası ve requirements.txt, yerelde CRLF -> LF
+normalizasyonuyla canlı hash'leriyle eşleşti. Bu, tüm canlı bağımlılıkların
+veya gerçek e-posta girişinin test edildiği anlamına gelmez.
+
+Kanıtlar temiz klonda outputs/v52 altında: audit-results.json,
+login-results.json, performance-results.json ve ekran görüntüleri.
+Push, master merge, canlı deploy ve kullanıcı listesi değişikliği yapılmadı.
+OCR motor karşılaştırması ile A1-A10 gerçek kabul kapıları açık kaldı.
