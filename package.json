@@ -10,7 +10,8 @@
     "test:scroll": "node work/verify-v61.cjs verify-v58-scroll.cjs",
     "test:library": "node work/verify-v61.cjs verify-v59-library.cjs",
     "test:update": "node work/verify-v61.cjs verify-v59-update.cjs",
-    "test:save": "node work/verify-v61.cjs verify-v61-save.cjs"
+    "test:save": "node work/verify-v61.cjs verify-v61-save.cjs",
+    "test:zoom": "node work/verify-v61.cjs verify-v61-zoom.cjs"
   },
   "devDependencies": { "playwright": "1.62.1" },
   "engines": { "node": ">=22" }

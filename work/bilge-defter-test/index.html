@@ -294,6 +294,13 @@ function applyPaperColor(){
     else if(pattern==='dotted'){paper.style.backgroundImage=`radial-gradient(${lc} 1.5px, transparent 1.5px)`;paper.style.backgroundSize='32px 32px'}
     else{paper.style.backgroundImage=`linear-gradient(${lc} 1px, transparent 1px)`;paper.style.backgroundSize='100% 32px'}
   }
+  paperGrid();
+}
+// Lines sit 32 page units apart, so they follow the ink through fit and zoom.
+function paperGrid(scale=paperScale(),offset=viewY()){
+  const paper=canvas.parentElement,pattern=paperPattern(),step=32*scale,size=pattern==='grid'||pattern==='dotted'?`${step}px ${step}px`:`100% ${step}px`;
+  if(paper.style.backgroundSize!==size)paper.style.backgroundSize=size;
+  paper.style.backgroundPosition=pattern==='grid'||pattern==='dotted'?`${-(viewX()*scale%step)}px ${-(offset*scale%step)}px`:`0 ${-(offset*scale%step)}px`;
 }
 function updatePaperControls(){
   const color=paperColor(),pattern=paperPattern();document.querySelector('#paperColor').value=color;document.querySelector('#paperColor').disabled=!page();
@@ -490,16 +497,16 @@ function drawAll(options){
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.restore();
   const scale=paperScale(),offset=viewY(),bottom=offset+canvas.getBoundingClientRect().height/scale;
   ctx.save();ctx.scale(scale,scale);ctx.translate(-viewX(),-offset);page()?.strokes.forEach(original=>{const s=mediaVisualStroke(original);if(visibleStroke(s,offset,bottom))drawStroke(s)});drawPendingMedia();ctx.restore();
-  canvas.parentElement.style.backgroundPosition=(paperPattern()==='grid'||paperPattern()==='dotted')?`${-(viewX()%32)}px ${-(offset%32)}px`:`0 ${-(offset%32)}px`;
+  paperGrid(scale,offset);
   refreshMediaSelection();
 }
 function point(e){const r=canvas.getBoundingClientRect(),scale=paperScale();return{x:(e.clientX-r.left)/scale+viewX(),y:(e.clientY-r.top)/scale+viewY(),p:e.pressure||.5}}
 function scrollPaper(next,nextX=viewX()){
   if(!canEdit()||!page()||!Number.isFinite(next)||!Number.isFinite(nextX))return;next=Math.max(0,next);nextX=Math.max(0,Math.min(maxViewX(),nextX));if(next===viewY()&&nextX===viewX())return;
-  page().viewY=next;if(page().pdf)page().viewX=nextX;checkpointDrawing();queueViewportRender();const status=page().pdf?'PDF · iki parmakla her yöne kaydırılıyor':`Satır ${Math.floor(next/32)+1} · iki parmakla kaydırılıyor`;const inputState=document.querySelector('#inputState');if(inputState.textContent!==status)inputState.textContent=status;
+  page().viewY=next;setViewX(nextX);checkpointDrawing();queueViewportRender();const status=page().pdf?'PDF · iki parmakla her yöne kaydırılıyor':`Satır ${Math.floor(next/32)+1} · iki parmakla kaydırılıyor`;const inputState=document.querySelector('#inputState');if(inputState.textContent!==status)inputState.textContent=status;
 }
 document.querySelector('#scrollToTop').onclick=()=>{if(!drawing&&!pan){scrollPaper(0,0);void flushSave()}};
-canvas.addEventListener('wheel',e=>{if(e.ctrlKey||drawing||pan||!canEdit())return;e.preventDefault();const unit=e.deltaMode===1?32:e.deltaMode===2?canvas.getBoundingClientRect().height:1,horizontal=!!page()?.pdf&&e.shiftKey;scrollPaper(viewY()+(horizontal?0:e.deltaY)*unit/paperScale(),viewX()+(horizontal?e.deltaY:e.deltaX)*unit/paperScale())},{passive:false});
+canvas.addEventListener('wheel',e=>{if(e.ctrlKey||drawing||pan||!canEdit())return;e.preventDefault();const unit=e.deltaMode===1?32:e.deltaMode===2?canvas.getBoundingClientRect().height:1,horizontal=(!!page()?.pdf||maxViewX()>0)&&e.shiftKey;scrollPaper(viewY()+(horizontal?0:e.deltaY)*unit/paperScale(),viewX()+(horizontal?e.deltaY:e.deltaX)*unit/paperScale())},{passive:false});
 function allowed(e){return !document.querySelector('#penOnly').checked||e.pointerType==='pen'||e.pointerType==='mouse'}
 function selectedWidth(base=+document.querySelector('#width').value){return base*(tool==='marker'?2.5:1)}
 function updateWidthPreview(){

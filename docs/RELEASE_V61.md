@@ -26,24 +26,54 @@ kayıt `JSON.stringify(defter)` ile bayt bayt aynıdır; v60/v59'a geri dönüş
 - Eşitleme: 5 saniyelik denetim ve gönderim de aynı birleştirmeyi kullanır; metin
   `JSON.stringify` ile aynıdır.
 
+## Düz sayfada yakınlaştırma (`pdf-workspace.js`, `index.html`, `ui-v2-bridge.js`)
+
+Kullanıcı 27 Eylül 2026'da alt çubuktaki − %100 + düğmelerinin düz sayfada da çalışmasını
+istedi. Önceden bu düğmeler yalnız PDF sayfalarında açıktı.
+
+- Düz sayfada da %100–%300 arası, 25 puanlık adımlarla büyütür; %100 düğmesi sayfa
+  genişliğine döndürür. Yakınlaştırma görünür merkez çevresindedir. Büyütülmüş sayfa iki
+  parmakla (veya Shift + tekerlekle) sağa/sola kaydırılır ve sayfa genişliğinde durur.
+- Kalem PDF'teki gibi çalışır: büyütülmüşken çizilen çizgi ekranda seçilen kalınlıkta
+  görünür, %100'de daha ince durur.
+- Kâğıt çizgileri, kareler ve noktalar artık mürekkeple birlikte ölçeklenir (sayfa
+  birimiyle 32). Bu, genişliğe sığdırma nedeniyle küçültülmüş sayfalarda da çizgi ile
+  yazıyı hizalar; önceden çizgiler 32 ekran pikselinde sabit kalıyordu.
+- **Yakınlaştırma düz sayfada kaydedilmez**, yalnız bu oturum boyunca her sayfa için
+  hatırlanır; yeniden açılınca sayfa %100'de açılır. PDF'in alanları (`pdfZoom`, `viewX`)
+  düz sayfada kullanılamaz: v60'ın `validPdfView` denetimi düz sayfada bu alanları görünce
+  bütün defteri geçersiz sayar, bu da v60'a geri dönüşü bozardı. Yeni adlı bir alan v60'ta
+  yok sayılır ve kalıcı yapılabilirdi, ama bu sürümün ilkesi kayıt biçimini değiştirmemek;
+  gerekirse ayrı bir sürümde doğrulaması ve testiyle eklenir. PDF yakınlaştırması ve konumu
+  eskisi gibi kaydedilir.
+- Sıkıştırma hareketiyle büyütme yalnız PDF'te kalır. Düz sayfada iki parmakla dikey
+  kaydırma çok sık kullanılıyor ve parmak arası mesafedeki küçük değişim istenmeyen
+  büyütme üretirdi.
+
 Kütüphane, hesap servisi, veritabanları, nginx izin listesi, Access/DNS değişmez.
 
 ## Yerel doğrulama
 
-- `npm test`: 13 suite geçti; v51, v52, v56, v57, v58, v59 ve v60 temel paketleri Git'ten
-  sabit hash'lerle yeniden üretildi.
+- `npm test`: 14 suite geçti (170 s); v51, v52, v56, v57, v58, v59 ve v60 temel paketleri
+  Git'ten sabit hash'lerle yeniden üretildi.
+- `verify-v61-zoom.cjs`, Chromium ve WebKit, **14 kontrol**: düz sayfa %100'de − kapalı,
+  + açık; dört + ile %200, mürekkep ölçeği ve çizgi aralığı iki katı; %200'de kalem çizgisi
+  kalemin altına ve yarı mantıksal kalınlıkla düşüyor; yana kaydırma sayfa kenarında
+  duruyor; kayıtta `pdfZoom`/`viewX` ya da başka görünüm alanı yok ve disk defterle aynı;
+  yakınlaştırma sayfaya ait; yeniden açılışta %100; PDF yakınlaştırması kaydediliyor ve
+  `setPdfZoom` düz sayfaya dokunmuyor.
 - `verify-v61-save.cjs`, Chromium ve WebKit, **10 kontrol**: 8 tür düzenlemenin
   (kalem, başka sayfanın adı ve kâğıt rengi, PDF değişimi, başka sayfadan çizgi silme,
   sayfa sırası, çöpteki sayfa, etkin sayfa değişimi) her birinden sonra disk
   `JSON.stringify(defter)` ile aynı; eşitleme metni de aynı; imzanın kaçırdığı değişiklik
   çıkışta ve boşta denetimde yazılıyor.
 - Sentetik defterde bir sayfa düzenlemesinin kaydı sayfayı en uzun ne kadar kilitliyor
-  (tam kayıt → sayfa bazlı kayıt; iki koşu):
+  (tam kayıt → sayfa bazlı kayıt; her hücre ayrı koşular):
 
 | Motor | 36 MB mürekkep | 36 MB PDF |
 |---|---|---|
-| Chromium | 100 → 31 ms | 212 → 19 ms; 221 → 26 ms |
-| WebKit | 114 → 47 ms; 127 → 62 ms | 63 → 41 ms; 64 → 47 ms |
+| Chromium | 100 → 31 ms; 139 → 44 ms | 212 → 19 ms; 221 → 26 ms; 250 → 26 ms |
+| WebKit | 114 → 47 ms; 127 → 62 ms; 144 → 66 ms | 63 → 41 ms; 64 → 47 ms; 65 → 48 ms |
 
   v59'da aynı mürekkep defteri 218–293 ms kilitliyordu. Kalan süre artık metne çevirme
   değil, birleştirilmiş metnin belleğe kopyalanması ve worker'a aktarılmasıdır.

@@ -94,7 +94,7 @@
         canUndo: !!(p && (p.strokes?.length || clearedPages.has(p.id) || mediaUndo.get(p.id)?.length)),
         canRedo: false,
         clearIsUndoable: true,
-        zoom: (p && p.pdfZoom) || 1,
+        zoom: typeof viewZoom === 'function' ? viewZoom() : 1,
         input: {
           fingerDraw: !document.querySelector('#penOnly')?.checked,
           lockTouch: false,
@@ -112,7 +112,7 @@
           detail: (typeof failureMessage !== 'undefined' && failureMessage) || ''
         },
         storageLabel: document.querySelector('#storageState')?.textContent || 'Bu cihazda kaydedildi',
-        disabledCommands: p?.pdf ? {} : {'view.zoom': 'Yakınlaştırma PDF sayfalarında kullanılabilir.'}
+        disabledCommands: {}
       };
     }
 
@@ -295,12 +295,12 @@
       },
       'view.zoom': ({ mode }) => {
         const p = typeof page === 'function' ? page() : null;
-        if (!p || !p.pdf) return;
-        let z = p.pdfZoom || 1;
+        if (!p) return;
+        let z = viewZoom();
         if (mode === 'in') z = Math.min(3, z + 0.25);
         else if (mode === 'out') z = Math.max(1, z - 0.25);
         else if (mode === 'fit') z = 1;
-        setPdfZoom(z);
+        setViewZoom(z);
         publish();
       }
     };

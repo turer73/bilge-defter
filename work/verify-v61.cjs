@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process'),Module=require('module'),assert=require('node:assert/strict');
 const repo=path.resolve(__dirname,'..');
 const mapping={'verify-v52-performance.cjs':[['v52','v61']],'verify-v47-update.cjs':[['v46','v60'],['v47','v61']],'verify-v59-update.cjs':[['v59','v61'],['v58','v60']]};
-const suites=['verify-v61-save.cjs','verify-v60-save.cjs','verify-v59-library.cjs','verify-v59-update.cjs','verify-v58-scroll.cjs','verify-v57-ink.cjs','verify-v52-performance.cjs','verify-v50-tablet.cjs','verify-v51-login.cjs','verify-library-quote.cjs','verify-terminology-ui.cjs','verify-dictionary-search.cjs','verify-v47-update.cjs'];
+const suites=['verify-v61-save.cjs','verify-v61-zoom.cjs','verify-v60-save.cjs','verify-v59-library.cjs','verify-v59-update.cjs','verify-v58-scroll.cjs','verify-v57-ink.cjs','verify-v52-performance.cjs','verify-v50-tablet.cjs','verify-v51-login.cjs','verify-library-quote.cjs','verify-terminology-ui.cjs','verify-dictionary-search.cjs','verify-v47-update.cjs'];
 if(process.argv[2]&&process.argv[3]!=='--child'){
  const result=spawnSync(process.execPath,[__filename,process.argv[2],'--child'],{cwd:repo,windowsHide:true,stdio:'inherit',env:childEnv(process.argv[2])});
  process.exit(result.status);
