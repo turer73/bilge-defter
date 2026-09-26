@@ -64,10 +64,32 @@ değişmez. Yayın yalnız davetli web konteynerini değiştirir; kütüphane ko
 - 21 Eylül'den kalan, hiçbir konteynerin kullanmadığı `alpine:latest` ve
   `python:3.12-alpine` imajları silindi (#1883).
 
-## Yayın
+## Yayın — 26 Eylül 2026
 
-Henüz yapılmadı. Sıra: `build-release-v59.py` → klipper'da `deploy-v59.py prepare`,
-`stage` (yalnız `127.0.0.1:18800`), kullanıcı onayı, `activate`.
+Kullanıcı kapalı önizleme sonucundan sonra canlıya alma onayı verdi.
+
+- Kaynak commit `4c7264a5159ba638d89e3dad05f38a130364e4aa`, GitHub
+  `repair/v57-stability` dalına gönderildi. `master` birleştirilmedi.
+- `build-release-v59.py`: 243 öğelik web-only paket; her web baytı commit'teki kaynak
+  dosyayla karşılaştırıldı. Paket arşivi `038b4d4b…`; sunucuda aynı hash doğrulandı.
+- `prepare`: v58 canlı durumu, kütüphane sağlığı ve korunan servis listesi kaydedildi.
+- `stage`: `127.0.0.1:18800` kapalı önizleme; 237 HTTP hash, 234 çevrimdışı varlık,
+  14 yetkisiz/sahte istek reddi, 6 kapalı yol.
+- `activate`: yalnız davetli web konteyneri değişti. `current` →
+  `/opt/bilge-defter-classroom-v59/ui`. Aynı doğrulamalar canlı origin'de geçti.
+- Bağımsız yayın sonrası ölçüm: 234/234 çevrimdışı dosya HTTP'den doğru hash; rozet,
+  `sw.js`, `release.json` ve manifest v59; servis worker kütüphane dönüş sayfasını ve
+  yalnız defter pencerelerini sayan filtreyi içeriyor. Kütüphane (başlangıç 16:15:43Z,
+  sağlıklı) ve hesap servisi (14:31:27Z) yeniden başlatılmadı. Dışarıdan temiz istek
+  Access girişine 302 döndü. Özel adres v46 değişmedi.
+- `bilge-defter-invited-web-rollback-v59` (v58 web) durdurulmuş olarak saklanıyor;
+  önizleme konteyneri durduruldu. Sunucu kanıtı `/opt/bilge-defter-classroom-v59/live-proof.json`,
+  yerel kopya `outputs/v59-release/live-proof.json` (Git dışında).
+
+Gerçek iPad ve gerçek hesapla kabul yapılmadı. Kurulu uygulamada **Ayarlar → Uygulama
+kurulumu → Güncellemeyi denetle** ile v59'a geçilir; kütüphane sekmesi artık güncellemeyi
+bekletmez. Kabul adımları: Kütüphane'yi açıp **Deftere dön** ile aynı notlara dönmek,
+sözlükten **Kütüphanede ara**, kütüphane açıkken **Güncellemeyi yükle**.
 
 Geri dönüş (yalnız v59 etkin sürümken):
 
