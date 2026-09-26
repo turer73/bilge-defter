@@ -178,6 +178,7 @@ def point(path):
     temp.symlink_to(path);temp.replace(CURRENT)
 def rollback():
     # Stop the new web before changing its upstreams. Do not restore stale data.
+    before_rollback=protected()
     for name in [WEB,LIB,API]:
         prior=inspect(name+'-rollback-v57')
         if prior:
@@ -191,7 +192,8 @@ def rollback():
         assert inspect(name)['Id']==load(name+'.json')['Id'];run('docker','start',name)
     point(PRIOR/'ui')
     result=json.loads(run('python3',str(PRIOR/'verify-publication-v56.py'),str(PRIOR/'ui'),'18790',timeout=120))
-    unchanged();print(json.dumps({'rollback':'v56','verification':result,'data_restored':False}))
+    assert protected()==before_rollback
+    print(json.dumps({'rollback':'v56','verification':result,'data_restored':False}))
 def activate():
     old();package();unchanged();assert json.loads((ROOT/'stage-proof.json').read_text())['package']==HASH
     verify(18800)

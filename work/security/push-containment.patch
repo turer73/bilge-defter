@@ -1,0 +1,110 @@
+diff --git a/app/api/bilge_defter.py b/app/api/bilge_defter.py
+index c576f55..3794b06 100644
+--- a/app/api/bilge_defter.py
++++ b/app/api/bilge_defter.py
+@@ -189,44 +189,10 @@ def _ensure_push_table(db) -> None:
+ 
+ 
+ def _notify_other_devices(email: str, exclude_device: str, event_ts: str) -> None:
+-    db = get_conn(_db_path())
+-    rows = []
+-    try:
+-        _ensure_push_table(db)
+-        rows = db.execute(
+-            "SELECT device_id, endpoint, p256dh, auth FROM bilge_defter_push_subscriptions WHERE email=? AND device_id!=?",
+-            (email, exclude_device),
+-        ).fetchall()
+-    finally:
+-        db.close()
+-    if not rows:
+-        return
+-    public, private = _vapid_keys()
+-    payload = json.dumps({"title": "Bilge Defter güncellendi", "body": "Başka bir cihazdan yeni yedek geldi.", "ts": event_ts})
+-    for row in rows:
+-        sub = {"endpoint": row["endpoint"], "keys": {"p256dh": row["p256dh"], "auth": row["auth"]}}
+-        try:
+-            webpush(
+-                subscription_info=sub,
+-                data=payload,
+-                vapid_private_key=private,
+-                vapid_claims={"sub": VAPID_MAILTO},
+-                ttl=86400,
+-            )
+-        except WebPushException as exc:
+-            status = exc.response.status_code if exc.response is not None else 0
+-            if status in (404, 410):
+-                db = get_conn(_db_path())
+-                try:
+-                    db.execute(
+-                        "DELETE FROM bilge_defter_push_subscriptions WHERE email=? AND endpoint=?",
+-                        (email, row["endpoint"]),
+-                    )
+-                    db.commit()
+-                finally:
+-                    db.close()
+-        except Exception:
+-            continue
++    # Security containment: historical subscriptions accepted arbitrary HTTPS
++    # endpoints. Do not read or contact them, even when called after a backup.
++    # Existing subscriptions and encrypted backups are retained unchanged.
++    return
+ 
+ 
+ @router.get("/vapid-key")
+@@ -235,8 +201,7 @@ def vapid_key(
+ ):
+     """Push aboneligi icin genel VAPID anahtari."""
+     _require_access(cf_access_jwt_assertion)
+-    public, _ = _vapid_keys()
+-    return {"public_key": public}
++    raise HTTPException(status_code=503, detail="Push bildirimleri guvenlik nedeniyle kapali")
+ 
+ 
+ class PushSubscriptionBody(BaseModel):
+@@ -249,43 +214,9 @@ def push_subscription(
+     body: PushSubscriptionBody,
+     cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion"),
+ ):
+-    """Cihazin push aboneligini kaydet (kullanici basina cihaz basina tek)."""
+-    identity = _require_access(cf_access_jwt_assertion)
+-    device_id = (body.device_id or "").strip()
+-    if not device_id or len(device_id) > 128:
+-        raise HTTPException(status_code=400, detail="device_id gecersiz")
+-    sub = body.subscription or {}
+-    endpoint = sub.get("endpoint")
+-    keys = sub.get("keys") or {}
+-    p256dh = keys.get("p256dh")
+-    auth = keys.get("auth")
+-    if (
+-        not isinstance(endpoint, str)
+-        or not endpoint.startswith("https://")
+-        or len(endpoint) > 2000
+-        or not _B64_RE.match(p256dh or "")
+-        or not _B64_RE.match(auth or "")
+-        or len(p256dh or "") > 512
+-        or len(auth or "") > 128
+-    ):
+-        raise HTTPException(status_code=400, detail="Push aboneligi gecersiz")
+-    now = datetime.now(UTC).replace(tzinfo=None).isoformat(timespec="seconds")
+-    db = get_conn(_db_path())
+-    try:
+-        _ensure_push_table(db)
+-        db.execute(
+-            """INSERT INTO bilge_defter_push_subscriptions
+-               (email, device_id, endpoint, p256dh, auth, created_at)
+-               VALUES (?, ?, ?, ?, ?, ?)
+-               ON CONFLICT(email, device_id) DO UPDATE SET
+-                 endpoint=excluded.endpoint, p256dh=excluded.p256dh,
+-                 auth=excluded.auth""",
+-            (identity["email"], device_id, endpoint, p256dh, auth, now),
+-        )
+-        db.commit()
+-    finally:
+-        db.close()
+-    return {"status": "ok"}
++    """Push registration is disabled until a reviewed provider policy exists."""
++    _require_access(cf_access_jwt_assertion)
++    raise HTTPException(status_code=503, detail="Push bildirimleri guvenlik nedeniyle kapali")
+ 
+ 
+ def _decode_b64(field: str, value: str, max_len: int) -> bytes:
