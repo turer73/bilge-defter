@@ -71,10 +71,25 @@ durduruldu (silinmedi) ve `tailscale serve` `:8443` eşlemesi kaldırıldı. Ger
 `sudo tailscale serve --bg --https=8443 http://127.0.0.1:18787`.
 Kopya ve not: `/opt/bilge-defter-test/closed-20260926/`.
 
-## Yayın
+## Yayın — 26 Eylül 2026
 
-Henüz yapılmadı. Sıra: `build-release-v60.py` → klipper'da `deploy-v60.py prepare`,
-`stage` (yalnız `127.0.0.1:18800`), kullanıcı onayı, `activate`.
+Kullanıcı kapalı önizlemeden sonra canlıya alma onayı verdi.
+
+- Kaynak `9b6c8ce4efa78d47949b81ce2187a0587e1af0c5` (`repair/v57-stability`, GitHub'a
+  gönderildi; master birleştirilmedi). Paket arşivi `025cd9f2…`, sunucuda aynı hash.
+- `stage` (`127.0.0.1:18800`) ve `activate`: 238 HTTP hash, 235 çevrimdışı varlık,
+  14 yetkisiz/sahte istek reddi, 6 kapalı yol; `save-worker.js` yeni izin listesiyle 200.
+- Bağımsız yayın sonrası ölçüm: 235/235 çevrimdışı dosya doğru; sayfa `save-worker.js`
+  kullanıyor; eşitleme paketinde push aboneliği yok, eski aboneliği bırakma kodu var.
+  Kütüphane (16:15:43Z) ve hesap servisi (14:31:27Z) yeniden başlatılmadı; özel adres
+  kapalı; dışarıdan Access 302. `current` → `/opt/bilge-defter-classroom-v60/ui`.
+- `bilge-defter-invited-web-rollback-v60` (v59 web) saklanıyor. Kanıt:
+  `/opt/bilge-defter-classroom-v60/live-proof.json`, yerel kopya
+  `outputs/v60-release/live-proof.json` (Git dışında).
+
+Kurulu uygulama **Güncellemeyi denetle → Güncellemeyi yükle** ile v60'a geçer. Gerçek
+iPad'de kabul: dolu, uzun bir defterde art arda yazarken kalemin takılıp takılmadığı ve
+kaydın "Bu cihazda kaydedildi"ye döndüğü denenmeli.
 
 Geri dönüş (yalnız v60 etkin sürümken):
 
