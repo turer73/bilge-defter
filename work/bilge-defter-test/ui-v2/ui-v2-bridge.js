@@ -184,6 +184,7 @@
       'study.planner': () => {
         document.querySelector('#plannerOpen')?.click();
       },
+      'study.library': () => window.openBilgeLibrary(),
       'study.dictionary': () => {
         document.querySelector('#dictOpen')?.click();
       },

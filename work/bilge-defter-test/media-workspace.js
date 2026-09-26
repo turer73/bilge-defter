@@ -1,4 +1,62 @@
 // Local-only text and raster images. No uploads, remote URLs, SVG or HTML rendering.
+// Library handoff only stages an ordinary text item; Bitti remains the sole save action.
+(() => {
+ let remembered='';try{remembered=sessionStorage.getItem('bilge-library-pending')||'';}catch{}
+ const token=new URLSearchParams(location.hash.slice(1)).get('libraryQuote')||remembered;
+ if(!token)return;
+ if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(token))return;
+ const key='bilge-library-quote:'+token;
+ try{sessionStorage.setItem('bilge-library-pending',token);}catch{}
+ function forget(){try{if(sessionStorage.getItem('bilge-library-pending')===token)sessionStorage.removeItem('bilge-library-pending');}catch{}}
+ function read(){
+  const q=JSON.parse(localStorage.getItem(key)||'null'),a=window.BilgeAccount;
+  if(!a?.required||a.locked||a.identity?.status!=='approved'||!q||q.version!==1||q.account!==a.identity.id||!Number.isFinite(q.expires)||q.expires<=Date.now()||q.expires>Date.now()+600000||typeof q.text!=='string'||!q.text.trim()||q.text.length>10000)throw Error('Alıntı bulunamadı, süresi doldu veya farklı hesaba ait. Aynı tarayıcı ve hesapla kütüphaneden tekrar alın.');
+  return q;
+ }
+ async function start(){
+  await window.BilgeAccount.ready;
+  for(let n=0;n<240&&!ready;n++)await new Promise(r=>setTimeout(r,250));
+  if(!ready)return;
+  history.replaceState(null,'',location.pathname+location.search);
+  let quote;
+  try{quote=read();}catch(e){forget();alert(e.message);return;}
+  const d=document.createElement('dialog');d.id='libraryQuoteDialog';d.className='tools-dialog';d.setAttribute('aria-labelledby','libraryQuoteTitle');
+  d.innerHTML='<div class="tools-heading"><h2 id="libraryQuoteTitle">Kütüphaneden alıntı ekle</h2><button class="btn" id="libraryQuoteCancel">Vazgeç</button></div><div class="tools-content"><p>Alıntıyı kontrol edin. Hedef sayfada taşıyıp boyutlandırın; yalnız Bitti ile kaydedilir. Mevcut notların yerine geçmez.</p><label>Hedef defter / sayfa<select id="libraryQuoteTarget" style="width:100%;min-height:44px;font:inherit"></select></label><textarea id="libraryQuotePreview" readonly rows="7" aria-label="Kaynak bilgisiyle alıntı" style="width:100%;font:inherit;margin:12px 0"></textarea><p id="libraryQuoteMessage" role="status"></p><button class="btn primary" id="libraryQuotePlace">Sayfada yerleştir</button></div>';
+  document.body.append(d);
+  const select=d.querySelector('select'),message=d.querySelector('#libraryQuoteMessage'),place=d.querySelector('#libraryQuotePlace');
+  for(const p of state.pages){const o=document.createElement('option');o.value=p.id;o.textContent=(notebooks().find(n=>n.id===pageNotebook(p))?.title||'Genel')+' / '+p.title;o.selected=p.id===activeId;select.append(o);}
+  d.querySelector('textarea').value=quote.text;
+  function cancel(){try{if(read().account===quote.account)localStorage.removeItem(key);}catch{}forget();d.close();d.remove();}
+  d.querySelector('#libraryQuoteCancel').onclick=cancel;d.addEventListener('cancel',e=>{e.preventDefault();cancel();});
+  place.onclick=async()=>{
+   place.disabled=true;
+   try{
+    if(!navigator.locks)throw Error('Bu tarayıcı güvenli aktarımı desteklemiyor. Güncel Safari, Chrome veya Edge ile deneyin.');
+    if(!await window.BilgeAccount.check())throw Error('Hesap doğrulanamadı. Bağlantıyı kontrol edip yeniden deneyin.');
+    await navigator.locks.request(key,async()=>{
+     const current=read();
+     if(current.text!==quote.text)throw Error('Alıntı değişti; kütüphaneden yeniden alın.');
+     if(!mediaAvailable()||mediaPending||mediaDraft||mediaGesture||plannerDirty)throw Error('Önce açık düzenlemeyi bitirin; alıntı henüz eklenmedi.');
+     if(!await flushSave())throw Error('Mevcut notlar kaydedilemedi. Önce yedek alın.');
+     read();
+     if(!mediaAvailable())throw Error('Düzenleme şu anda kullanılamıyor. Tekrar deneyin.');
+     const target=state.pages.find(p=>p.id===select.value);
+     if(!target)throw Error('Hedef sayfa artık yok. Kütüphaneden yeniden alın.');
+     activeNotebook=pageNotebook(target);state.activeNotebook=activeNotebook;activeId=target.id;renderPages();drawAll();
+     if(!pdfBackgroundReady())throw Error('PDF sayfası hazırlanıyor. Biraz bekleyip yeniden yerleştirin.');
+     beginPendingMedia({tool:'text',text:current.text,fontSize:18,color:'#173b36',width:Math.max(80,Math.min(440,(canvas.getBoundingClientRect().width-60)/paperScale())),points:[defaultMediaPoint()]});
+     if(!mediaPending||mediaPending.draft.text!==current.text)throw Error('Alıntı yerleştirilemedi; mevcut notlar korunuyor.');
+     localStorage.removeItem(key);forget();d.close();d.remove();document.querySelector('#layoutText').focus({preventScroll:true});
+    });
+   }catch(e){message.textContent=e.message||'Alıntı eklenemedi; mevcut notlar korunuyor.';}
+   finally{place.disabled=false;}
+  };
+  // Never close an existing edit or gate merely to present an incoming quote.
+  if(document.querySelector('dialog[open]')||!mediaAvailable()){d.remove();alert('Alıntı 10 dakika bekletiliyor. Açık düzenlemeyi bitirdikten sonra bu aktarım bağlantısını yeniden açın.');history.replaceState(null,'',location.pathname+location.search+'#libraryQuote='+token);return;}
+  d.showModal();
+ }
+ window.addEventListener('load',()=>void start().catch(()=>alert('Alıntı açılamadı. Notlar değiştirilmedi.')),{once:true});
+})();
 let mediaSelection=null,mediaGesture=null,mediaPending=null,layoutMulti=false;const layoutTouches=new Set();
 const layoutPaper=document.querySelector('.paper'),layoutFrame=document.createElement('div'),layoutHandle=document.createElement('button'),layoutBar=document.createElement('div');
 const layoutRotate=document.createElement('button');layoutRotate.id='layoutRotate';layoutRotate.hidden=true;layoutRotate.className='btn';layoutRotate.textContent='↻';layoutRotate.setAttribute('aria-label','Seçili öğeyi sürükleyerek döndür');

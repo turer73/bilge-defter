@@ -322,6 +322,7 @@
     'insert.image':{label:'Görsel ekle',desc:'Cihazından bir görsel seç.',icon:'image',page:true},
     'insert.camera':{label:'Fotoğraf çek',desc:'Kamera veya cihaz seçicisini aç.',icon:'camera',page:true},
     'pdf.open':{label:'PDF aç',desc:'Belgeyi mevcut PDF motoruyla aç.',icon:'pdf'},
+    'study.library':{label:'Kütüphane',desc:'Kaynak kitapları yeni sekmede aç. İnternet ve onaylı hesap gerekir.',icon:'book'},
     'study.planner':{label:'Takvim / çalışma planı',desc:'Derslerini ve tekrarlarını düzenle.',icon:'calendar'},
     'study.dictionary':{label:'Sözlük',desc:'Seçili metni veya girdiğin terimi incele.',icon:'dictionary',page:true},
     'study.recognize':{label:'Yazıyı tanı',desc:'Kapsamı seçerek mevcut tanıma motorunu aç.',icon:'scan',page:true},
@@ -426,6 +427,7 @@ dialog.panel[data-panel=library] .panel-body{flex:0 1 auto}
 dialog.panel[data-pointer-focus=true] #bdx-panel-title:focus{outline:none}
 .navgroup{min-width:0;flex-wrap:wrap}
 .nav-button{flex-shrink:0}
+@media(max-width:700px){.navrow .navgroup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;width:100%}.navrow .nav-button{width:100%;min-width:0;min-height:44px;white-space:normal}.navrow .nav-button svg{flex-shrink:0}}
 @media(min-width:701px) and (max-width:1399px){
  .shell{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto auto minmax(0,1fr) auto}
  .brandbar,.navrow,.toolbar,.alert,.workspace,.footer{grid-column:1}
@@ -450,6 +452,7 @@ dialog.panel[data-pointer-focus=true] #bdx-panel-title:focus{outline:none}
         <div class="navgroup">
           <button class="nav-button primary-action" data-panel="insert" aria-haspopup="dialog" aria-expanded="false">${icon('plus')}<span>Ekle</span></button>
           <button class="nav-button" data-panel="study" aria-haspopup="dialog" aria-expanded="false">${icon('calendar')}<span>Çalışma</span></button>
+          <button class="nav-button" data-command="study.library" title="Kaynak kütüphanesi · yeni sekme">${icon('book')}<span>Kütüphane</span></button>
           <button class="nav-button" data-panel="page" aria-haspopup="dialog" aria-expanded="false">${icon('paper')}<span>Sayfa</span></button>
           <button class="nav-button" data-panel="file" aria-haspopup="dialog" aria-expanded="false">${icon('folder')}<span class="full-label">Dosya ve yedek</span><span class="mobile-label">Dosya</span></button>
           <button class="nav-button" data-panel="settings" aria-haspopup="dialog" aria-expanded="false">${icon('settings')}<span>Ayarlar</span></button>

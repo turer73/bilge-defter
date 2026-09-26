@@ -19,6 +19,7 @@ manifest.files=manifest.files.filter(f=>!['auth-continue.html','auth-continue.js
 for(const name of ['account-workspace.js','account.css'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
 for(const name of ['media-workspace.js','planner-workspace.js','ui-workspace.js','ui.css','sync-workspace.js','dictionary-data.js','dictionary-workspace.js','ocr-workspace.js','button-theme.css','button-theme.js','button-theme-workspace.js','ui-v2/bilge-defter-ui.js','ui-v2/mount.js','ui-v2/ui-v2-bridge.js'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
 const hash=(dir,file)=>crypto.createHash('sha256').update(fs.readFileSync(path.join(dir,file))).digest('hex');
+for(const name of ['terminology-data.js','terminology.js'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
 for(const f of manifest.files)f.sha256=hash(src,f.path);
 fs.writeFileSync(path.join(src,'offline-assets.json'),JSON.stringify(manifest));
 function walk(dir,prefix=''){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name),prefix+e.name+'/'):[prefix+e.name])}
