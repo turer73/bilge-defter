@@ -58,3 +58,18 @@ kütüphanenin üç ekranından dönüş testi hâlâ gereklidir.
 Kullanıcının `Alalım` onayından sonra 26 Eylül 2026'da v58 web ve kütüphane
 birlikte yayımlandı. Kaynak `be8637d` commit'iyle kaydedildi ve GitHub'a gönderildi.
 Canlı sonuç, geri dönüş ve kalan cihaz kabulü: [RELEASE_V58.md](RELEASE_V58.md).
+
+## v59 düzeltmesi — dönüş gerçekten aynı deftere
+
+v58'deki bağlantı doğru adrese gidiyordu ama defter kütüphaneyi yeni sekmede açtığı için
+**Deftere dön** açık defter sekmesine değil, yeni bir defter penceresine varıyordu.
+Tarayıcıda her gidiş-dönüş bir defter sekmesi daha bırakıyordu. Aynı defterin iki kopyası
+kayıt çakışma korumasına takılabiliyor ve tek dokunuşla güncellemeyi bekletiyordu. Kurulu
+iPad uygulamasında yeni sekme uygulama dışındaki tarayıcı görünümünde açılabildiğinden,
+dönüş başka bir depolama alanını gösterebilirdi.
+
+v59'da defter kütüphaneyi kendi penceresinde açar; önce açık düzenlemeyi denetler ve kaydı
+diske yazar. Böylece kütüphanedeki bağlantı değişmeden gerçek bir dönüş olur ve alıntı
+aktarımıyla aynı modeli kullanır. Kütüphane açılamazsa servis worker ham hata yerine dönüş
+sayfası gösterir. Ayrıntı ve kanıt: [RELEASE_V59.md](RELEASE_V59.md). Kütüphane kodu bu
+düzeltme için değişmedi.

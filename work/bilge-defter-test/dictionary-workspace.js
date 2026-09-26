@@ -16,11 +16,20 @@
   let libraryTerm=null;
   const clearDraft=()=>{libraryTerm=null;queryDraft.hidden=true;queryDraft.replaceChildren()};
   // Only an explicit click opens the invited library. Never send notebook content.
-  window.openBilgeLibrary=(term='')=>{
+  // Same window: the installed iPad app keeps its own window and storage, and the
+  // library's "Deftere dön" comes back here instead of opening a second notebook.
+  const leaveBlocked=()=>(typeof drawing!=='undefined'&&drawing)||(typeof importing!=='undefined'&&importing)||(typeof pdfBusy!=='undefined'&&pdfBusy)||(typeof mediaBusy!=='undefined'&&mediaBusy)||(typeof mediaPending!=='undefined'&&mediaPending)||(typeof mediaGesture!=='undefined'&&mediaGesture)||(typeof plannerDirty!=='undefined'&&plannerDirty);
+  window.openBilgeLibrary=async(term='')=>{
     if(!navigator.onLine){alert('Kütüphane için internet bağlantısı gerekiyor. Defteriniz açık kalacak.');return;}
     const url=new URL('https://defter.bilgearena.com/library/');
     const q=String(term).trim().slice(0,120);if(q)url.hash=new URLSearchParams({q}).toString();
-    window.open(url.href,'_blank','noopener,noreferrer');
+    // Another origin has other storage; its notebook could not be the one we return to.
+    if(location.origin!==url.origin){window.open(url.href,'_blank','noopener,noreferrer');return;}
+    const blocked='Önce açık düzenlemeyi bitirin; kütüphane ardından bu pencerede açılır.';
+    if(leaveBlocked()){alert(blocked);return;}
+    if(typeof flushSave==='function'&&!await flushSave()){alert('Kayıt tamamlanamadı; kütüphane açılmadı. Notlarınız bu pencerede duruyor.');return;}
+    if(leaveBlocked()||(typeof isDirty==='function'&&isDirty())){alert(blocked);return;}
+    location.assign(url.href);
   };
   const libraryButton=document.createElement('button');libraryButton.id='dictLibrary';libraryButton.type='button';libraryButton.className='btn';libraryButton.textContent='Kütüphanede ara';libraryButton.disabled=true;
   document.querySelector('#dictWeb').before(libraryButton);

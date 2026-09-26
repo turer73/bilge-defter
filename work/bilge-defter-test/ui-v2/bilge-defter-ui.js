@@ -322,7 +322,7 @@
     'insert.image':{label:'Görsel ekle',desc:'Cihazından bir görsel seç.',icon:'image',page:true},
     'insert.camera':{label:'Fotoğraf çek',desc:'Kamera veya cihaz seçicisini aç.',icon:'camera',page:true},
     'pdf.open':{label:'PDF aç',desc:'Belgeyi mevcut PDF motoruyla aç.',icon:'pdf'},
-    'study.library':{label:'Kütüphane',desc:'Kaynak kitapları yeni sekmede aç. İnternet ve onaylı hesap gerekir.',icon:'book'},
+    'study.library':{label:'Kütüphane',desc:'Kaynak kitapları bu pencerede aç; Deftere dön ile buraya dönersiniz. İnternet ve onaylı hesap gerekir.',icon:'book'},
     'study.planner':{label:'Takvim / çalışma planı',desc:'Derslerini ve tekrarlarını düzenle.',icon:'calendar'},
     'study.dictionary':{label:'Sözlük',desc:'Seçili metni veya girdiğin terimi incele.',icon:'dictionary',page:true},
     'study.recognize':{label:'Yazıyı tanı',desc:'Kapsamı seçerek mevcut tanıma motorunu aç.',icon:'scan',page:true},
@@ -452,7 +452,7 @@ dialog.panel[data-pointer-focus=true] #bdx-panel-title:focus{outline:none}
         <div class="navgroup">
           <button class="nav-button primary-action" data-panel="insert" aria-haspopup="dialog" aria-expanded="false">${icon('plus')}<span>Ekle</span></button>
           <button class="nav-button" data-panel="study" aria-haspopup="dialog" aria-expanded="false">${icon('calendar')}<span>Çalışma</span></button>
-          <button class="nav-button" data-command="study.library" title="Kaynak kütüphanesi · yeni sekme">${icon('book')}<span>Kütüphane</span></button>
+          <button class="nav-button" data-command="study.library" title="Kaynak kütüphanesi · bu pencerede açılır">${icon('book')}<span>Kütüphane</span></button>
           <button class="nav-button" data-panel="page" aria-haspopup="dialog" aria-expanded="false">${icon('paper')}<span>Sayfa</span></button>
           <button class="nav-button" data-panel="file" aria-haspopup="dialog" aria-expanded="false">${icon('folder')}<span class="full-label">Dosya ve yedek</span><span class="mobile-label">Dosya</span></button>
           <button class="nav-button" data-panel="settings" aria-haspopup="dialog" aria-expanded="false">${icon('settings')}<span>Ayarlar</span></button>
