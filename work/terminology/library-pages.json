@@ -1,0 +1,3073 @@
+{
+ "method": "Pages the library search matches for a term: every token (first 8, library aliases applied) found as a word prefix. Per concept the English label or alias with most pages (label wins ties). Counts, not text.",
+ "terms_sha256": "18f70db977e11c82919b946dedc6c2cfda8ba5d344b4830b77661438369663e3",
+ "books": {
+  "iowa-physiology-research": {
+   "pages_sha256": "a9b4554a2a1585b2e2da571091a372d7fa13f61f66fec8294313181a2a366ae1",
+   "pages": 204,
+   "pdf_sha256": "1732f7a842b56646015ea58bfaf1482ba702e821b61f2c4b3a9422d7f18b7f53"
+  },
+  "lmu-human-physiology": {
+   "pages_sha256": "0f6d4e679bf6cbbeb71122327e17ced2812e0f4e577b66582320a856fd3205c0",
+   "pages": 1611,
+   "pdf_sha256": "f1a6444e78ce3ef5569325fce30868b9efcae81d3e7acdb361fde6eb0e478123"
+  },
+  "msu-neuroscience": {
+   "pages_sha256": "0aa7d1314f3b9b0f3d78d5a797afdda69e5c54dec48d3183e6d3747affd87d89",
+   "pages": 464,
+   "pdf_sha256": "7c0b8818463a4f9326c9d40db47b3e8c2cc231008e0c7523621636ec7c0d7fcd"
+  },
+  "rotel-anatomy-lab": {
+   "pages_sha256": "4a2f8a21f3f896bf037890a1aa26185a0dfda6626631e3e2d2044d0b9f23b0b9",
+   "pages": 541,
+   "pdf_sha256": "1b012e5636e51738459763e8a0db5b51f663dd1bd1aca92bba1e2b4fb802e44b"
+  },
+  "wistech-anatomy": {
+   "pages_sha256": "ccabcf3ee78078400fd7104ae095a150716e267efd55e4892d3f7251a2a210f0",
+   "pages": 1397,
+   "pdf_sha256": "fe103d7109e60599f2265e14603cf60f8127f214b319cdbe4e799fa5164886e4"
+  }
+ },
+ "pages": {
+  "anatomy.heart": {
+   "term": "heart",
+   "books": {
+    "iowa-physiology-research": 35,
+    "lmu-human-physiology": 286,
+    "msu-neuroscience": 8,
+    "rotel-anatomy-lab": 29,
+    "wistech-anatomy": 160
+   }
+  },
+  "anatomy.lung": {
+   "term": "lung",
+   "books": {
+    "iowa-physiology-research": 21,
+    "lmu-human-physiology": 152,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 15,
+    "wistech-anatomy": 83
+   }
+  },
+  "anatomy.liver": {
+   "term": "liver",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 131,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 15,
+    "wistech-anatomy": 70
+   }
+  },
+  "anatomy.kidney": {
+   "term": "kidney",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 166,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 26,
+    "wistech-anatomy": 74
+   }
+  },
+  "anatomy.stomach": {
+   "term": "stomach",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 87,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 25,
+    "wistech-anatomy": 53
+   }
+  },
+  "anatomy.spleen": {
+   "term": "spleen",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 19,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 12,
+    "wistech-anatomy": 26
+   }
+  },
+  "anatomy.pancreas": {
+   "term": "pancreas",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 67,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 19,
+    "wistech-anatomy": 27
+   }
+  },
+  "anatomy.brain": {
+   "term": "brain",
+   "books": {
+    "iowa-physiology-research": 18,
+    "lmu-human-physiology": 207,
+    "msu-neuroscience": 106,
+    "rotel-anatomy-lab": 47,
+    "wistech-anatomy": 120
+   }
+  },
+  "anatomy.cerebellum": {
+   "term": "cerebellum",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 33,
+    "msu-neuroscience": 12,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.spinal-cord": {
+   "term": "spinal cord",
+   "books": {
+    "iowa-physiology-research": 13,
+    "lmu-human-physiology": 75,
+    "msu-neuroscience": 56,
+    "rotel-anatomy-lab": 35,
+    "wistech-anatomy": 45
+   }
+  },
+  "anatomy.trachea": {
+   "term": "trachea",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 33,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 12,
+    "wistech-anatomy": 16
+   }
+  },
+  "anatomy.oesophagus": {
+   "term": "esophagus",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 43,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 16,
+    "wistech-anatomy": 25
+   }
+  },
+  "anatomy.pharynx": {
+   "term": "pharynx",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 34,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 7,
+    "wistech-anatomy": 22
+   }
+  },
+  "anatomy.larynx": {
+   "term": "larynx",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 19,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 15
+   }
+  },
+  "anatomy.diaphragm": {
+   "term": "diaphragm",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 24,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 12,
+    "wistech-anatomy": 29
+   }
+  },
+  "anatomy.tongue": {
+   "term": "tongue",
+   "books": {
+    "iowa-physiology-research": 14,
+    "lmu-human-physiology": 25,
+    "msu-neuroscience": 8,
+    "rotel-anatomy-lab": 13,
+    "wistech-anatomy": 26
+   }
+  },
+  "anatomy.tooth": {
+   "term": "tooth",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 7,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 11
+   }
+  },
+  "anatomy.skin": {
+   "term": "skin",
+   "books": {
+    "iowa-physiology-research": 20,
+    "lmu-human-physiology": 82,
+    "msu-neuroscience": 25,
+    "rotel-anatomy-lab": 46,
+    "wistech-anatomy": 146
+   }
+  },
+  "anatomy.eye": {
+   "term": "eye",
+   "books": {
+    "iowa-physiology-research": 34,
+    "lmu-human-physiology": 35,
+    "msu-neuroscience": 17,
+    "rotel-anatomy-lab": 27,
+    "wistech-anatomy": 82
+   }
+  },
+  "anatomy.ear": {
+   "term": "ear",
+   "books": {
+    "iowa-physiology-research": 16,
+    "lmu-human-physiology": 111,
+    "msu-neuroscience": 10,
+    "rotel-anatomy-lab": 16,
+    "wistech-anatomy": 190
+   }
+  },
+  "anatomy.nose": {
+   "term": "nose",
+   "books": {
+    "iowa-physiology-research": 11,
+    "lmu-human-physiology": 15,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 19
+   }
+  },
+  "anatomy.urinary-bladder": {
+   "term": "urinary bladder",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 20,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 13,
+    "wistech-anatomy": 21
+   }
+  },
+  "anatomy.gallbladder": {
+   "term": "gallbladder",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 23,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 8,
+    "wistech-anatomy": 11
+   }
+  },
+  "anatomy.small-intestine": {
+   "term": "small intestine",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 96,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 27,
+    "wistech-anatomy": 44
+   }
+  },
+  "anatomy.large-intestine": {
+   "term": "large intestine",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 60,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 12,
+    "wistech-anatomy": 26
+   }
+  },
+  "anatomy.duodenum": {
+   "term": "duodenum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 36,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 15,
+    "wistech-anatomy": 21
+   }
+  },
+  "anatomy.rectum": {
+   "term": "rectum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 16,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 16
+   }
+  },
+  "anatomy.thyroid": {
+   "term": "thyroid gland",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 41,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 19
+   }
+  },
+  "anatomy.pituitary": {
+   "term": "pituitary gland",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 71,
+    "msu-neuroscience": 4,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 26
+   }
+  },
+  "anatomy.adrenal": {
+   "term": "adrenal gland",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 54,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 11,
+    "wistech-anatomy": 21
+   }
+  },
+  "anatomy.uterus": {
+   "term": "uterus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 70,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 7,
+    "wistech-anatomy": 26
+   }
+  },
+  "anatomy.ovary": {
+   "term": "ovary",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 18,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 14
+   }
+  },
+  "anatomy.testis": {
+   "term": "testis",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 17,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 13,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.prostate": {
+   "term": "prostate",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 14,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 19
+   }
+  },
+  "anatomy.ureter": {
+   "term": "ureter",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 17,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 11,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.urethra": {
+   "term": "urethra",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 30,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 10,
+    "wistech-anatomy": 28
+   }
+  },
+  "anatomy.skull": {
+   "term": "skull",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 14,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 28,
+    "wistech-anatomy": 42
+   }
+  },
+  "anatomy.mandible": {
+   "term": "mandible",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 17,
+    "wistech-anatomy": 9
+   }
+  },
+  "anatomy.maxilla": {
+   "term": "maxilla",
+   "books": {
+    "iowa-physiology-research": 3,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 11,
+    "wistech-anatomy": 13
+   }
+  },
+  "anatomy.frontal-bone": {
+   "term": "frontal bone",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 6,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 8,
+    "wistech-anatomy": 14
+   }
+  },
+  "anatomy.parietal-bone": {
+   "term": "parietal bone",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 11
+   }
+  },
+  "anatomy.temporal-bone": {
+   "term": "temporal bone",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 13,
+    "wistech-anatomy": 18
+   }
+  },
+  "anatomy.occipital-bone": {
+   "term": "occipital bone",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 17,
+    "wistech-anatomy": 13
+   }
+  },
+  "anatomy.clavicle": {
+   "term": "clavicle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 13,
+    "wistech-anatomy": 14
+   }
+  },
+  "anatomy.scapula": {
+   "term": "scapula",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 18,
+    "wistech-anatomy": 25
+   }
+  },
+  "anatomy.sternum": {
+   "term": "sternum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 13,
+    "wistech-anatomy": 21
+   }
+  },
+  "anatomy.rib": {
+   "term": "rib",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 84,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 20,
+    "wistech-anatomy": 38
+   }
+  },
+  "anatomy.vertebra": {
+   "term": "vertebra",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 24,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 48,
+    "wistech-anatomy": 67
+   }
+  },
+  "anatomy.vertebral-column": {
+   "term": "vertebral column",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 19,
+    "wistech-anatomy": 22
+   }
+  },
+  "anatomy.sacrum": {
+   "term": "sacrum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 15,
+    "wistech-anatomy": 11
+   }
+  },
+  "anatomy.coccyx": {
+   "term": "coccyx",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 11,
+    "wistech-anatomy": 8
+   }
+  },
+  "anatomy.humerus": {
+   "term": "humerus",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 21,
+    "wistech-anatomy": 22
+   }
+  },
+  "anatomy.radius": {
+   "term": "radius",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 6,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 17,
+    "wistech-anatomy": 13
+   }
+  },
+  "anatomy.ulna": {
+   "term": "ulna",
+   "books": {
+    "iowa-physiology-research": 12,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 23,
+    "wistech-anatomy": 20
+   }
+  },
+  "anatomy.femur": {
+   "term": "femur",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 29,
+    "wistech-anatomy": 30
+   }
+  },
+  "anatomy.patella": {
+   "term": "patella",
+   "books": {
+    "iowa-physiology-research": 14,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 12,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.tibia": {
+   "term": "tibia",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 22,
+    "wistech-anatomy": 33
+   }
+  },
+  "anatomy.fibula": {
+   "term": "fibula",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 14,
+    "wistech-anatomy": 24
+   }
+  },
+  "anatomy.talus": {
+   "term": "talus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.calcaneus": {
+   "term": "calcaneus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.hip-bone": {
+   "term": "hip bone",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 16
+   }
+  },
+  "anatomy.hyoid": {
+   "term": "hyoid bone",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 8,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.head": {
+   "term": "head",
+   "books": {
+    "iowa-physiology-research": 29,
+    "lmu-human-physiology": 117,
+    "msu-neuroscience": 14,
+    "rotel-anatomy-lab": 45,
+    "wistech-anatomy": 99
+   }
+  },
+  "anatomy.neck": {
+   "term": "neck",
+   "books": {
+    "iowa-physiology-research": 5,
+    "lmu-human-physiology": 31,
+    "msu-neuroscience": 8,
+    "rotel-anatomy-lab": 37,
+    "wistech-anatomy": 54
+   }
+  },
+  "anatomy.thorax": {
+   "term": "chest",
+   "books": {
+    "iowa-physiology-research": 5,
+    "lmu-human-physiology": 40,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 7,
+    "wistech-anatomy": 49
+   }
+  },
+  "anatomy.abdomen": {
+   "term": "abdomen",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 28,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 11,
+    "wistech-anatomy": 30
+   }
+  },
+  "anatomy.pelvis": {
+   "term": "pelvis",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 20,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 16,
+    "wistech-anatomy": 26
+   }
+  },
+  "anatomy.back": {
+   "term": "back",
+   "books": {
+    "iowa-physiology-research": 37,
+    "lmu-human-physiology": 178,
+    "msu-neuroscience": 25,
+    "rotel-anatomy-lab": 31,
+    "wistech-anatomy": 133
+   }
+  },
+  "anatomy.arm": {
+   "term": "arm",
+   "books": {
+    "iowa-physiology-research": 31,
+    "lmu-human-physiology": 36,
+    "msu-neuroscience": 9,
+    "rotel-anatomy-lab": 26,
+    "wistech-anatomy": 64
+   }
+  },
+  "anatomy.forearm": {
+   "term": "forearm",
+   "books": {
+    "iowa-physiology-research": 14,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 15,
+    "wistech-anatomy": 27
+   }
+  },
+  "anatomy.hand": {
+   "term": "hand",
+   "books": {
+    "iowa-physiology-research": 48,
+    "lmu-human-physiology": 51,
+    "msu-neuroscience": 12,
+    "rotel-anatomy-lab": 33,
+    "wistech-anatomy": 58
+   }
+  },
+  "anatomy.thigh": {
+   "term": "thigh",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 7,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 16,
+    "wistech-anatomy": 37
+   }
+  },
+  "anatomy.leg": {
+   "term": "leg",
+   "books": {
+    "iowa-physiology-research": 10,
+    "lmu-human-physiology": 52,
+    "msu-neuroscience": 15,
+    "rotel-anatomy-lab": 29,
+    "wistech-anatomy": 76
+   }
+  },
+  "anatomy.foot": {
+   "term": "foot",
+   "books": {
+    "iowa-physiology-research": 5,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 4,
+    "rotel-anatomy-lab": 15,
+    "wistech-anatomy": 30
+   }
+  },
+  "anatomy.knee": {
+   "term": "knee",
+   "books": {
+    "iowa-physiology-research": 10,
+    "lmu-human-physiology": 7,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 24,
+    "wistech-anatomy": 42
+   }
+  },
+  "anatomy.elbow": {
+   "term": "elbow",
+   "books": {
+    "iowa-physiology-research": 11,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 11,
+    "wistech-anatomy": 24
+   }
+  },
+  "anatomy.deltoid": {
+   "term": "deltoid muscle",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.biceps-brachii": {
+   "term": "biceps brachii muscle",
+   "books": {
+    "iowa-physiology-research": 6,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 12
+   }
+  },
+  "anatomy.triceps-brachii": {
+   "term": "triceps brachii muscle",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.trapezius": {
+   "term": "trapezius muscle",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.latissimus-dorsi": {
+   "term": "latissimus dorsi muscle",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.pectoralis-major": {
+   "term": "pectoralis major muscle",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.rectus-abdominis": {
+   "term": "rectus abdominis muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 8
+   }
+  },
+  "anatomy.gluteus-maximus": {
+   "term": "gluteus maximus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.sartorius": {
+   "term": "sartorius muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.gastrocnemius": {
+   "term": "gastrocnemius muscle",
+   "books": {
+    "iowa-physiology-research": 3,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.soleus": {
+   "term": "soleus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.tibialis-anterior": {
+   "term": "tibialis anterior muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.masseter": {
+   "term": "masseter muscle",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.sternocleidomastoid": {
+   "term": "sternocleidomastoid muscle",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.aorta": {
+   "term": "aorta",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 57,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 16,
+    "wistech-anatomy": 45
+   }
+  },
+  "anatomy.artery": {
+   "term": "artery",
+   "books": {
+    "iowa-physiology-research": 10,
+    "lmu-human-physiology": 65,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 21,
+    "wistech-anatomy": 61
+   }
+  },
+  "anatomy.vein": {
+   "term": "vein",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 101,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 30,
+    "wistech-anatomy": 92
+   }
+  },
+  "anatomy.nerve": {
+   "term": "nerve",
+   "books": {
+    "iowa-physiology-research": 49,
+    "lmu-human-physiology": 125,
+    "msu-neuroscience": 39,
+    "rotel-anatomy-lab": 75,
+    "wistech-anatomy": 97
+   }
+  },
+  "anatomy.sciatic-nerve": {
+   "term": "sciatic nerve",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.vagus-nerve": {
+   "term": "vagus nerve",
+   "books": {
+    "iowa-physiology-research": 5,
+    "lmu-human-physiology": 11,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.optic-nerve": {
+   "term": "optic nerve",
+   "books": {
+    "iowa-physiology-research": 6,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 12,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.median-nerve": {
+   "term": "median nerve",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 10,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.acl": {
+   "term": "anterior cruciate ligament",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.pcl": {
+   "term": "posterior cruciate ligament",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.mouth": {
+   "term": "mouth",
+   "books": {
+    "iowa-physiology-research": 13,
+    "lmu-human-physiology": 59,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 15,
+    "wistech-anatomy": 46
+   }
+  },
+  "anatomy.digestive-system": {
+   "term": "digestive system",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 62,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 44,
+    "wistech-anatomy": 73
+   }
+  },
+  "anatomy.respiratory-system": {
+   "term": "respiratory system",
+   "books": {
+    "iowa-physiology-research": 3,
+    "lmu-human-physiology": 84,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 16,
+    "wistech-anatomy": 75
+   }
+  },
+  "anatomy.genital-systems": {
+   "term": "reproductive system",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 43,
+    "msu-neuroscience": 6,
+    "rotel-anatomy-lab": 35,
+    "wistech-anatomy": 71
+   }
+  },
+  "anatomy.hair": {
+   "term": "hair",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 41,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 16,
+    "wistech-anatomy": 53
+   }
+  },
+  "anatomy.hair-follicle": {
+   "term": "hair follicle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 9,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 8,
+    "wistech-anatomy": 11
+   }
+  },
+  "anatomy.urinary-system": {
+   "term": "urinary system",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 24,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 28,
+    "wistech-anatomy": 62
+   }
+  },
+  "anatomy.anus": {
+   "term": "anus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 13,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 14
+   }
+  },
+  "anatomy.anterior-pituitary": {
+   "term": "anterior pituitary",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 43,
+    "msu-neuroscience": 10,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 11
+   }
+  },
+  "anatomy.integumentary-system": {
+   "term": "integumentary system",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 28,
+    "wistech-anatomy": 30
+   }
+  },
+  "anatomy.colon": {
+   "term": "colon",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 25,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 20,
+    "wistech-anatomy": 20
+   }
+  },
+  "anatomy.vagina": {
+   "term": "vagina",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 33,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 27
+   }
+  },
+  "anatomy.epidermis": {
+   "term": "epidermis",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 7,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 14,
+    "wistech-anatomy": 26
+   }
+  },
+  "anatomy.peritoneum": {
+   "term": "peritoneum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 21,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 11
+   }
+  },
+  "anatomy.dermis": {
+   "term": "dermis",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 7,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 17,
+    "wistech-anatomy": 21
+   }
+  },
+  "anatomy.uterine-tube": {
+   "term": "uterine tube",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 27,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 8
+   }
+  },
+  "anatomy.thoracic-cavity": {
+   "term": "thoracic cavity",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 23,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 26
+   }
+  },
+  "anatomy.endocrine-gland": {
+   "term": "endocrine gland",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 44,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 16,
+    "wistech-anatomy": 41
+   }
+  },
+  "anatomy.parathyroid-gland": {
+   "term": "parathyroid gland",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 19,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.ileum": {
+   "term": "ileum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 16,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 10,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.lip": {
+   "term": "lip",
+   "books": {
+    "iowa-physiology-research": 6,
+    "lmu-human-physiology": 153,
+    "msu-neuroscience": 4,
+    "rotel-anatomy-lab": 15,
+    "wistech-anatomy": 69
+   }
+  },
+  "anatomy.nasal-cavity": {
+   "term": "nasal cavity",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 13,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 17
+   }
+  },
+  "anatomy.palate": {
+   "term": "palate",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 8,
+    "wistech-anatomy": 13
+   }
+  },
+  "anatomy.cervix-of-uterus": {
+   "term": "cervix",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 22,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 8
+   }
+  },
+  "anatomy.endometrium": {
+   "term": "endometrium",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 25,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.bronchus": {
+   "term": "bronchus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 6,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 0,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.salivary-gland": {
+   "term": "salivary gland",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 14,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 11
+   }
+  },
+  "anatomy.sweat-gland": {
+   "term": "sweat gland",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 20,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 8,
+    "wistech-anatomy": 19
+   }
+  },
+  "anatomy.nail": {
+   "term": "nail",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 6,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 13
+   }
+  },
+  "anatomy.epididymis": {
+   "term": "epididymis",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 14,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.scrotum": {
+   "term": "scrotum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 12,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 9
+   }
+  },
+  "anatomy.nipple": {
+   "term": "nipple",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 9,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 0,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.cheek": {
+   "term": "cheek",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 7,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.epiglottis": {
+   "term": "epiglottis",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 10,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.abdominal-cavity": {
+   "term": "abdominal cavity",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 19,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 21
+   }
+  },
+  "anatomy.seminal-vesicle": {
+   "term": "seminal vesicle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.soft-palate": {
+   "term": "soft palate",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 7,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.gingiva": {
+   "term": "gum",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 8
+   }
+  },
+  "anatomy.pineal-gland": {
+   "term": "pineal gland",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 14,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.palatine-tonsil": {
+   "term": "tonsil",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.vulva": {
+   "term": "vulva",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.nasopharynx": {
+   "term": "nasopharynx",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 8
+   }
+  },
+  "anatomy.peritoneal-cavity": {
+   "term": "peritoneal cavity",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 13,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.clitoris": {
+   "term": "clitoris",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 11,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.mediastinum": {
+   "term": "mediastinum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.anal-canal": {
+   "term": "anal canal",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 15,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.pancreatic-islets": {
+   "term": "pancreatic islets",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 6,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.vermiform-appendix": {
+   "term": "vermiform appendix",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.caecum": {
+   "term": "cecum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.sigmoid-colon": {
+   "term": "sigmoid colon",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.common-bile-duct": {
+   "term": "common bile duct",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 6,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.vocal-fold": {
+   "term": "vocal fold",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 9,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.perineum": {
+   "term": "perineum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.glans-penis": {
+   "term": "glans penis",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.mucosa": {
+   "term": "mucosa",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 51,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 18,
+    "wistech-anatomy": 27
+   }
+  },
+  "anatomy.common-hepatic-duct": {
+   "term": "common hepatic duct",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.pancreatic-duct": {
+   "term": "pancreatic duct",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 10,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.prepuce": {
+   "term": "foreskin",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.labium-minus": {
+   "term": "labia minora",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 0,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.cystic-duct": {
+   "term": "cystic duct",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.eyebrow": {
+   "term": "eyebrow",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.parotid-gland": {
+   "term": "parotid gland",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.nasal-septum": {
+   "term": "nasal septum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.neuron": {
+   "term": "neuron",
+   "books": {
+    "iowa-physiology-research": 27,
+    "lmu-human-physiology": 170,
+    "msu-neuroscience": 179,
+    "rotel-anatomy-lab": 25,
+    "wistech-anatomy": 52
+   }
+  },
+  "anatomy.nervous-system": {
+   "term": "nervous system",
+   "books": {
+    "iowa-physiology-research": 10,
+    "lmu-human-physiology": 180,
+    "msu-neuroscience": 46,
+    "rotel-anatomy-lab": 57,
+    "wistech-anatomy": 142
+   }
+  },
+  "anatomy.central-nervous-system": {
+   "term": "central nervous system",
+   "books": {
+    "iowa-physiology-research": 5,
+    "lmu-human-physiology": 51,
+    "msu-neuroscience": 23,
+    "rotel-anatomy-lab": 22,
+    "wistech-anatomy": 29
+   }
+  },
+  "anatomy.hypothalamus": {
+   "term": "hypothalamus",
+   "books": {
+    "iowa-physiology-research": 3,
+    "lmu-human-physiology": 71,
+    "msu-neuroscience": 19,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 27
+   }
+  },
+  "anatomy.autonomic-nervous-system": {
+   "term": "autonomic nervous system",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 67,
+    "msu-neuroscience": 7,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 22
+   }
+  },
+  "anatomy.thalamus": {
+   "term": "thalamus",
+   "books": {
+    "iowa-physiology-research": 3,
+    "lmu-human-physiology": 25,
+    "msu-neuroscience": 42,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 11
+   }
+  },
+  "anatomy.cerebrum": {
+   "term": "cerebrum",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 46,
+    "msu-neuroscience": 7,
+    "rotel-anatomy-lab": 10,
+    "wistech-anatomy": 16
+   }
+  },
+  "anatomy.cranial-nerve": {
+   "term": "cranial nerve",
+   "books": {
+    "iowa-physiology-research": 24,
+    "lmu-human-physiology": 11,
+    "msu-neuroscience": 18,
+    "rotel-anatomy-lab": 16,
+    "wistech-anatomy": 17
+   }
+  },
+  "anatomy.cerebral-cortex": {
+   "term": "cerebral cortex",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 32,
+    "msu-neuroscience": 10,
+    "rotel-anatomy-lab": 11,
+    "wistech-anatomy": 18
+   }
+  },
+  "anatomy.cerebrospinal-fluid": {
+   "term": "cerebrospinal fluid",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 25,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 10,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.spinal-nerve": {
+   "term": "spinal nerve",
+   "books": {
+    "iowa-physiology-research": 8,
+    "lmu-human-physiology": 40,
+    "msu-neuroscience": 24,
+    "rotel-anatomy-lab": 24,
+    "wistech-anatomy": 35
+   }
+  },
+  "anatomy.midbrain": {
+   "term": "midbrain",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 24,
+    "msu-neuroscience": 9,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 8
+   }
+  },
+  "anatomy.diencephalon": {
+   "term": "diencephalon",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 27,
+    "msu-neuroscience": 4,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.neuroglia": {
+   "term": "neuroglia",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 7,
+    "wistech-anatomy": 13
+   }
+  },
+  "anatomy.meninges": {
+   "term": "meninges",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 20,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 8,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.frontal-lobe": {
+   "term": "frontal lobe",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 15,
+    "msu-neuroscience": 20,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.forebrain": {
+   "term": "forebrain",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 22,
+    "msu-neuroscience": 4,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.basal-nuclei": {
+   "term": "basal ganglia",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 26,
+    "rotel-anatomy-lab": 0,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.hippocampus": {
+   "term": "hippocampus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 7,
+    "msu-neuroscience": 14,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.amygdala": {
+   "term": "amygdala",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 7,
+    "msu-neuroscience": 14,
+    "rotel-anatomy-lab": 0,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.occipital-lobe": {
+   "term": "occipital lobe",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 8,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.trigeminal-nerve": {
+   "term": "trigeminal nerve",
+   "books": {
+    "iowa-physiology-research": 5,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 5,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.facial-nerve": {
+   "term": "facial nerve",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.oculomotor-nerve": {
+   "term": "oculomotor nerve",
+   "books": {
+    "iowa-physiology-research": 6,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.vestibulocochlear-nerve": {
+   "term": "vestibulocochlear nerve",
+   "books": {
+    "iowa-physiology-research": 3,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.hypoglossal-nerve": {
+   "term": "hypoglossal nerve",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.glossopharyngeal-nerve": {
+   "term": "glossopharyngeal nerve",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.sensory-nerve": {
+   "term": "sensory nerve",
+   "books": {
+    "iowa-physiology-research": 18,
+    "lmu-human-physiology": 23,
+    "msu-neuroscience": 17,
+    "rotel-anatomy-lab": 10,
+    "wistech-anatomy": 23
+   }
+  },
+  "anatomy.accessory-nerve": {
+   "term": "accessory nerve",
+   "books": {
+    "iowa-physiology-research": 3,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.olfactory-nerve": {
+   "term": "olfactory nerve",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 4,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.abducens-nerve": {
+   "term": "abducens nerve",
+   "books": {
+    "iowa-physiology-research": 5,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.trochlear-nerve": {
+   "term": "trochlear nerve",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.nucleus-accumbens": {
+   "term": "nucleus accumbens",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 5,
+    "rotel-anatomy-lab": 0,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.medial-lemniscus": {
+   "term": "medial lemniscus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.blood": {
+   "term": "blood",
+   "books": {
+    "iowa-physiology-research": 43,
+    "lmu-human-physiology": 678,
+    "msu-neuroscience": 11,
+    "rotel-anatomy-lab": 75,
+    "wistech-anatomy": 521
+   }
+  },
+  "anatomy.blood-vessel": {
+   "term": "blood vessel",
+   "books": {
+    "iowa-physiology-research": 6,
+    "lmu-human-physiology": 244,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 35,
+    "wistech-anatomy": 190
+   }
+  },
+  "anatomy.capillary": {
+   "term": "capillary",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 80,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 12
+   }
+  },
+  "anatomy.arteriole": {
+   "term": "arteriole",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 50,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 17
+   }
+  },
+  "anatomy.lymph": {
+   "term": "lymph",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 50,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 33,
+    "wistech-anatomy": 86
+   }
+  },
+  "anatomy.inferior-vena-cava": {
+   "term": "inferior vena cava",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 13,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 8,
+    "wistech-anatomy": 22
+   }
+  },
+  "anatomy.pulmonary-vein": {
+   "term": "pulmonary vein",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 34,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 19
+   }
+  },
+  "anatomy.superior-vena-cava": {
+   "term": "superior vena cava",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 9,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 7,
+    "wistech-anatomy": 16
+   }
+  },
+  "anatomy.hepatic-portal-vein": {
+   "term": "hepatic portal vein",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 13,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.abdominal-aorta": {
+   "term": "abdominal aorta",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 17
+   }
+  },
+  "anatomy.dural-venous-sinuses": {
+   "term": "dural venous sinuses",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.subclavian-vein": {
+   "term": "subclavian vein",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 13
+   }
+  },
+  "anatomy.radial-artery": {
+   "term": "radial artery",
+   "books": {
+    "iowa-physiology-research": 3,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.internal-carotid-artery": {
+   "term": "internal carotid artery",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.femoral-artery": {
+   "term": "femoral artery",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 12
+   }
+  },
+  "anatomy.cerebral-arterial-circle": {
+   "term": "circle of Willis",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.subclavian-artery": {
+   "term": "subclavian artery",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.thoracic-duct": {
+   "term": "thoracic duct",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.coeliac-trunk": {
+   "term": "celiac trunk",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.common-carotid-artery": {
+   "term": "common carotid artery",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.axillary-vein": {
+   "term": "axillary vein",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 8
+   }
+  },
+  "anatomy.brachiocephalic-trunk": {
+   "term": "brachiocephalic artery",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.internal-jugular-vein": {
+   "term": "internal jugular vein",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.axillary-artery": {
+   "term": "axillary artery",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.brachiocephalic-vein": {
+   "term": "brachiocephalic vein",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.hepatic-vein": {
+   "term": "hepatic vein",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 13,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 11
+   }
+  },
+  "anatomy.ulnar-artery": {
+   "term": "ulnar artery",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.right-coronary-artery": {
+   "term": "right coronary artery",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 6,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.splenic-artery": {
+   "term": "splenic artery",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.external-jugular-vein": {
+   "term": "external jugular vein",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.bone": {
+   "term": "bone",
+   "books": {
+    "iowa-physiology-research": 8,
+    "lmu-human-physiology": 124,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 101,
+    "wistech-anatomy": 218
+   }
+  },
+  "anatomy.cartilage": {
+   "term": "cartilage",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 20,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 26,
+    "wistech-anatomy": 40
+   }
+  },
+  "anatomy.palatine-bone": {
+   "term": "palatine bone",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.orbit": {
+   "term": "orbit",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 11,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 10,
+    "wistech-anatomy": 13
+   }
+  },
+  "anatomy.lumbar-vertebra": {
+   "term": "lumbar vertebra",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 18,
+    "wistech-anatomy": 14
+   }
+  },
+  "anatomy.ilium": {
+   "term": "ilium",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 12,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.metacarpal-bones": {
+   "term": "metacarpal bones",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.thoracic-vertebra": {
+   "term": "thoracic vertebra",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 20,
+    "wistech-anatomy": 25
+   }
+  },
+  "anatomy.tarsal-bones": {
+   "term": "tarsal bones",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.forehead": {
+   "term": "forehead",
+   "books": {
+    "iowa-physiology-research": 6,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.metatarsal-bones": {
+   "term": "metatarsal bones",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.sphenoid-bone": {
+   "term": "sphenoid bone",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.atlas": {
+   "term": "atlas",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.ethmoid-bone": {
+   "term": "ethmoid bone",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 7,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.zygomatic-bone": {
+   "term": "zygomatic bone",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.trapezium": {
+   "term": "trapezium",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.pisiform-bone": {
+   "term": "pisiform bone",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.auditory-ossicles": {
+   "term": "auditory ossicles",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.skeleton": {
+   "term": "skeleton",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 27,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 23,
+    "wistech-anatomy": 65
+   }
+  },
+  "anatomy.xiphoid-process": {
+   "term": "xiphoid process",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.olecranon": {
+   "term": "olecranon",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.vomer": {
+   "term": "vomer",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.nasal-bone": {
+   "term": "nasal bone",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 6,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.human-body": {
+   "term": "human body",
+   "books": {
+    "iowa-physiology-research": 20,
+    "lmu-human-physiology": 215,
+    "msu-neuroscience": 5,
+    "rotel-anatomy-lab": 110,
+    "wistech-anatomy": 99
+   }
+  },
+  "anatomy.buttock": {
+   "term": "buttock",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.face": {
+   "term": "face",
+   "books": {
+    "iowa-physiology-research": 8,
+    "lmu-human-physiology": 25,
+    "msu-neuroscience": 20,
+    "rotel-anatomy-lab": 22,
+    "wistech-anatomy": 37
+   }
+  },
+  "anatomy.lumbar-region": {
+   "term": "lower back",
+   "books": {
+    "iowa-physiology-research": 7,
+    "lmu-human-physiology": 35,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 33
+   }
+  },
+  "anatomy.toe": {
+   "term": "toe",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 9,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 13,
+    "wistech-anatomy": 26
+   }
+  },
+  "anatomy.wrist": {
+   "term": "wrist",
+   "books": {
+    "iowa-physiology-research": 9,
+    "lmu-human-physiology": 8,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 13,
+    "wistech-anatomy": 19
+   }
+  },
+  "anatomy.thumb": {
+   "term": "thumb",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 16
+   }
+  },
+  "anatomy.index-finger": {
+   "term": "index finger",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.upper-limb": {
+   "term": "upper limb",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 12,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 24
+   }
+  },
+  "anatomy.axilla": {
+   "term": "axilla",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 10,
+    "wistech-anatomy": 12
+   }
+  },
+  "anatomy.little-finger": {
+   "term": "little finger",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.calf": {
+   "term": "calf",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.umbilicus": {
+   "term": "umbilicus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 6,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 0,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.chin": {
+   "term": "chin",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.middle-finger": {
+   "term": "middle finger",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 5,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.retina": {
+   "term": "retina",
+   "books": {
+    "iowa-physiology-research": 7,
+    "lmu-human-physiology": 12,
+    "msu-neuroscience": 35,
+    "rotel-anatomy-lab": 10,
+    "wistech-anatomy": 21
+   }
+  },
+  "anatomy.pupil": {
+   "term": "pupil",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 11,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 9
+   }
+  },
+  "anatomy.choroid": {
+   "term": "choroid",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 9,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.malleus": {
+   "term": "malleus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.eyelid": {
+   "term": "eyelid",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.cochlea": {
+   "term": "cochlea",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.taste-bud": {
+   "term": "taste bud",
+   "books": {
+    "iowa-physiology-research": 2,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 3,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.tympanic-membrane": {
+   "term": "tympanic membrane",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.macula-lutea": {
+   "term": "macula of retina",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.stapes": {
+   "term": "stapes",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.auditory-tube": {
+   "term": "auditory tube",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.incus": {
+   "term": "incus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.ciliary-body": {
+   "term": "ciliary body",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.muscle": {
+   "term": "muscle",
+   "books": {
+    "iowa-physiology-research": 75,
+    "lmu-human-physiology": 436,
+    "msu-neuroscience": 30,
+    "rotel-anatomy-lab": 148,
+    "wistech-anatomy": 306
+   }
+  },
+  "anatomy.tendon": {
+   "term": "tendon",
+   "books": {
+    "iowa-physiology-research": 13,
+    "lmu-human-physiology": 13,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 24,
+    "wistech-anatomy": 35
+   }
+  },
+  "anatomy.pulmonary-trunk": {
+   "term": "pulmonary trunk",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 37,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 19
+   }
+  },
+  "anatomy.pulmonary-circulation": {
+   "term": "pulmonary circulation",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 30,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 20
+   }
+  },
+  "anatomy.facial-skeleton": {
+   "term": "facial skeleton",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.musculoskeletal-system": {
+   "term": "musculoskeletal system",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.joint": {
+   "term": "joint",
+   "books": {
+    "iowa-physiology-research": 5,
+    "lmu-human-physiology": 24,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 51,
+    "wistech-anatomy": 107
+   }
+  },
+  "anatomy.ligament": {
+   "term": "ligament",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 17,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 24,
+    "wistech-anatomy": 44
+   }
+  },
+  "anatomy.patellar-ligament": {
+   "term": "patellar tendon",
+   "books": {
+    "iowa-physiology-research": 9,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 1,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.meniscus": {
+   "term": "meniscus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.synovial-membrane": {
+   "term": "synovial membrane",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.synovial-bursa": {
+   "term": "synovial bursa",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.atrium": {
+   "term": "atrium",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 51,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 30
+   }
+  },
+  "anatomy.sinoatrial-node": {
+   "term": "SA node",
+   "books": {
+    "iowa-physiology-research": 3,
+    "lmu-human-physiology": 31,
+    "msu-neuroscience": 9,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.myocardium": {
+   "term": "myocardium",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 22,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 12
+   }
+  },
+  "anatomy.pericardium": {
+   "term": "pericardium",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 12,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 14
+   }
+  },
+  "anatomy.ventricle-of-heart": {
+   "term": "ventricle of heart",
+   "books": {
+    "iowa-physiology-research": 9,
+    "lmu-human-physiology": 66,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 46
+   }
+  },
+  "anatomy.muscular-system": {
+   "term": "muscular system",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 42,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 95,
+    "wistech-anatomy": 39
+   }
+  },
+  "anatomy.fascia": {
+   "term": "fascia",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 12,
+    "wistech-anatomy": 8
+   }
+  },
+  "anatomy.quadriceps-femoris": {
+   "term": "quadriceps",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 2,
+    "rotel-anatomy-lab": 6,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.external-anal-sphincter": {
+   "term": "external anal sphincter",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 3,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.supraspinatus": {
+   "term": "supraspinatus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.bone-marrow": {
+   "term": "bone marrow",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 34,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 12,
+    "wistech-anatomy": 31
+   }
+  },
+  "anatomy.lymphatic-system": {
+   "term": "lymphatic system",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 15,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 17,
+    "wistech-anatomy": 51
+   }
+  },
+  "anatomy.lymph-node": {
+   "term": "lymph node",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 11,
+    "wistech-anatomy": 14
+   }
+  },
+  "anatomy.thymus": {
+   "term": "thymus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 10,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 8,
+    "wistech-anatomy": 9
+   }
+  }
+ }
+}

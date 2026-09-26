@@ -1,0 +1,11 @@
+{
+  "endpoint": "https://query.wikidata.org/sparql",
+  "query_file": "wikidata-query.rq",
+  "query_sha256": "ce3e5e1083fe6e05c715178f9e248c4e01cfb021be4139eeafdaf2e0e79d26e4",
+  "retrieved_at": "2026-09-26T21:21:17Z",
+  "file": "wikidata-anatomy-tr-2026-09-26.json",
+  "sha256": "06f429cbac9e304e93727c4abff403c0a01f264bf5c5760ac128a4d31c157fd0",
+  "items": 705,
+  "license": "Wikidata structured data: CC0 1.0",
+  "note": "Items with a TA98 (P1323) or TA2 (P7173) identifier and a Turkish label. Labels are community-edited; see review-v62.txt for editorial decisions."
+}

@@ -42,5 +42,5 @@
     if(!concept)return null;
     return {original:String(original||'').slice(0,120),conceptId,terms:[...new Set(['tr','en','la'].flatMap(lang=>[concept.labels[lang],...(concept.aliases[lang]||[])]).filter(Boolean))],reviewStatus:concept.reviewStatus,requiresConfirmation:true};
   }
-  return Object.freeze({search,expansion,version:data?.version,count:records.length,sources:data?.sources||[]});
+  return Object.freeze({search,expansion,version:data?.version,count:records.length,sources:data?.sources||[],libraryBooks:data?.libraryBooks||{}});
 });

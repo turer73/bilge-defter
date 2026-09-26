@@ -1,14 +1,32 @@
-const assert=require('node:assert/strict');
+const assert=require('node:assert/strict'),{execFileSync}=require('child_process'),path=require('path');
 const data=require('./bilge-defter-test/terminology-data.js'),create=require('./bilge-defter-test/terminology.js'),engine=create(data);
 let passed=0;function test(name,fn){fn();passed++;console.log('PASS '+name)}
-test('100 unique draft concepts; no unearned source verification',()=>{
-  assert.equal(data.concepts.length,100);assert.equal(new Set(data.concepts.map(c=>c.id)).size,100);
+const pilot=data.concepts.filter(c=>!c.labelSource),wikidata=data.concepts.filter(c=>c.labelSource);
+test('Generated block is exactly the build of the pinned Wikidata snapshot, review and page index',()=>{
+  assert.match(execFileSync(process.execPath,[path.join(__dirname,'build-terminology.cjs'),'check'],{encoding:'utf8'}),/matches pinned inputs/)});
+test('304 unique draft concepts: 100 independent pilot + 204 reviewed Wikidata labels; no unearned source verification',()=>{
+  assert.equal(data.concepts.length,304);assert.equal(new Set(data.concepts.map(c=>c.id)).size,304);assert.equal(pilot.length,100);assert.equal(wikidata.length,204);
   for(const c of data.concepts){assert.equal(c.reviewStatus,'draft');assert.deepEqual(c.verifiedSources,[]);for(const lang of ['tr','en','la'])assert.ok(c.labels[lang]?.trim());for(const ref of c.referenceCandidates)assert.ok(data.sources.some(s=>s.id===ref));}
 });
-for(const lang of ['tr','en','la'])test('All 100 '+lang+' labels retrieve their own concept without collapsing homonyms',()=>{
+test('Every Wikidata concept names its item and TA id and lists only real label edits',()=>{
+  assert.ok(data.sources.some(s=>s.id==='wikidata'&&/CC0/.test(s.rights)));
+  for(const c of wikidata){const s=c.labelSource;assert.equal(s.id,'wikidata');assert.match(s.item,/^Q[0-9]+$/);assert.ok(s.ta98||s.ta2,c.id);assert.ok(s.edited.every(l=>['tr','en','la'].includes(l)),c.id)}
+  assert.equal(new Set(wikidata.map(c=>c.labelSource.item)).size,204);
+});
+test('Every concept carries a library search term from its own English labels and matching page counts',()=>{
+  for(const c of data.concepts){assert.ok([c.labels.en,...c.aliases.en].includes(c.library.term),c.id);const books=Object.entries(c.library.books);assert.ok(books.length>0,c.id);for(const [id,n] of books){assert.ok(data.libraryBooks[id],id);assert.ok(Number.isSafeInteger(n)&&n>0)}}
+  assert.equal(Object.keys(data.libraryBooks).length,5);
+  assert.equal(data.concepts.find(c=>c.id==='anatomy.oesophagus').library.term,'esophagus');
+});
+for(const lang of ['tr','en','la'])test('All 304 '+lang+' labels retrieve their own concept without collapsing homonyms',()=>{
   for(const c of data.concepts)assert.ok(engine.search(c.labels[lang],50).some(h=>h.concept.id===c.id),c.id+' '+lang);
 });
-for(const [q,id] of [['kalp','heart'],['HEART','heart'],['COR','heart'],['yürek','heart'],['on capraz bag','acl'],['ÖN ÇAPRAZ BAĞ','acl'],['BOBREK','kidney'],['ESOPHAGUS','oesophagus'],['İDRAR KESESİ','urinary-bladder'],['O\u0308N C\u0327APRAZ BAG\u0306','acl']])test('Lookup '+q,()=>assert.equal(engine.search(q)[0].concept.id,'anatomy.'+id));
+for(const [q,id] of [['kalp','heart'],['HEART','heart'],['COR','heart'],['yürek','heart'],['on capraz bag','acl'],['ÖN ÇAPRAZ BAĞ','acl'],['BOBREK','kidney'],['ESOPHAGUS','oesophagus'],['İDRAR KESESİ','urinary-bladder'],['ÖN ÇAPRAZ BAĞ','acl'],
+  ['nöron','neuron'],['sinir hücresi','neuron'],['göz bebeği','pupil'],['Willis halkası','cerebral-arterial-circle'],['kulak zarı','tympanic-membrane'],['femoral arter','femoral-artery'],['sinovyal zar','synovial-membrane'],['İÇ SALGI BEZİ','endocrine-gland']])test('Lookup '+q,()=>assert.equal(engine.search(q)[0].concept.id,'anatomy.'+id));
+test('Accent neighbours stay apart: exact kaş and kas each come first',()=>{assert.equal(engine.search('kaş')[0].concept.id,'anatomy.eyebrow');assert.equal(engine.search('kas')[0].concept.id,'anatomy.muscle')});
+test('Latin os keeps both meanings (mouth, bone) with explaining notes',()=>{const hits=engine.search('os').filter(h=>h.score===0);assert.deepEqual(new Set(hits.map(h=>h.concept.id)),new Set(['anatomy.mouth','anatomy.bone']));for(const h of hits)assert.match(h.concept.note,/os/)});
+test('Abbreviations from the review are marked as abbreviations',()=>{for(const [q,id] of [['MSS','central-nervous-system'],['BOS','cerebrospinal-fluid'],['RCA','right-coronary-artery']]){const h=engine.search(q)[0];assert.equal(h.concept.id,'anatomy.'+id);assert.equal(h.match,'abbreviation')}});
+test('Slang and wrong Wikidata aliases were not imported',()=>{const all=JSON.stringify(data.concepts).toLocaleLowerCase('tr-TR');for(const w of ['göt','toto','bızır','pıtış','taşak','bağdemcik','menüsküs','femoral sinir','sinovit','xiphoid işlemi'])assert.ok(!all.includes('"'+w+'"'),w)});
 test('Misspelling yields explicit suggestion, not a rewrite',()=>{const hits=engine.search('kallp');assert.equal(hits[0].concept.id,'anatomy.heart');assert.equal(hits[0].match,'suggestion')});
 test('Femur retains separate bone and region meanings',()=>{const hits=engine.search('femur').filter(h=>h.score===0);assert.deepEqual(new Set(hits.map(h=>h.concept.id)),new Set(['anatomy.femur','anatomy.thigh']))});
 test('Abbreviations marked, never treated as globally unique',()=>assert.equal(engine.search('ACL')[0].match,'abbreviation'));
@@ -19,4 +37,4 @@ test('Missing Latin stays absent; no invented counterpart',()=>{const fixture=st
 test('Unknown concept cannot be expanded',()=>assert.equal(engine.expansion('not-a-concept','kalp'),null));
 test('Different concepts sharing an abbreviation remain separate',()=>{const fixtures=structuredClone(data.concepts.slice(0,2));fixtures.forEach(c=>c.abbreviations=['XX']);const local=create({concepts:fixtures});assert.equal(local.search('XX').length,2)});
 test('Search result limits are bounded',()=>{assert.ok(engine.search('musculus',1).length<=1);assert.ok(engine.search('musculus',Infinity).length<=20)});
-console.log(JSON.stringify({passed,concepts:engine.count,labelRoundTrips:300,expertReviewed:0,liveDeployment:false}));
+console.log(JSON.stringify({passed,concepts:engine.count,wikidataConcepts:wikidata.length,labelRoundTrips:912,expertReviewed:0,liveDeployment:false}));

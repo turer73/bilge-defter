@@ -11,7 +11,7 @@
   for(const [value,label] of [['general','Türkçe sözlük'],['anatomy','Anatomi terimleri · pilot']]){const option=document.createElement('option');option.value=value;option.textContent=label;modeSelect.append(option)}
   modeRow.append(modeSelect);dictNote.before(modeRow);
   const isAnatomy=()=>modeSelect.value==='anatomy';
-  const pilotNote='100 kavramlık çevrim dışı pilot. Türkçe, İngilizce ve Latince eşleştirmeler taslaktır; uzman/kaynak kontrolü tamamlanmadı. Resmî FIPAT çevirisi veya tıbbi karar desteği değildir.';
+  const pilotNote=()=>`${window.BilgeTerminology?.count||0} kavramlık çevrim dışı pilot. Türkçe, İngilizce ve Latince eşleştirmeler taslaktır; uzman kontrolü tamamlanmadı. İlk 100 kavram bağımsız hazırlandı; diğerlerinin etiketleri Wikidata’dan (CC0) alınıp tek tek gözden geçirildi. Resmî FIPAT çevirisi veya tıbbi karar desteği değildir.`;
   const queryDraft=document.createElement('section');queryDraft.id='dictQueryDraft';queryDraft.hidden=true;queryDraft.setAttribute('aria-live','polite');document.querySelector('#dictResults').after(queryDraft);
   let libraryTerm=null;
   const clearDraft=()=>{libraryTerm=null;queryDraft.hidden=true;queryDraft.replaceChildren()};
@@ -36,7 +36,7 @@
   libraryButton.onclick=()=>{const q=libraryTerm||document.querySelector('#dictQuery').value.trim();if(q)window.openBilgeLibrary(q)};
   // Global tool-row display rules otherwise override the native hidden attribute.
   const hiddenStyle=document.createElement('style');hiddenStyle.textContent='#dictDialog .tool-row[hidden]{display:none}';document.head.append(hiddenStyle);
-  const pilotStyle=document.createElement('style');pilotStyle.textContent='.dict-mode{display:grid;gap:6px;margin-bottom:12px;font-size:14px;font-weight:600}#dictMode{width:100%;min-height:44px;font-size:16px;padding:8px;border:1px solid #b6ccc4;border-radius:8px;background:white;color:#17312d}#dictDialog .dict-languages{display:grid;grid-template-columns:75px minmax(0,1fr);gap:5px;margin:8px 0;font-size:14px}#dictDialog dt{color:#52655e}#dictDialog dd{margin:0;overflow-wrap:anywhere}#dictDialog .dict-review{color:#775312;background:#fff2d8;padding:6px 8px;border-radius:6px;margin:6px 0}#dictDialog .dict-entry button{margin-top:8px;min-height:44px}#dictDialog .dict-reference{display:block;font-size:12px;margin-top:8px;overflow-wrap:anywhere}#dictQueryDraft{padding:12px;background:#e8f2ec;border-radius:8px;overflow-wrap:anywhere}#dictQueryDraft[hidden]{display:none}#dictQueryDraft p{font-size:13px;line-height:1.5}';document.head.append(pilotStyle);
+  const pilotStyle=document.createElement('style');pilotStyle.textContent='.dict-mode{display:grid;gap:6px;margin-bottom:12px;font-size:14px;font-weight:600}#dictMode{width:100%;min-height:44px;font-size:16px;padding:8px;border:1px solid #b6ccc4;border-radius:8px;background:white;color:#17312d}#dictDialog .dict-languages{display:grid;grid-template-columns:75px minmax(0,1fr);gap:5px;margin:8px 0;font-size:14px}#dictDialog dt{color:#52655e}#dictDialog dd{margin:0;overflow-wrap:anywhere}#dictDialog .dict-review{color:#775312;background:#fff2d8;padding:6px 8px;border-radius:6px;margin:6px 0}#dictDialog .dict-entry button{margin-top:8px;min-height:44px}#dictDialog .dict-reference{display:block;font-size:12px;margin-top:8px;overflow-wrap:anywhere}#dictDialog .dict-library{font-size:12px;margin:8px 0 0;color:#40524d;overflow-wrap:anywhere}#dictQueryDraft{padding:12px;background:#e8f2ec;border-radius:8px;overflow-wrap:anywhere}#dictQueryDraft[hidden]{display:none}#dictQueryDraft p{font-size:13px;line-height:1.5}';document.head.append(pilotStyle);
   const localNote='Cihazdaki tıp ağırlıklı TDK alt kümesi kullanılıyor; tam sözlük hizmeti doğrulanmadı. Tanı veya tedavi önerisi DEĞİLDİR. El yazısı otomatik okunmaz.';
   const serverNote='Sunucudaki seçili sözlük kullanılıyor. Bağlantı veya hizmet sorunu olursa cihazdaki sınırlı alt kümeye dönülür. Tanı veya tedavi önerisi değildir.';
   dictNote.textContent=localNote;
@@ -55,7 +55,7 @@
   async function loadDictionaries(){
     const generation=++listGeneration;dictList=[];activeDict=null;dictNote.textContent=localNote;
     const select=document.querySelector('#dictSelect');select.replaceChildren();
-    if(isAnatomy()){select.closest('.tool-row').hidden=true;dictNote.textContent=pilotNote;renderCount();return}
+    if(isAnatomy()){select.closest('.tool-row').hidden=true;dictNote.textContent=pilotNote();renderCount();return}
     if(!invited()){select.closest('.tool-row').hidden=true;renderCount();return}
     try{
       const res=await requestDictionary('./api/v1/bilge-defter/dictionaries');
@@ -91,7 +91,7 @@
     list.setAttribute('aria-busy','false');
     const renderedRequest=lastRequest;
     const engine=window.BilgeTerminology,hits=engine?.search(query)||[];
-    dictNote.textContent=pilotNote;
+    dictNote.textContent=pilotNote();
     document.querySelector('#dictCount').textContent=query.trim()?`${hits.length} kavram · cihazdaki anatomi pilotu`:'';
     document.querySelector('#dictWeb').disabled=!query.trim();
     if(!query.trim()){renderCount();return}
@@ -108,12 +108,18 @@
       if(c.note){const p=document.createElement('p');p.textContent=c.note;card.append(p)}
       const ref=engine.sources.find(s=>c.referenceCandidates.includes(s.id));
       if(ref){const a=document.createElement('a');a.className='dict-reference';a.textContent='Kaynak adayı: '+ref.title;a.href=ref.url;a.target='_blank';a.rel='noopener noreferrer';card.append(a)}
+      // Label provenance: which Wikidata item, and which labels the editor changed.
+      const origin=c.labelSource;
+      if(origin?.id==='wikidata'&&/^Q[0-9]+$/.test(origin.item)){const a=document.createElement('a');a.className='dict-reference';a.href='https://www.wikidata.org/wiki/'+origin.item;a.target='_blank';a.rel='noopener noreferrer';const names={tr:'Türkçe',en:'English',la:'Latince'},edited=(origin.edited||[]).map(l=>names[l]).filter(Boolean);a.textContent=`Etiket kaynağı: Wikidata ${origin.item}${origin.ta98?' · TA98 '+origin.ta98:''} (CC0)${edited.length?' · editör düzeltmesi: '+edited.join(', '):''}`;card.append(a)}
+      // Counts only: how many library pages the library search matches for this term.
+      const found=Object.entries(c.library?.books||{}).filter(([,n])=>Number.isSafeInteger(n)&&n>0).sort((a,b)=>b[1]-a[1]);
+      if(c.library?.term){const p=document.createElement('p');p.className='dict-library';const pages=found.reduce((a,[,n])=>a+n,0),top=found[0]&&engine.libraryBooks[found[0][0]];p.textContent=pages?`Kütüphane: “${c.library.term}” ${found.length} kitapta ${pages} sayfada geçiyor${top?` · en çok: ${top} (${found[0][1]})`:''}.`:`Kütüphane: “${c.library.term}” kitaplarda bulunmadı.`;card.append(p)}
       const select=document.createElement('button');select.type='button';select.className='btn';select.textContent='Arama için seç';select.setAttribute('aria-label',c.labels.tr+' — arama için seç');
       select.onclick=()=>{
         // A detached card or queued event must never select a previous query/session.
         if(!dictDialog.open||!isAnatomy()||renderedRequest!==lastRequest||document.querySelector('#dictQuery').value!==query)return;
         const draft=engine.expansion(c.id,query);if(!draft)return;
-        libraryTerm=c.labels.en||c.labels.tr;
+        libraryTerm=c.library?.term||c.labels.en||c.labels.tr;
         queryDraft.replaceChildren();queryDraft.hidden=false;
         for(const text of ['Arama taslağı — henüz gönderilmedi','Özgün sorgu: '+draft.original,'Seçilen kavram: '+c.labels.tr,'Karşılıklar: '+draft.terms.join(' · '),'Kütüphanede ara: '+libraryTerm+' — seçilen taslak karşılığı kontrol edin. Yalnız düğmeye basınca gönderilir; kaynaklar İngilizcedir. Web’de ara özgün sorguyu kullanır.']){const p=document.createElement('p');p.textContent=text;queryDraft.append(p)}
       };

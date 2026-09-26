@@ -1,0 +1,218 @@
+# Editorial review of Wikidata (CC0) anatomy items for the v62 pilot expansion.
+# Candidates: items with a TA98/TA2 id, a Turkish label and a Latin label, not already in
+# the 100-concept pilot, found on >=5 library pages. Columns (pipe separated):
+# qid | A=accept, R=reject | id | category | tr | tr aliases (;) | en | en aliases (;) | la | abbreviations (;) | note | reason
+# Final values are written out; build-terminology.cjs marks every field that differs from
+# the Wikidata snapshot (case-insensitive) as an editor change. Nothing here is expert review.
+Q9635|A|mouth|organ|ağız||mouth||os||Latince os burada ağız anlamındadır (os, oris); kemik anlamındaki os (ossis) ile karıştırmayın.|
+Q9649|A|digestive-system|organ|sindirim sistemi||digestive system||systema digestorium|||Wikidata etiketindeki insan/humanum eki kaldırıldı; TA adı.
+Q7891|A|respiratory-system|organ|solunum sistemi||respiratory system||systema respiratorium|||
+Q7895|A|genital-systems|organ|üreme sistemi|genital sistem|reproductive system|genital systems|systemata genitalia|||Latince TA adı (systemata genitalia).
+Q28472|A|hair|organ|saç|kıl|hair||pilus|||Yanlış eş anlamlı (saç folikülü) çıkarıldı.
+Q866324|A|hair-follicle|organ|kıl folikülü|saç folikülü|hair follicle||folliculus pili|||Tekil ve genel ad.
+Q181100|A|urinary-system|organ|boşaltım sistemi|idrar sistemi;üriner sistem|urinary system||systema urinarium|||
+Q497|A|anus|organ|anüs|makat|anus||anus|||Argo eş anlamlılar çıkarıldı.
+Q356002|A|anterior-pituitary|organ|ön hipofiz|adenohipofiz|anterior pituitary|adenohypophysis|lobus anterior hypophysis|||
+Q483213|A|integumentary-system|organ|örtü sistemi||integumentary system||integumentum commune|||Latince TA adı (integumentum commune).
+Q5982337|A|colon|organ|kolon||colon||colon||Kalın bağırsağın bir bölümüdür; kalın bağırsak kaydıyla aynı değildir.|
+Q5880|A|vagina|organ|vajina||vagina||vagina|||
+Q212743|A|epidermis|organ|epidermis|üst deri|epidermis||epidermis|||
+Q9629|A|peritoneum|organ|karın zarı|periton|peritoneum||peritoneum|||
+Q505531|A|dermis|organ|dermis||dermis||dermis|||
+Q1233836|A|uterine-tube|organ|fallop tüpü|yumurta kanalı|uterine tube|fallopian tube|tuba uterina|||Tekil ad; TA İngilizcesi.
+Q994554|A|thoracic-cavity|organ|göğüs boşluğu||thoracic cavity||cavitas thoracis|||İngilizce etiket sadeleştirildi.
+Q324663|A|endocrine-gland|organ|iç salgı bezi|endokrin bez|endocrine gland||glandulae endocrinae|||Türkçe tekil ad.
+Q650401|A|parathyroid-gland|organ|paratiroit bezi|paratiroid bezi|parathyroid gland||glandula parathyroidea|||Pilotun tiroit yazımıyla uyum; tekil ad.
+Q233345|A|ileum|organ|ileum|kıvrım bağırsak|ileum||ileum|||
+Q15173|A|lip|organ|dudak||lip||labium oris|||Latince TA adı (labium oris).
+Q156104|A|nasal-cavity|organ|burun boşluğu||nasal cavity||cavitas nasi|||Latince TA adı (cavitas nasi).
+Q172605|A|palate|organ|damak||palate||palatum|||
+Q666412|A|cervix-of-uterus|organ|rahim ağzı|serviks|cervix|uterine cervix|cervix uteri|||Latince tam TA adı.
+Q839508|A|endometrium|organ|endometriyum|rahim iç zarı|endometrium||endometrium|||
+Q181602|A|bronchus|organ|bronş||bronchus||bronchus|||Yanlış eş anlamlı (bronşçuk) çıkarıldı.
+Q134938|A|salivary-gland|organ|tükürük bezi||salivary gland||glandulae salivariae|||Çekimli eş anlamlılar çıkarıldı.
+Q243784|A|sweat-gland|organ|ter bezi||sweat gland||glandula sudorifera|||
+Q36864|A|nail|organ|tırnak||nail||unguis|||
+Q1973610|A|epididymis|organ|epididim|epididimis|epididymis||epididymis|||Latince yazım hatası düzeltildi.
+Q174471|A|scrotum|organ|testis torbası|skrotum|scrotum||scrotum|||Argo eş anlamlı çıkarıldı.
+Q188641|A|nipple|organ|meme başı|meme ucu|nipple||papilla mammaria|||Latince TA adı (papilla mammaria).
+Q47038|A|cheek|organ|yanak||cheek||bucca|||Latince TA adı (bucca).
+Q235378|A|epiglottis|organ|gırtlak kapağı|epiglot|epiglottis||epiglottis|||
+Q682466|A|abdominal-cavity|organ|karın boşluğu||abdominal cavity||cavitas abdominis|||
+Q217259|A|seminal-vesicle|organ|meni kesesi|seminal vezikül|seminal vesicle|seminal gland|vesicula seminalis|||Tekil ad; İngilizce etiket düzeltildi.
+Q1056395|A|soft-palate|organ|yumuşak damak||soft palate||palatum molle|||
+Q104280|A|gingiva|organ|diş eti||gingiva|gum|gingiva|||İngilizce tekil ad.
+Q198654|A|pineal-gland|organ|epifiz bezi|pineal bez|pineal gland||glandula pinealis|||
+Q180569|A|palatine-tonsil|lenf|bademcik||palatine tonsil|tonsil|tonsilla palatina|||Yanlış yazımlı eş anlamlı çıkarıldı.
+Q2192288|A|vulva|organ|vulva||vulva||vulva|||
+Q552082|A|nasopharynx|organ|nazofarenks|geniz|nasopharynx||pars nasalis pharyngis|||
+Q1030169|A|peritoneal-cavity|organ|periton boşluğu|peritoneal boşluk|peritoneal cavity||cavitas peritonealis|||
+Q873072|A|clitoris|organ|klitoris||clitoris||clitoris|||Argo eş anlamlılar çıkarıldı.
+Q337247|A|mediastinum|organ|mediasten||mediastinum||mediastinum|||
+Q2465231|A|anal-canal|organ|anal kanal||anal canal||canalis analis|||
+Q728309|A|pancreatic-islets|organ|Langerhans adacıkları|pankreas adacıkları|pancreatic islets|islets of Langerhans|insulae pancreaticae|||
+Q9656|A|vermiform-appendix|organ|apandis||vermiform appendix||appendix vermiformis||Kitaplardaki ek (appendix) bölümleriyle karışmaması için kütüphanede tam ad aranır.|
+Q185317|A|caecum|organ|kör bağırsak|çekum|caecum|cecum|caecum|||
+Q677253|A|sigmoid-colon|organ|sigmoid kolon||sigmoid colon||colon sigmoideum|||
+Q1263617|A|common-bile-duct|organ|ana safra kanalı|koledok|common bile duct||ductus choledochus|||
+Q215558|A|vocal-fold|organ|ses teli||vocal fold|vocal cord|plica vocalis|||İngilizce tekil ad.
+Q105499|A|perineum|organ|perine||perineum||perineum|||
+Q650891|A|glans-penis|organ|penis başı||glans penis||glans penis|||
+Q1219805|A|mucosa|doku|mukoza||mucous membrane|mucosa|tunica mucosa|||Latince TA adı (tunica mucosa); belirsiz eş anlamlılar çıkarıldı.
+Q2043581|A|common-hepatic-duct|organ|ortak hepatik kanal||common hepatic duct||ductus hepaticus communis|||
+Q668063|A|pancreatic-duct|organ|pankreas kanalı||pancreatic duct||ductus pancreaticus|||
+Q673203|A|prepuce|organ|prepüs|sünnet derisi|foreskin|prepuce|praeputium|||
+Q1211892|A|labium-minus|organ|küçük dudak|iç dudak|labium minus|labia minora|labium minus pudendi|||Tekil ad.
+Q664439|A|cystic-duct|organ|sistik kanal|safra kesesi kanalı|cystic duct||ductus cysticus|||
+Q43748|A|eyebrow|bölge|kaş||eyebrow||supercilium|||
+Q691653|A|parotid-gland|organ|parotis bezi|kulak altı bezi|parotid gland||glandula parotidea|||
+Q500634|A|nasal-septum|organ|burun bölmesi||nasal septum||septum nasi|||
+Q43054|A|neuron|sinir|nöron|sinir hücresi|neuron||neuronum|||
+Q9404|A|nervous-system|sinir|sinir sistemi||nervous system||systema nervosum|||
+Q47273|A|central-nervous-system|sinir|merkezi sinir sistemi|merkez sinir sistemi|central nervous system||systema nervosum centrale|MSS;CNS||
+Q160695|R||||||||||TA kodu (spinal sinir gövdesi) etiketle (gövde/torso) uyuşmuyor; belirsiz.
+Q164386|A|hypothalamus|sinir|hipotalamus||hypothalamus||hypothalamus|||
+Q171064|A|autonomic-nervous-system|sinir|otonom sinir sistemi|özerk sinir sistemi|autonomic nervous system||systema nervosum autonomicum|||
+Q193472|R||||||||||Gövde anlamı belirsiz (vücut gövdesi / sinir gövdesi); TA kodu uyuşmuyor.
+Q41500|R||||||||||Kök anlamı belirsiz (sinir kökü / diş kökü).
+Q184215|A|thalamus|sinir|talamus||thalamus||thalamus|||
+Q75855|A|cerebrum|sinir|uç beyin|serebrum;telensefalon|cerebrum|telencephalon|telencephalon|||Türkçe anatomik ad öne alındı.
+Q180454|A|cranial-nerve|sinir|kafa siniri|kraniyal sinir|cranial nerve||nervi craniales|||Tekil ad; İngilizce etiket düzeltildi.
+Q75839|A|cerebral-cortex|sinir|beyin kabuğu|serebral korteks|cerebral cortex||cortex cerebri|||Türkçe anatomik ad öne alındı.
+Q54196|A|cerebrospinal-fluid|sinir|beyin omurilik sıvısı||cerebrospinal fluid||liquor cerebrospinalis|BOS;CSF||
+Q937076|A|spinal-nerve|sinir|omurilik siniri|spinal sinir|spinal nerve||nervus spinalis|||Türkçe anatomik ad öne alındı.
+Q185080|A|midbrain|sinir|orta beyin|mezensefalon|midbrain|mesencephalon|mesencephalon|||
+Q192419|A|diencephalon|sinir|ara beyin|diensefalon|diencephalon||diencephalon|||
+Q177105|A|neuroglia|sinir|nöroglia|glia hücresi|neuroglia||cellula glialis|||
+Q268930|A|meninges|sinir|beyin zarları|meninksler|meninges||meninges|||Çoğul ad.
+Q749520|A|frontal-lobe|sinir|frontal lob|alın lobu|frontal lobe||lobus frontalis|||
+Q507027|A|forebrain|sinir|ön beyin|prosensefalon|forebrain|prosencephalon|prosencephalon|||
+Q464210|A|basal-nuclei|sinir|bazal çekirdekler|bazal gangliyonlar|basal nuclei|basal ganglia|nuclei basales|||TA İngilizcesi.
+Q48360|A|hippocampus|sinir|hipokampus||hippocampus||hippocampus|||
+Q338924|A|amygdala|sinir|amigdala||amygdala||corpus amygdaloideum|||
+Q848340|A|occipital-lobe|sinir|oksipital lob|art kafa lobu|occipital lobe||lobus occipitalis|||
+Q492038|R||||||||||Pilottaki beyin kavramının tekrarı.
+Q189763|A|trigeminal-nerve|sinir|trigeminal sinir||trigeminal nerve||nervus trigeminus|||
+Q242160|A|facial-nerve|sinir|yüz siniri|fasiyal sinir|facial nerve||nervus facialis|||
+Q223903|A|oculomotor-nerve|sinir|okülomotor sinir||oculomotor nerve||nervus oculomotorius|||
+Q319317|A|vestibulocochlear-nerve|sinir|vestibulokohlear sinir|işitme ve denge siniri|vestibulocochlear nerve||nervus vestibulocochlearis|||
+Q319577|A|hypoglossal-nerve|sinir|hipoglossal sinir|dil altı siniri|hypoglossal nerve||nervus hypoglossus|||
+Q334143|A|glossopharyngeal-nerve|sinir|glossofaringeal sinir||glossopharyngeal nerve||nervus glossopharyngeus|||
+Q2635510|A|sensory-nerve|sinir|duyu siniri||sensory nerve||nervus sensorius|||Tekil ad.
+Q271987|A|accessory-nerve|sinir|aksesuar sinir|yardımcı sinir|accessory nerve||nervus accessorius|||
+Q209704|A|olfactory-nerve|sinir|koku siniri|olfaktör sinir|olfactory nerve||nervus olfactorius|||
+Q318773|A|abducens-nerve|sinir|abdusens siniri||abducens nerve||nervus abducens|||
+Q319584|A|trochlear-nerve|sinir|troklear sinir||trochlear nerve||nervus trochlearis|||
+Q1476178|A|nucleus-accumbens|sinir|nükleus akumbens||nucleus accumbens||nucleus accumbens|||
+Q2070480|A|medial-lemniscus|sinir|medial lemniskus||medial lemniscus||lemniscus medialis|||
+Q7873|A|blood|damar|kan||blood||sanguis|||
+Q988343|A|blood-vessel|damar|kan damarı||blood vessel||vas sanguineum|||
+Q103142|A|capillary|damar|kılcal damar|kapiller|capillary||vas capillare|||Latince TA adı (vas capillare).
+Q501908|A|arteriole|damar|arteriyol||arteriole||arteriola|||
+Q179422|A|lymph|lenf|lenf||lymph||lympha|||
+Q745438|A|inferior-vena-cava|damar|alt ana toplardamar|vena kava inferior|inferior vena cava||vena cava inferior|||Türkçe anatomik ad öne alındı.
+Q535352|A|pulmonary-vein|damar|akciğer toplardamarı|pulmoner ven|pulmonary vein||venae pulmonales|||
+Q736995|A|superior-vena-cava|damar|üst ana toplardamar|vena kava superior|superior vena cava||vena cava superior|||Türkçe anatomik ad öne alındı.
+Q464543|A|hepatic-portal-vein|damar|kapı toplardamarı|portal ven|hepatic portal vein||vena portae hepatis|||
+Q2264329|A|abdominal-aorta|damar|karın aortu|abdominal aort|abdominal aorta||aorta abdominalis|||
+Q1322802|A|dural-venous-sinuses|damar|dural venöz sinüsler||dural venous sinuses||sinus durae matris|||
+Q493430|A|subclavian-vein|damar|köprücükaltı toplardamarı|subklaviyan ven|subclavian vein||vena subclavia|||
+Q662857|A|radial-artery|damar|radial arter||radial artery||arteria radialis|||
+Q515848|A|internal-carotid-artery|damar|iç karotis arter|internal karotid arter|internal carotid artery||arteria carotis interna|||
+Q707174|A|femoral-artery|damar|femoral arter||femoral artery||arteria femoralis|||Wikidata Türkçe etiketi yanlış (femoral sinir).
+Q487595|A|cerebral-arterial-circle|damar|Willis halkası|Willis poligonu|cerebral arterial circle|circle of Willis|circulus arteriosus cerebri|||
+Q490059|A|subclavian-artery|damar|köprücükaltı atardamarı|subklaviyan arter|subclavian artery||arteria subclavia|||
+Q1263629|A|thoracic-duct|lenf|göğüs kanalı|torasik kanal|thoracic duct||ductus thoracicus|||
+Q519368|A|coeliac-trunk|damar|çölyak gövde|çölyak arter|coeliac trunk|celiac trunk;celiac artery|truncus coeliacus|||TA İngilizcesi.
+Q214275|A|common-carotid-artery|damar|ortak karotis arter|şah damarı|common carotid artery||arteria carotis communis|||Karışık dilli etiket düzeltildi.
+Q682122|A|axillary-vein|damar|koltuk altı toplardamarı|aksiller ven|axillary vein||vena axillaris|||
+Q515917|A|brachiocephalic-trunk|damar|brakiyosefalik gövde||brachiocephalic trunk|brachiocephalic artery|truncus brachiocephalicus|||Eksik Türkçe etiket tamamlandı.
+Q540598|A|internal-jugular-vein|damar|iç juguler ven|iç şah toplardamarı|internal jugular vein||vena jugularis interna|||
+Q502164|A|axillary-artery|damar|koltuk altı atardamarı|aksiller arter|axillary artery||arteria axillaris|||Yanlış eş anlamlı (kol atardamarı) çıkarıldı.
+Q2341350|A|brachiocephalic-vein|damar|brakiyosefalik ven||brachiocephalic vein||vena brachiocephalica|||
+Q1578686|A|hepatic-vein|damar|karaciğer toplardamarı|hepatik ven|hepatic vein||venae hepaticae|||
+Q599817|A|ulnar-artery|damar|ulnar arter||ulnar artery||arteria ulnaris|||
+Q429285|A|right-coronary-artery|damar|sağ koroner arter||right coronary artery||arteria coronaria dextra|RCA||
+Q707326|A|splenic-artery|damar|dalak atardamarı|splenik arter|splenic artery||arteria splenica|||
+Q2512768|A|external-jugular-vein|damar|dış juguler ven|eksternal juguler ven|external jugular vein||vena jugularis externa|||
+Q265868|A|bone|kemik|kemik|kemik doku|bone||os||Latince os burada kemik anlamındadır (os, ossis); ağız anlamındaki os (oris) ile karıştırmayın.|
+Q502730|A|cartilage|doku|kıkırdak||cartilage||cartilago|||
+Q237632|A|palatine-bone|kemik|damak kemiği||palatine bone||os palatinum|||
+Q156075|A|orbit|kemik|göz çukuru|orbita|orbit||orbita|||
+Q405478|A|lumbar-vertebra|kemik|bel omuru|lomber omur|lumbar vertebra||vertebrae lumbales|||Tekil ad.
+Q728889|A|ilium|kemik|ilium|iliak kemik|ilium||os ilium|||
+Q237229|A|metacarpal-bones|kemik|el tarak kemikleri|metakarpal kemikler|metacarpal bones||ossa metacarpi|||
+Q578786|A|thoracic-vertebra|kemik|göğüs omuru|torasik omur|thoracic vertebra||vertebrae thoracicae|||
+Q469660|R||||||||||Genel kemik çıkıntısı; tüberküloz ile karışabilir.
+Q1059724|A|tarsal-bones|kemik|ayak bileği kemikleri|tarsal kemikler|tarsal bones||ossa tarsi|||
+Q41055|A|forehead|bölge|alın||forehead||frons|||Latince: alın için frons (sinciput daha geniş bir bölgedir).
+Q320524|A|metatarsal-bones|kemik|ayak tarak kemikleri|metatarsal kemikler|metatarsal bones||ossa metatarsi|||
+Q16321|A|sphenoid-bone|kemik|kama kemiği|sfenoid kemik|sphenoid bone||os sphenoidale|||Türkçe ad eklendi.
+Q655357|A|atlas|kemik|atlas|birinci boyun omuru|atlas||atlas|||
+Q16331|A|ethmoid-bone|kemik|kalbur kemiği|etmoid kemik|ethmoid bone||os ethmoidale|||
+Q186102|A|zygomatic-bone|kemik|elmacık kemiği|zigomatik kemik|zygomatic bone||os zygomaticum|||
+Q265617|A|trapezium|kemik|trapez kemiği||trapezium||os trapezium||Trapez kası ile karıştırmayın.|Türkçe ad eklendi.
+Q691942|A|pisiform-bone|kemik|bezelye kemiği|pisiform kemik|pisiform bone||os pisiforme|||Türkçe ad eklendi.
+Q816052|A|auditory-ossicles|duyu|kulak kemikçikleri||auditory ossicles||ossicula auditus|||
+Q9621|A|skeleton|kemik|iskelet||skeleton||systema skeletale|||Wikidata etiketindeki insan/humanum eki kaldırıldı.
+Q16359|A|xiphoid-process|kemik|ksifoid çıkıntı|kılıç çıkıntısı|xiphoid process||processus xiphoideus|||Wikidata çevirisi yanlış (işlemi).
+Q2536335|A|olecranon|kemik|olekranon||olecranon||olecranon|||
+Q193527|A|vomer|kemik|saban kemiği|vomer|vomer||vomer|||
+Q38155|A|nasal-bone|kemik|burun kemiği||nasal bone||os nasale|||Türkçe ad eklendi.
+Q3409626|R||||||||||Pilottaki baş kavramının tekrarı.
+Q23852|A|human-body|bölge|insan vücudu||human body||corpus humanum|||
+Q42165|A|buttock|bölge|kaba et|kıç;gluteal bölge|buttock|buttocks|nates|||Argo eş anlamlılar çıkarıldı.
+Q37017|A|face|bölge|yüz||face||facies|||
+Q16363|R||||||||||Latince karşılık (umerus) TA değil; omus/humerus belirsizliği doğrulanamadı.
+Q1293405|A|lumbar-region|bölge|bel|bel bölgesi;lomber bölge|lumbar region|lower back|regio lumbalis|||
+Q154425|A|toe|bölge|ayak parmağı||toe||digitus pedis|||
+Q185706|A|wrist|bölge|el bileği|bilek|wrist||carpus|||Latince: bölge için carpus (radiocarpea eklemdir).
+Q83360|A|thumb|bölge|başparmak||thumb||pollex|||
+Q184848|A|index-finger|bölge|işaret parmağı||index finger||index|||
+Q841423|A|upper-limb|bölge|üst ekstremite|üst uzuv|upper limb|upper extremity|membrum superius|||Wikidata Türkçe etiketi yanlış (kemikleri).
+Q499|A|axilla|bölge|koltuk altı|aksilla|axilla|armpit|axilla|||
+Q228027|A|little-finger|bölge|serçe parmak||little finger||digitus minimus manus|||
+Q3216080|A|calf|bölge|baldır||calf||sura|||
+Q43801|A|umbilicus|bölge|göbek||navel|umbilicus|umbilicus|||
+Q82714|A|chin|bölge|çene ucu||chin||mentum|||
+Q167131|A|middle-finger|bölge|orta parmak||middle finger||digitus medius|||
+Q169342|A|retina|duyu|retina|ağ tabaka|retina||retina|||
+Q173318|A|pupil|duyu|göz bebeği|gözbebeği|pupil||pupilla|||
+Q271762|A|choroid|duyu|damar tabaka|koroid|choroid||choroidea|||
+Q319636|A|malleus|duyu|çekiç kemiği||malleus||malleus|||
+Q48228|A|eyelid|duyu|göz kapağı||eyelid||palpebra|||
+Q317857|A|cochlea|duyu|salyangoz|koklea|cochlea||cochlea|||Türkçe anatomik ad öne alındı.
+Q862867|A|taste-bud|duyu|tat tomurcuğu||taste bud||caliculus gustatorius|||İngilizce tekil ad.
+Q173801|A|tympanic-membrane|duyu|kulak zarı||tympanic membrane|eardrum|membrana tympanica|||Latince TA adı (membrana tympanica).
+Q747023|A|macula-lutea|duyu|sarı benek|makula|macula of retina|macula lutea|macula lutea|||
+Q499897|A|stapes|duyu|üzengi kemiği||stapes||stapes|||
+Q320561|A|auditory-tube|duyu|östaki borusu|işitme borusu|auditory tube|Eustachian tube|tuba auditiva|||TA İngilizcesi ve Latincesi.
+Q497385|A|incus|duyu|örs kemiği||incus||incus|||
+Q1048080|A|ciliary-body|duyu|kirpiksi cisim|siliyer cisim|ciliary body||corpus ciliare|||
+Q7365|A|muscle|kas|kas||muscle||musculus|||
+Q24517852|R||||||||||Pilottaki kol (üst kol) kavramıyla eş anlamlısı çakışıyor.
+Q232358|A|tendon|kas|kiriş|tendon|tendon||tendo|||Türkçe anatomik ad öne alındı.
+Q206280|A|pulmonary-trunk|damar|akciğer atardamarı|pulmoner arter|pulmonary trunk|pulmonary artery|truncus pulmonalis|||TA İngilizcesi ve Latincesi.
+Q494603|A|pulmonary-circulation|damar|küçük kan dolaşımı|pulmoner dolaşım|pulmonary circulation||circulatio pulmonaris|||
+Q1068553|A|facial-skeleton|kemik|yüz iskeleti||facial skeleton||ossa faciei|||
+Q726543|A|musculoskeletal-system|kas|kas-iskelet sistemi|destek ve hareket sistemi|musculoskeletal system||systema musculoskeletale|||
+Q9644|A|joint|eklem|eklem||joint||junctura|||Tekil ad.
+Q39888|A|ligament|eklem|bağ|ligament|ligament||ligamentum|||Türkçe anatomik ad öne alındı.
+Q1172095|A|patellar-ligament|eklem|diz kapağı bağı||patellar ligament|patellar tendon|ligamentum patellae|||Türkçe ad eklendi.
+Q846928|A|meniscus|eklem|menisküs||meniscus||meniscus|||Yanlış yazımlı eş anlamlı çıkarıldı.
+Q575064|A|synovial-membrane|eklem|sinovyal zar||synovial membrane||membrana synovialis|||Wikidata Türkçe etiketi yanlış (sinovit bir iltihaptır).
+Q1431311|A|synovial-bursa|eklem|sinovyal bursa|bursa|synovial bursa||bursa synovialis|||
+Q1074839|A|atrium|kalp|kulakçık|atriyum|atrium||atrium cordis|||Tekil Latince.
+Q286020|A|sinoatrial-node|kalp|sinoatriyal düğüm|SA düğümü|sinoatrial node|SA node|nodus sinuatrialis|||
+Q84133|A|myocardium|kalp|miyokard|kalp kası|myocardium||myocardium|||
+Q193302|A|pericardium|kalp|perikard|kalp zarı|pericardium||pericardium|||
+Q2002035|A|ventricle-of-heart|kalp|karıncık|ventrikül|ventricle of heart||ventriculus cordis|||
+Q7060553|A|muscular-system|kas|kas sistemi||muscular system||systema musculare|||
+Q936531|A|fascia|kas|fasya||fascia||fascia|||
+Q504536|A|quadriceps-femoris|kas|dört başlı uyluk kası|kuadriseps|quadriceps femoris muscle|quadriceps|musculus quadriceps femoris|||Türkçe anatomik ad öne alındı.
+Q2379958|A|external-anal-sphincter|kas|dış anal sfinkter||external anal sphincter||musculus sphincter ani externus|||
+Q74959|A|supraspinatus|kas|supraspinatus kası|diken üstü kası|supraspinatus muscle||musculus supraspinatus|||Türkçe ad eklendi.
+Q546523|A|bone-marrow|lenf|kemik iliği||bone marrow||medulla ossium|||
+Q712604|A|lymphatic-system|lenf|lenf sistemi|lenfatik sistem|lymphatic system||systema lymphoideum|||
+Q170758|A|lymph-node|lenf|lenf düğümü|lenf nodu|lymph node||nodus lymphaticus|||Tekil ad.
+Q163987|A|thymus|lenf|timüs||thymus||thymus|||Belirsiz eş anlamlı çıkarıldı.
