@@ -41,4 +41,28 @@ dolu sayfada iki parmak kaydırma, ardından kalemle devam etme ve kütüphane/P
 metin ekranındaki **Deftere dön** düğmesini denemeli. Uzun defterlerde kalan
 serileştirme ve görünür çizgi çizim maliyeti bu sürümde kaldırılmadı.
 
-Bu belgenin ilk commit'i yayın hazırlığıdır; canlı sonuç ayrıca eklenecektir.
+## Doğrulanan yayın sonucu — 26 Eylül 2026
+
+- Kaynak commit: `be8637d4a7645e183908808fb589f455ebbc45b5`;
+  GitHub `repair/v57-stability` dalına gönderildi. `master` birleştirilmedi.
+- Canlı `current` hedefi `/opt/bilge-defter-classroom-v58/ui`.
+- Yeni web ve kütüphane etkin; kütüphane sağlık kontrolü **healthy**.
+- `npm test`: **190** uygulama kontrolü geçti. Kütüphane **20** tarayıcı
+  kontrolü ve **44** Python testi geçti; iki WebKit görüntüsü incelendi.
+- Kapalı önizleme ve canlı origin: **237** HTTP dosya hash'i, **234** çevrimdışı
+  varlık, **14** yetkisiz erişim reddi ve **6** kapalı özel yol doğrulandı.
+- Bağımsız yayın sonrası kontrol: **254** makbuz dosyası ve konteyner içindeki
+  **3** değişen kütüphane dosyası aynı hash'lerle doğrulandı.
+- Hesap konteynerinin kimliği ve başlangıç zamanı birebir aynı; diğer
+  konteynerler/paylaşılan servis de değişmedi. Kaynak ve yer imi mount'ları aynı.
+- Web/kütüphane `-rollback-v58` konteynerleri durdurulmuş olarak saklandı;
+  test konteynerleri de durduruldu. Veri geri yüklemesi yapılmadı.
+- Dış `/` ve `/library/` adresleri davetli girişine yönleniyor. İlk Python
+  varsayılan istemci başlığı 403 aldı; tarayıcı başlığıyla Windows ve sunucudan
+  302 doğrulandı. Cloudflare ayarı değiştirilmedi. Gerçek hesapla canlı kabul
+  veya fiziksel iPad testi bu yayın işleminde yapılmadı.
+- Sunucu kanıtı: `/opt/bilge-defter-classroom-v58/live-proof.json`;
+  yerel kopya: `outputs/v58-release/live-proof.json` (Git dışında).
+
+Uygulama v58'e güncellenmeli; açık kütüphane sekmesi yenilenmeli. Gerçek cihazda
+uzun sayfa/kaydırma/kaleme dönüş kabulü hâlâ kullanıcı testini bekliyor.

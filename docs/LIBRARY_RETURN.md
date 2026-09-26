@@ -40,7 +40,7 @@ Test yazımında önce ilk parmağın geçici çizgi iptali hareket sayımından
 ardından gerekli tek kayıt-durumu yenilemesine izin verildi. Bunlar test düzeneği
 düzeltmeleridir, iptal veya kayıt davranışı uygulamadan kaldırılmadı.
 
-## Yayın sınırı
+## İlk hazırlık anındaki yayın sınırı
 
 Henüz commit, push veya canlı yayın yapılmadı. Kullanıcı yayın sorusuna yeni
 kaydırma sorununu bildirdi; bunu ayrıca yayın onayı saymadık. Canlı son yayın v57.
@@ -52,3 +52,9 @@ Kütüphane dosyaları ayrı sunulduğundan ana v58 web paketiyle birlikte kontr
 yayınlanmalıdır; eski v57 deploy aracı sürüm/hash değiştirilmeden kullanılamaz.
 Yayın sonrası gerçek iPad'de uzun dolu sayfa, iki parmak kaydırma → kalem ve
 kütüphanenin üç ekranından dönüş testi hâlâ gereklidir.
+
+## Sonraki onay ve yayın
+
+Kullanıcının `Alalım` onayından sonra 26 Eylül 2026'da v58 web ve kütüphane
+birlikte yayımlandı. Kaynak `be8637d` commit'iyle kaydedildi ve GitHub'a gönderildi.
+Canlı sonuç, geri dönüş ve kalan cihaz kabulü: [RELEASE_V58.md](RELEASE_V58.md).
