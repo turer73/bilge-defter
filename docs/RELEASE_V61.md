@@ -81,8 +81,17 @@ Kütüphane, hesap servisi, veritabanları, nginx izin listesi, Access/DNS deği
 
 ## Yayın
 
-Henüz yapılmadı. Sıra: `build-release-v61.py` → klipper'da `deploy-v61.py prepare`,
-`stage` (yalnız `127.0.0.1:18800`), kullanıcı onayı, `activate`.
+Kullanıcı onayıyla 26 Eylül 2026 21:08 UTC civarında canlıya alındı (kaynak `0601191`,
+paket `SHA256SUMS` 20bcf136…, payload 5e27eada…, nginx 3f3ef2ae… v60 ile aynı).
+
+- `stage`: önizleme `127.0.0.1:18800`'de 238 HTTP hash, 235 çevrim dışı dosya, 14 yetkisiz
+  istek reddi, 6 özel yol kapalı.
+- `activate`: aynı dört sonuç canlı `127.0.0.1:18790`'da; kütüphane `v58/library` kodunda ve
+  sağlıklı; hesaplar ve diğer servisler değişmedi (`live-proof.json`).
+- Bağımsız kontrol: canlı `release.json` = v61; `index.html`, `pdf-workspace.js`,
+  `ui-v2-bridge.js`, `sw.js` baytları Git'teki `0601191` ile aynı; `verify` yeniden geçti;
+  `-preview-v61` kapalı, v60 web konteyneri `-rollback-v61` adıyla durdurulmuş saklanıyor.
+- Fiziksel iPad ve gerçek hesapla kabul yapılmadı.
 
 Geri dönüş (yalnız v61 etkin sürümken):
 
