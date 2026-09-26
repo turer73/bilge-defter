@@ -98,15 +98,17 @@
   const deviceKey=()=> 'bilge-defter-device-id'+(window.BilgeAccount?.identity?.id?'-'+window.BilgeAccount.identity.id:'');
   let syncPass=null,syncEnabled=false,localDirty=true,lastSyncAt=null,conflictHold=0,conflictPayload=null,receipt=null;
   const hashText=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(text))),n=>n.toString(16).padStart(2,'0')).join('');
+  // Same text as JSON.stringify, rebuilt only for changed pages (see serializeNotebook).
+  const notebookJSON=o=>typeof serializeNotebook==='function'?serializeNotebook(o):JSON.stringify(o);
   async function refreshReceipt(){
     receipt=await dbGet('sync-state-v2');
-    localDirty=!receipt||receipt.dirty!==false||receipt.ackHash!==await hashText(JSON.stringify(state))||isDirty();
+    localDirty=!receipt||receipt.dirty!==false||receipt.ackHash!==await hashText(notebookJSON(state))||isDirty();
     lastSyncAt=receipt?.lastSyncAt||null;
   }
   async function acknowledge(expected,revision,tag,at){
     const next={ackHash:await hashText(expected),tag,lastSyncAt:at};
     const dirty=await dbAcknowledgeSync(expected,next);
-    receipt=next;localDirty=dirty||editRevision!==revision||JSON.stringify(state)!==expected;
+    receipt=next;localDirty=dirty||editRevision!==revision||notebookJSON(state)!==expected;
     lastSyncAt=at;renderSyncUi();
   }
   function editorIdle(){return ready&&!saveConflict&&!saveFailed&&!importing&&!drawing&&!pan&&canEdit()&&!mediaPending&&!mediaGesture&&!plannerDirty&&!document.querySelector('dialog[open]')}
@@ -145,9 +147,9 @@
   async function syncPush(remote){
     if(!syncEnabled||!invited()||!editorIdle()||!await flushSave())return;
     requireCas(remote);
-    const expected=JSON.stringify(state),revision=editRevision;
+    const expected=notebookJSON(state),revision=editRevision;
     const snapshot=notebookSnapshot();
-    const payload=await encryptPayload(syncPass,JSON.stringify(snapshot));
+    const payload=await encryptPayload(syncPass,notebookJSON(snapshot));
     const tag=await postRemote(remote,{...payload,updated_at:snapshot.exportedAt,device_id:deviceId()});
     await acknowledge(expected,revision,tag,snapshot.exportedAt);
   }

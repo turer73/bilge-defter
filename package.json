@@ -1,16 +1,16 @@
 {
   "name": "bilge-defter",
   "private": true,
-  "version": "0.60.0",
+  "version": "0.61.0",
   "scripts": {
     "build": "node work/build-invited.cjs",
-    "prepare:baselines": "node work/prepare-v52-baseline.cjs && node work/prepare-clean-baselines.cjs && node work/prepare-v56-baseline.cjs && node work/prepare-v57-baseline.cjs && node work/prepare-v58-baseline.cjs && node work/prepare-v59-baseline.cjs",
-    "test": "npm run build && npm run prepare:baselines && node work/verify-v60.cjs",
-    "test:ink": "node work/verify-v60.cjs verify-v57-ink.cjs",
-    "test:scroll": "node work/verify-v60.cjs verify-v58-scroll.cjs",
-    "test:library": "node work/verify-v60.cjs verify-v59-library.cjs",
-    "test:update": "node work/verify-v60.cjs verify-v59-update.cjs",
-    "test:save": "node work/verify-v60.cjs verify-v60-save.cjs"
+    "prepare:baselines": "node work/prepare-v52-baseline.cjs && node work/prepare-clean-baselines.cjs && node work/prepare-v56-baseline.cjs && node work/prepare-v57-baseline.cjs && node work/prepare-v58-baseline.cjs && node work/prepare-v59-baseline.cjs && node work/prepare-v60-baseline.cjs",
+    "test": "npm run build && npm run prepare:baselines && node work/verify-v61.cjs",
+    "test:ink": "node work/verify-v61.cjs verify-v57-ink.cjs",
+    "test:scroll": "node work/verify-v61.cjs verify-v58-scroll.cjs",
+    "test:library": "node work/verify-v61.cjs verify-v59-library.cjs",
+    "test:update": "node work/verify-v61.cjs verify-v59-update.cjs",
+    "test:save": "node work/verify-v61.cjs verify-v61-save.cjs"
   },
   "devDependencies": { "playwright": "1.62.1" },
   "engines": { "node": ">=22" }
