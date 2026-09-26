@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v59</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v60</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -230,8 +230,28 @@ writingSurface.addEventListener('touchmove',e=>{
 for(const type of ['touchend','touchcancel'])writingSurface.addEventListener(type,e=>{if(pinchT&&e.touches.length<2){pinchT=null;if(pinchDirty){pinchDirty=false;checkpointDrawing();void flushSave()}}},{passive:true});
 function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>{db=r.result;ok()};r.onerror=()=>no(r.error)})}
 function dbGet(key='app'){return new Promise((ok,no)=>{const r=db.transaction(STORE).objectStore(STORE).get(key);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+// The pen thread validates and serializes the snapshot once; save-worker.js parses,
+// reads back, compares and writes the notebook. No worker: the original path below.
+let saveWorker=null,saveSeq=0;const saveWaiters=new Map();
+function saveWorkerFailed(){
+  // The worker held the only baseline; an unknown baseline must never pass the compare.
+  saveWorker=null;storedJSON='\u0000baseline-lost';
+  for(const waiter of saveWaiters.values())waiter.no(Object.assign(new Error('Kayıt işlemcisi durdu. Yedek alıp sayfayı yeniden açın.'),{name:'NotebookConflict'}));saveWaiters.clear();
+}
+function startSaveWorker(json){
+  return new Promise(ok=>{
+    let w;try{w=new Worker('save-worker.js')}catch{ok(false);return}
+    const id=++saveSeq,timer=setTimeout(()=>{if(saveWaiters.delete(id)){w.terminate();ok(false)}},5000);
+    w.onmessage=({data})=>{const waiter=saveWaiters.get(data.id);if(!waiter)return;saveWaiters.delete(data.id);if(data.ok)waiter.ok();else waiter.no(Object.assign(new Error(data.message),{name:data.name}))};
+    w.onerror=w.onmessageerror=e=>{e?.preventDefault?.();if(saveWorker===w)saveWorkerFailed();else if(saveWaiters.delete(id)){clearTimeout(timer);w.terminate();ok(false)}};
+    saveWaiters.set(id,{ok:()=>{clearTimeout(timer);saveWorker=w;ok(true)},no:()=>{clearTimeout(timer);w.terminate();ok(false)}});
+    try{w.postMessage({type:'baseline',id,db:DB,store:STORE,json})}catch{saveWaiters.delete(id);clearTimeout(timer);w.terminate();ok(false)}
+  });
+}
 function dbPut(snapshot,{preservePrevious=false}={}){
   if(!validState(snapshot))return Promise.reject(new Error('Geçersiz kayıt engellendi. Son sağlam kayıt korundu.'));
+  // A worker that never answers must not leave the save pending forever.
+  if(saveWorker)return new Promise((ok,no)=>{const id=++saveSeq,w=saveWorker,timer=setTimeout(()=>{if(saveWaiters.has(id)&&saveWorker===w)saveWorkerFailed()},60000);saveWaiters.set(id,{ok:()=>{clearTimeout(timer);ok()},no:e=>{clearTimeout(timer);no(e)}});try{w.postMessage({type:'put',id,db:DB,store:STORE,json:JSON.stringify(snapshot),preservePrevious})}catch(e){saveWaiters.delete(id);clearTimeout(timer);no(e)}});
   const nextJSON=JSON.stringify(snapshot),payload=JSON.parse(nextJSON),expected=storedJSON;
   return new Promise((ok,no)=>{
     let conflict;const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE),read=store.get('app');
@@ -657,7 +677,7 @@ document.querySelector('#emptyNewPage').onclick=()=>document.querySelector('#new
 function notebookSnapshot(){
   const exportedAt=new Date().toISOString();
   // Format 3 keeps older importers from discarding archived pages.
-  return {version:state.version,pages:state.pages,active:activeId,...notebookFields(state),backupFormat:'bilge-defter',backupVersion:state.version===6?8:state.version===5?7:state.version===4?6:state.version===3?5:state.version===2?4:state.trash?.length?3:state.notebooks?.length?2:1,appVersion:'v59',exportedAt};
+  return {version:state.version,pages:state.pages,active:activeId,...notebookFields(state),backupFormat:'bilge-defter',backupVersion:state.version===6?8:state.version===5?7:state.version===4?6:state.version===3?5:state.version===2?4:state.trash?.length?3:state.notebooks?.length?2:1,appVersion:'v60',exportedAt};
 }
 function exportNotebook(){
   if(!state||!validState(state))return;
@@ -729,8 +749,9 @@ async function init(){
   DB=await window.BilgeAccount.ready;
   await openDB();const saved=await dbGet();if(saved!==undefined&&!validState(saved))throw new Error('Kayıt yapısı okunamadı; mevcut veri korundu');
   storedJSON=saved===undefined?null:JSON.stringify(saved);
+  await startSaveWorker(storedJSON);
   state=saved||blank();const selection=selectionFor(state);activeId=selection.active;activeNotebook=selection.notebook;state.active=activeId;
-  renderPages();resize();if(JSON.stringify(state)!==storedJSON)await dbPut(state);ready=true;await refreshRecovery();saveEl.textContent='Bu cihazda kaydedildi';if(typeof plannerStartReminders==='function')plannerStartReminders();
+  renderPages();resize();if(JSON.stringify(state)!==storedJSON)await dbPut(state);if(saveWorker)storedJSON=null;ready=true;await refreshRecovery();saveEl.textContent='Bu cihazda kaydedildi';if(typeof plannerStartReminders==='function')plannerStartReminders();
   document.querySelector('#storageState').textContent='Tarayıcı depolaması kullanılıyor';
   if(navigator.storage?.persist)navigator.storage.persist().then(yes=>{if(yes)document.querySelector('#storageState').textContent='Kalıcı depolama izni var'}).catch(()=>{});
 }

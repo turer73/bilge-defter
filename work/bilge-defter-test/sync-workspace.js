@@ -96,7 +96,7 @@
   window.renderSyncActions=renderSyncActions;
   // --- Otomatik esitleme: oturum kilidi + 5 sn denetim + cakisma secimi ---
   const deviceKey=()=> 'bilge-defter-device-id'+(window.BilgeAccount?.identity?.id?'-'+window.BilgeAccount.identity.id:'');
-  let syncPass=null,syncEnabled=false,localDirty=true,pushState='',lastSyncAt=null,conflictHold=0,conflictPayload=null,receipt=null;
+  let syncPass=null,syncEnabled=false,localDirty=true,lastSyncAt=null,conflictHold=0,conflictPayload=null,receipt=null;
   const hashText=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(text))),n=>n.toString(16).padStart(2,'0')).join('');
   async function refreshReceipt(){
     receipt=await dbGet('sync-state-v2');
@@ -111,21 +111,10 @@
   }
   function editorIdle(){return ready&&!saveConflict&&!saveFailed&&!importing&&!drawing&&!pan&&canEdit()&&!mediaPending&&!mediaGesture&&!plannerDirty&&!document.querySelector('dialog[open]')}
   function deviceId(){const key=deviceKey();let d=null;try{d=localStorage.getItem(key)}catch{}if(!d){d=(globalThis.crypto?.randomUUID?.()||'dev-'+Date.now()+'-'+Math.random().toString(36).slice(2));try{localStorage.setItem(key,d)}catch{}}return d}
-  function b64UrlToBytes(s){const pad=s.length%4?s+'='.repeat(4-s.length%4):s;const bin=atob(pad.replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(bin,c=>c.charCodeAt(0))}
-  async function subscribePush(){
-    if(typeof Notification==='undefined'||!('serviceWorker' in navigator)||!('PushManager' in window))return 'desteklenmiyor';
-    let perm=Notification.permission;
-    if(perm==='default'){try{perm=await Notification.requestPermission()}catch{return 'izin-yok'}}
-    if(perm!=='granted')return 'izin-yok';
-    try{
-      const reg=await navigator.serviceWorker.ready;
-      const pub=(await (await syncApi('./api/v1/bilge-defter/vapid-key')).json()).public_key;
-      let sub=await reg.pushManager.getSubscription();
-      if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64UrlToBytes(pub)});
-      const json=sub.toJSON?sub.toJSON():sub;
-      await syncApi('./api/v1/bilge-defter/push-subscription',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device_id:deviceId(),subscription:{endpoint:json.endpoint,keys:json.keys}})});
-      return 'acik';
-    }catch{return 'kurulamadi'}
+  // Server push sending is disabled (unrestricted endpoints were contained on 26 Sep).
+  // Never advertise it; drop a subscription left by an earlier version.
+  async function retirePush(){
+    try{const reg=await navigator.serviceWorker?.getRegistration();const sub=await reg?.pushManager?.getSubscription();if(sub)await sub.unsubscribe()}catch{}
   }
   if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{if(event.data&&event.data.type==='SYNC_PULL')void syncTick()});
   window.markSyncDirty=()=>{if(localDirty)return;localDirty=true;renderSyncUi()};
@@ -140,9 +129,8 @@
     const invitedNow=invited();
     document.querySelector('#syncUnlock').hidden=!invitedNow||syncEnabled;
     document.querySelector('#syncAutoNote').hidden=invitedNow;
-    const pushNote=pushState==='acik'?' · bildirimler açık':pushState==='izin-yok'?' · bildirim izni yok':pushState==='desteklenmiyor'?' · bildirim desteklenmiyor':'';
     if(!invitedNow){document.querySelector('#syncAutoStatus').textContent='Otomatik eşitleme yalnız defter.bilgearena.com adresinde.';return}
-    document.querySelector('#syncAutoStatus').textContent=syncEnabled?(lastSyncAt?`Eşitleme açık · son: ${new Date(lastSyncAt).toLocaleString('tr-TR')}${localDirty?' · değişiklikler var':''}${pushNote}`:`Eşitleme açık · henüz eşitlenmedi${pushNote}`):'Eşitleme kapalı; açmak için parolayı girin.';
+    document.querySelector('#syncAutoStatus').textContent=syncEnabled?(lastSyncAt?`Eşitleme açık · son: ${new Date(lastSyncAt).toLocaleString('tr-TR')}${localDirty?' · değişiklikler var':''}`:'Eşitleme açık · henüz eşitlenmedi'):'Eşitleme kapalı; açmak için parolayı girin.';
   }
   document.querySelector('#syncUnlock').onclick=async()=>{
     if(!invited())return;
@@ -151,8 +139,7 @@
       const remote=await readRemote();requireCas(remote);
       if(remote.data)try{await decryptPayload(remote.data,pass)}catch{document.querySelector('#syncAutoStatus').textContent='Parola yanlış; sunucudaki yedek bu parolayla açılamıyor.';return}
       await refreshReceipt();syncPass=pass;syncEnabled=true;renderSyncUi();
-      // Push is an optional hint, not a prerequisite, and must not request permission implicitly.
-      if(typeof Notification!=='undefined'&&Notification.permission==='granted')void subscribePush().then(result=>{pushState=result;renderSyncUi()});
+      void retirePush();
     }catch(error){document.querySelector('#syncAutoStatus').textContent=`Eşitleme açılamadı. ${error.message}`}
   };
   async function syncPush(remote){
