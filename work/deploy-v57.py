@@ -157,9 +157,10 @@ def stage():
     offhost=json.loads((ROOT/'offhost-backups.json').read_text())
     assert offhost==load('backup-receipt.json')
     # The two images share the exact runtime layers; pytest exists only in verify.
+    assert json.loads(run('docker','image','inspect','bilge-defter-accounts:v50'))[0]['Id']==APIIMAGE
     for target in ['production','verify']:
         with (ROOT/f'build-{target}.log').open('w') as log:
-            p=subprocess.run(['docker','build','--network','default','--target',target,'-f',str(ROOT/'api/Dockerfile'),'-t',f'bilge-defter-accounts:v57-{target}',str(ROOT/'api')],stdout=log,stderr=subprocess.STDOUT,timeout=300)
+            p=subprocess.run(['docker','build','--pull=false','--network','default','--target',target,'-f',str(ROOT/'api/Dockerfile'),'-t',f'bilge-defter-accounts:v57-{target}',str(ROOT/'api')],stdout=log,stderr=subprocess.STDOUT,timeout=300)
         assert p.returncode==0,f'Build {target} failed; inspect build log'
     (ROOT/'images.json').write_text(json.dumps({'accounts':json.loads(run('docker','image','inspect','bilge-defter-accounts:v57-production'))[0]['Id']}))
     output=run('docker','run','--rm','--network','none','--read-only','--tmpfs','/tmp:rw,size=128m,mode=1777','--memory','768m','--cpus','1.5','--pids-limit','100','--cap-drop','ALL','--security-opt','no-new-privileges:true','--mount',f'type=bind,src={ROOT}/dictionary,dst=/dictionaries,readonly','bilge-defter-accounts:v57-verify',timeout=180)

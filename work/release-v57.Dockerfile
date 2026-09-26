@@ -1,4 +1,5 @@
-FROM sha256:9c7b3e941788b7068b48173a29687da41429b227fc5a0dddd4cd7be4106dbf93 AS production
+FROM bilge-defter-accounts:v50 AS production
+# deploy-v57.py verifies this local tag is exactly the deployed image ID.
 # Reuse the deployed Python 3.12/dependencies. No dependency or OS upgrade.
 COPY app /srv/app
 
