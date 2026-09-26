@@ -92,6 +92,20 @@ class InvitedHandler(Handler):
         return False
 
     def do_GET(self):
+        if urlsplit(self.path).path == '/healthz':
+            # Only the container's own loopback probe can bypass user auth.
+            # Requests through nginx cannot spoof the TCP peer address.
+            if (getattr(self, 'client_address', ('',))[0] not in ('127.0.0.1', '::1')
+                    or self.headers.get('Host') not in ('127.0.0.1:8080', '[::1]:8080')):
+                return self.reply({'error': 'Not found'}, status=404)
+            try:
+                if not self.books:
+                    raise RuntimeError('Sources not ready')
+                with closing(sqlite3.connect((STATE / 'bookmarks.sqlite3').resolve().as_uri() + '?mode=ro', uri=True, timeout=1)) as db:
+                    db.execute('SELECT 1 FROM bookmarks LIMIT 1').fetchone()
+                return self.reply({'status': 'ok', 'service': 'bilge-defter-library'})
+            except Exception:
+                return self.reply({'status': 'unavailable'}, status=503)
         if not self.authorize():
             return
         path = urlsplit(self.path).path

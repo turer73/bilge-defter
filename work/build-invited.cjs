@@ -27,4 +27,4 @@ fs.writeFileSync(path.join(src,'SHA256SUMS'),walk(src).filter(f=>f!=='SHA256SUMS
 const files=[...manifest.files.map(x=>x.path),'sw.js','release.json','offline-assets.json','THIRD_PARTY.md','auth-continue.html','auth-continue.js'];
 for(const file of files){if(file.includes('..')||path.isAbsolute(file))throw Error('Unsafe path');const out=path.join(dest,file);fs.mkdirSync(path.dirname(out),{recursive:true});fs.copyFileSync(path.join(src,file),out)}
 fs.writeFileSync(path.join(dest,'SHA256SUMS'),[...new Set(files)].sort().map(f=>`${hash(dest,f)}  ${f}`).join('\n')+'\n');
-console.log(JSON.stringify({version,assets:manifest.files.length,manifestHash:hash(dest,'SHA256SUMS'),sameRuntimeForBothAddresses:true}));
+console.log(JSON.stringify({version,assets:manifest.files.length,manifestHash:hash(dest,'SHA256SUMS'),liveDeployment:false}));

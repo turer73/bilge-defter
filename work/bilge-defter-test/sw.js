@@ -1,5 +1,5 @@
 // Each release is installed completely before it can replace the previous one.
-const VERSION='v56',PREFIX='bilge-defter-test-',CACHE=PREFIX+VERSION;
+const VERSION='v57',PREFIX='bilge-defter-test-',CACHE=PREFIX+VERSION;
 const root=new URL('./',self.location.href);
 self.addEventListener('install',event=>event.waitUntil((async()=>{
   try{

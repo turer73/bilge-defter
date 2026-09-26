@@ -7,7 +7,7 @@ from prepare import HERE, ROOT, DATA, CATALOG
 from server import load_books
 
 OUT=ROOT/'outputs/library-pilot-release'
-FILES=['server.py','prepare.py','hosted.py','textview.py','quote.js','catalog.json','accepted-sources.json','app.js','index.html','style.css','test_hosted.py']
+FILES=['server.py','prepare.py','hosted.py','healthcheck.py','backup_state.py','textview.py','quote.js','catalog.json','accepted-sources.json','app.js','index.html','style.css','test_hosted.py']
 if __name__=='__main__':
     load_books()
     OUT.mkdir(exist_ok=True)

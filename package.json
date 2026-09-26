@@ -1,11 +1,12 @@
 {
   "name": "bilge-defter",
   "private": true,
-  "version": "0.56.0",
+  "version": "0.57.0",
   "scripts": {
     "build": "node work/build-invited.cjs",
-    "prepare:baselines": "node work/prepare-clean-baselines.cjs",
-    "test": "node work/verify-source-v56.cjs"
+    "prepare:baselines": "node work/prepare-v52-baseline.cjs && node work/prepare-clean-baselines.cjs && node work/prepare-v56-baseline.cjs",
+    "test": "npm run build && npm run prepare:baselines && node work/verify-v57.cjs",
+    "test:ink": "node work/verify-v57-ink.cjs"
   },
   "devDependencies": { "playwright": "1.62.1" },
   "engines": { "node": ">=22" }
