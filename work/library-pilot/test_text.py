@@ -6,6 +6,11 @@ from textview import render_text
 from test_hosted import Handler,A,B
 
 class TextTests(unittest.TestCase):
+    def test_notebook_return_is_fixed_same_tab_without_script_or_account(self):
+        html=render_text(self.books['msu-neuroscience'],14,A)
+        self.assertIn('href="https://defter.bilgearena.com/" target="_self">← Deftere dön</a>',html)
+        self.assertIn('class="notebook-return-bar"',html)
+        self.assertNotIn('history.back(',html)
     @classmethod
     def setUpClass(cls):cls.books=load_books()
     def test_each_source_exact_text_and_attribution(self):

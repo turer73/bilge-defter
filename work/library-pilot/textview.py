@@ -18,7 +18,7 @@ def render_text(book, number, account):
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{escape(book['title'])} — PDF page {number}</title><link rel="stylesheet" href="../../style.css"><script defer src="../../quote.js?{escape(binding)}"></script></head>
-<body class="text-reading"><header><p class="eyebrow" lang="tr" translate="no">BİLGE DEFTER / METİN OKUMA</p><h1>{escape(book['title'])}</h1>
+<body class="text-reading"><nav class="notebook-return-bar" aria-label="Deftere dönüş" lang="tr" translate="no"><a class="read-action notebook-return" href="https://defter.bilgearena.com/" target="_self">← Deftere dön</a><span>Defteri bu sekmede açar</span></nav><header><p class="eyebrow" lang="tr" translate="no">BİLGE DEFTER / METİN OKUMA</p><h1>{escape(book['title'])}</h1>
 <p class="read-credit" translate="no">{escape(book['authors'])} · {escape(book['publisher'])} · {escape(book['license'])}</p>
 <p lang="tr" translate="no">PDF sayfası {number} / {len(book['page_data'])} · Basılı sayfa etiketi: {escape(str(page.get('label') or number))}</p></header>
 <main><aside class="notice" lang="tr" translate="no"><strong>Türkçe okumak için tarayıcınızın Çevir seçeneğini kullanın.</strong><details><summary>Çeviri, gizlilik ve metin sınırları</summary>

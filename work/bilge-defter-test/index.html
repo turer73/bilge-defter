@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v57</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v58</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -167,6 +167,9 @@ const clearedPages=new Map();
 // Each tool retains its own width during this open session.
 const toolWidths={pen:4,marker:4,eraser:12};
 const touchPoints=new Map(),strokeBounds=new WeakMap();let pan=null,suppressTouch=false,activeInputType=null,pinchT=null,pinchDirty=false;
+let viewportFrame=null;
+function queueViewportRender(){if(viewportFrame!==null)return;viewportFrame=requestAnimationFrame(()=>{viewportFrame=null;drawAll({viewportOnly:true})})}
+function finishViewportRender(){if(viewportFrame!==null)drawAll({viewportOnly:true})}
 const canvas=document.querySelector('#canvas'),ctx=canvas.getContext('2d'),saveEl=document.querySelector('#saveState');
 const backupDialog=document.querySelector('#backupDialog');let pendingBackup=null,backupRead=0;
 const eraserDialog=document.querySelector('#eraserDialog');
@@ -342,7 +345,7 @@ function flushSave(){
 }
 document.querySelector('#retrySave').onclick=()=>{if(!importing)void flushSave()};
 document.querySelector('#reloadSaved').onclick=()=>{if(confirm('Bu sekmedeki kaydedilmemiş değişiklikler kapanacak. Yedeğinizi aldıysanız kayıtlı defter yeniden açılsın mı?')){allowLeave=true;location.reload()}};
-function flushOnLeave(){if(!ready)return;if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear();void flushSave()}
+function flushOnLeave(){if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear();void flushSave()}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushOnLeave()});
 window.addEventListener('pagehide',flushOnLeave);
 window.addEventListener('blur',flushOnLeave);
@@ -406,9 +409,12 @@ function visibleStroke(s,top,bottom){
   let bounds=strokeBounds.get(s);if(!bounds||bounds.count!==s.points.length){let min=Infinity,max=-Infinity;for(const p of s.points){min=Math.min(min,p.y);max=Math.max(max,p.y)}bounds={count:s.points.length,min,max};strokeBounds.set(s,bounds)}
   return bounds.max+s.width/2>=top&&bounds.min-s.width/2<=bottom;
 }
-function drawAll(){
-  if(typeof refreshChrome==='function')refreshChrome();
-  applyPaperColor();drawPdfBackground();pruneMediaImages();
+function drawAll(options){
+  // An explicit redraw supersedes any queued viewport work (page switch, pen,
+  // resize, media load). Never repaint a stale frame over newly started ink.
+  if(viewportFrame!==null){cancelAnimationFrame(viewportFrame);viewportFrame=null}
+  if(!options?.viewportOnly){if(typeof refreshChrome==='function')refreshChrome();applyPaperColor();pruneMediaImages()}
+  drawPdfBackground();
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.restore();
   const scale=paperScale(),offset=viewY(),bottom=offset+canvas.getBoundingClientRect().height/scale;
   ctx.save();ctx.scale(scale,scale);ctx.translate(-viewX(),-offset);page()?.strokes.forEach(original=>{const s=mediaVisualStroke(original);if(visibleStroke(s,offset,bottom))drawStroke(s)});drawPendingMedia();ctx.restore();
@@ -418,7 +424,7 @@ function drawAll(){
 function point(e){const r=canvas.getBoundingClientRect(),scale=paperScale();return{x:(e.clientX-r.left)/scale+viewX(),y:(e.clientY-r.top)/scale+viewY(),p:e.pressure||.5}}
 function scrollPaper(next,nextX=viewX()){
   if(!canEdit()||!page()||!Number.isFinite(next)||!Number.isFinite(nextX))return;next=Math.max(0,next);nextX=Math.max(0,Math.min(maxViewX(),nextX));if(next===viewY()&&nextX===viewX())return;
-  page().viewY=next;if(page().pdf)page().viewX=nextX;checkpointDrawing();drawAll();document.querySelector('#inputState').textContent=page().pdf?'PDF · iki parmakla her yöne kaydırılıyor':`Satır ${Math.floor(next/32)+1} · iki parmakla kaydırılıyor`;
+  page().viewY=next;if(page().pdf)page().viewX=nextX;checkpointDrawing();queueViewportRender();const status=page().pdf?'PDF · iki parmakla her yöne kaydırılıyor':`Satır ${Math.floor(next/32)+1} · iki parmakla kaydırılıyor`;const inputState=document.querySelector('#inputState');if(inputState.textContent!==status)inputState.textContent=status;
 }
 document.querySelector('#scrollToTop').onclick=()=>{if(!drawing&&!pan){scrollPaper(0,0);void flushSave()}};
 canvas.addEventListener('wheel',e=>{if(e.ctrlKey||drawing||pan||!canEdit())return;e.preventDefault();const unit=e.deltaMode===1?32:e.deltaMode===2?canvas.getBoundingClientRect().height:1,horizontal=!!page()?.pdf&&e.shiftKey;scrollPaper(viewY()+(horizontal?0:e.deltaY)*unit/paperScale(),viewX()+(horizontal?e.deltaY:e.deltaX)*unit/paperScale())},{passive:false});
@@ -475,6 +481,7 @@ canvas.addEventListener('pointerdown',e=>{
   }
   if(!allowed(e)){document.querySelector('#inputState').textContent='Dokunma engellendi; kaleminiz yazmıyorsa avuç içi korumasını kapatın';return}
   if(activePointer!==null||(e.pointerType==='mouse'&&e.button!==0))return;
+  finishViewportRender();
   e.preventDefault();try{canvas.setPointerCapture(e.pointerId)}catch{}
   activePointer=e.pointerId;activeInputType=e.pointerType;drawing=true;current={tool,color:document.querySelector('#color').value,width:selectedWidth()/paperScale(),points:[point(e)]};page().strokes.push(current);
   checkpointDrawing();
@@ -498,7 +505,7 @@ canvas.addEventListener('pointermove',e=>{
 });
 function finishStroke(){if(!drawing)return;const id=activePointer,finishedTool=current?.tool;drawing=false;activePointer=null;activeInputType=null;current=null;try{if(canvas.hasPointerCapture(id))canvas.releasePointerCapture(id)}catch{}scheduleInkSave();if(finishedTool!=='pen')drawAll()}
 function end(e){
-  if(touchPoints.has(e.pointerId)){if(pan&&pan.ids.includes(e.pointerId)){pan=null;void flushSave()}touchPoints.delete(e.pointerId);if(!touchPoints.size)suppressTouch=false}
+  if(touchPoints.has(e.pointerId)){if(pan&&pan.ids.includes(e.pointerId)){finishViewportRender();pan=null;if(typeof refreshChrome==='function')refreshChrome();void flushSave()}touchPoints.delete(e.pointerId);if(!touchPoints.size)suppressTouch=false}
   if(!drawing||e.pointerId!==activePointer)return;if(e.type==='pointerup'&&canEdit()){current.points.push(point(e));drawStrokeSegment(current,current.points.length-2,current.points.length-1)}finishStroke();
 }window.addEventListener('pointerup',end,true);window.addEventListener('pointercancel',end,true);canvas.addEventListener('lostpointercapture',end);
 document.querySelector('#penOnly').addEventListener('change',e=>{document.querySelector('#inputState').textContent=e.target.checked?'Avuç içi koruması açık: yalnız pen/mouse kabul edilir':'Uyumluluk modu açık: kalem touch görünse de yazabilir'});
@@ -650,7 +657,7 @@ document.querySelector('#emptyNewPage').onclick=()=>document.querySelector('#new
 function notebookSnapshot(){
   const exportedAt=new Date().toISOString();
   // Format 3 keeps older importers from discarding archived pages.
-  return {version:state.version,pages:state.pages,active:activeId,...notebookFields(state),backupFormat:'bilge-defter',backupVersion:state.version===6?8:state.version===5?7:state.version===4?6:state.version===3?5:state.version===2?4:state.trash?.length?3:state.notebooks?.length?2:1,appVersion:'v57',exportedAt};
+  return {version:state.version,pages:state.pages,active:activeId,...notebookFields(state),backupFormat:'bilge-defter',backupVersion:state.version===6?8:state.version===5?7:state.version===4?6:state.version===3?5:state.version===2?4:state.trash?.length?3:state.notebooks?.length?2:1,appVersion:'v58',exportedAt};
 }
 function exportNotebook(){
   if(!state||!validState(state))return;
