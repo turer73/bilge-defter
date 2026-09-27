@@ -1,0 +1,11 @@
+{
+  "endpoint": "https://query.wikidata.org/sparql",
+  "query_file": "wikidata-muscles-query.rq",
+  "query_sha256": "d715c010171336af7347501a32c1609bec195742849d8bdea68b924831c5420c",
+  "retrieved_at": "2026-09-27T08:04:55Z",
+  "file": "wikidata-muscles-2026-09-27.json",
+  "sha256": "189a0babc045939f198aa9bbfc675d5cfd97fb870db40f1be84a5e271af4e0be",
+  "items": 618,
+  "license": "Wikidata structured data: CC0 1.0",
+  "note": "Items with a TA98 (P1323) identifier in chapter A04 (muscles) and an English label; Turkish and Latin optional. See review-v62-muscles.txt."
+}

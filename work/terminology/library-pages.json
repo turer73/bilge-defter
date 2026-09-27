@@ -1,6 +1,6 @@
 {
  "method": "Pages the library search matches for a term: every token (first 8, library aliases applied) found as a word prefix. Per concept the English label or alias with most pages (label wins ties). Counts, not text.",
- "terms_sha256": "18f70db977e11c82919b946dedc6c2cfda8ba5d344b4830b77661438369663e3",
+ "terms_sha256": "64ea84b6dc723906226f073eaa9fb6aa94b55187b6a539a12b2e5a27238b7f46",
  "books": {
   "iowa-physiology-research": {
    "pages_sha256": "a9b4554a2a1585b2e2da571091a372d7fa13f61f66fec8294313181a2a366ae1",
@@ -3067,6 +3067,526 @@
     "msu-neuroscience": 0,
     "rotel-anatomy-lab": 8,
     "wistech-anatomy": 9
+   }
+  },
+  "anatomy.temporalis": {
+   "term": "temporal muscle",
+   "books": {
+    "iowa-physiology-research": 3,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 12,
+    "wistech-anatomy": 10
+   }
+  },
+  "anatomy.orbicularis-oculi": {
+   "term": "orbicularis oculi muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.orbicularis-oris": {
+   "term": "orbicularis oris muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.buccinator": {
+   "term": "buccinator muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.platysma": {
+   "term": "platysma muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 0,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.occipitofrontalis": {
+   "term": "occipitofrontalis muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.digastric": {
+   "term": "digastric muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.scalenus-anterior": {
+   "term": "anterior scalene muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.pectoralis-minor": {
+   "term": "pectoralis minor muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.serratus-anterior": {
+   "term": "serratus anterior muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.external-intercostal-muscles": {
+   "term": "external intercostal muscles",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 7,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.internal-intercostal-muscles": {
+   "term": "internal intercostal muscles",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 4,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.external-oblique": {
+   "term": "external oblique",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.internal-oblique": {
+   "term": "internal oblique",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.transversus-abdominis": {
+   "term": "transversus abdominis muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.erector-spinae": {
+   "term": "erector spinae muscles",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 5,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.rhomboid-major": {
+   "term": "rhomboid major muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.levator-scapulae": {
+   "term": "levator scapulae muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.levator-ani": {
+   "term": "levator ani",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.quadratus-lumborum": {
+   "term": "quadratus lumborum muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 1,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.psoas-major": {
+   "term": "psoas major muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.iliacus": {
+   "term": "iliacus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.iliopsoas": {
+   "term": "iliopsoas",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.infraspinatus": {
+   "term": "infraspinatus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.teres-major": {
+   "term": "teres major muscle",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.teres-minor": {
+   "term": "teres minor muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.subscapularis": {
+   "term": "subscapularis muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.coracobrachialis": {
+   "term": "coracobrachialis muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.brachialis": {
+   "term": "brachialis muscle",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.brachioradialis": {
+   "term": "brachioradialis",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 4
+   }
+  },
+  "anatomy.pronator-teres": {
+   "term": "pronator teres muscle",
+   "books": {
+    "iowa-physiology-research": 6,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.flexor-carpi-radialis": {
+   "term": "flexor carpi radialis muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.flexor-carpi-ulnaris": {
+   "term": "flexor carpi ulnaris muscle",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.extensor-digitorum": {
+   "term": "extensor digitorum",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 9,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.gluteus-medius": {
+   "term": "gluteus medius muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.gluteus-minimus": {
+   "term": "gluteus minimus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 5
+   }
+  },
+  "anatomy.tensor-fasciae-latae": {
+   "term": "tensor fasciae latae muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 0,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.piriformis": {
+   "term": "piriformis muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.rectus-femoris": {
+   "term": "rectus femoris muscle",
+   "books": {
+    "iowa-physiology-research": 1,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 7
+   }
+  },
+  "anatomy.vastus-lateralis": {
+   "term": "vastus lateralis muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.vastus-medialis": {
+   "term": "vastus medialis",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.vastus-intermedius": {
+   "term": "vastus intermedius muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.adductor-longus": {
+   "term": "adductor longus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 2
+   }
+  },
+  "anatomy.adductor-magnus": {
+   "term": "adductor magnus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 1
+   }
+  },
+  "anatomy.gracilis": {
+   "term": "gracilis muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.biceps-femoris": {
+   "term": "biceps femoris muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 6
+   }
+  },
+  "anatomy.semitendinosus": {
+   "term": "semitendinosus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.semimembranosus": {
+   "term": "semimembranosus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 3,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.fibularis-longus": {
+   "term": "fibularis longus",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 4,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.tibialis-posterior": {
+   "term": "tibialis posterior muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 3
+   }
+  },
+  "anatomy.popliteus": {
+   "term": "popliteus muscle",
+   "books": {
+    "iowa-physiology-research": 0,
+    "lmu-human-physiology": 0,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 2,
+    "wistech-anatomy": 0
+   }
+  },
+  "anatomy.triceps-surae": {
+   "term": "calf muscle",
+   "books": {
+    "iowa-physiology-research": 4,
+    "lmu-human-physiology": 2,
+    "msu-neuroscience": 0,
+    "rotel-anatomy-lab": 1,
+    "wistech-anatomy": 2
    }
   }
  }

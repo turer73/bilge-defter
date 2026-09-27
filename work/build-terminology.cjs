@@ -16,12 +16,17 @@ const HOMONYMS=new Set(['la:os','la:femur']);
 // The search engine's exact key: identical words clash, accent-folded neighbours (kaş/kas) do not.
 const exactKey=(s,lang)=>s.normalize('NFC').toLocaleLowerCase(lang==='tr'?'tr-TR':'en-US').trim().replace(/\s+/g,' ');
 
-const receipt=json('wikidata-receipt.json'),snapshot=fs.readFileSync(path.join(dir,receipt.file));
-assert.equal(sha(snapshot),receipt.sha256,'Wikidata snapshot hash');
-assert.equal(sha(fs.readFileSync(path.join(dir,receipt.query_file),'utf8').trim()),receipt.query_sha256,'query hash');
 const v=(b,k)=>b[k]?.value||'';
-const items=new Map(JSON.parse(snapshot).results.bindings.map(b=>{const id=v(b,'item').split('/').pop();return [id,{id,tr:v(b,'TR'),en:v(b,'EN'),la:v(b,'LA'),ta98:v(b,'TA98'),ta2:v(b,'TA2')}]}));
-assert.equal(items.size,receipt.items);
+function snapshot(receiptName){
+  const receipt=json(receiptName),bytes=fs.readFileSync(path.join(dir,receipt.file));
+  assert.equal(sha(bytes),receipt.sha256,'Wikidata snapshot hash '+receipt.file);
+  assert.equal(sha(fs.readFileSync(path.join(dir,receipt.query_file),'utf8').trim()),receipt.query_sha256,'query hash '+receipt.query_file);
+  const items=new Map(JSON.parse(bytes).results.bindings.map(b=>{const id=v(b,'item').split('/').pop();return [id,{id,tr:v(b,'TR'),en:v(b,'EN'),la:v(b,'LA'),ta98:v(b,'TA98'),ta2:v(b,'TA2')}]}));
+  assert.equal(items.size,receipt.items);
+  return {receipt,items};
+}
+// Turkish-labelled anatomy items (frequency-selected candidates) and chapter A04 muscles (editor-selected).
+const {receipt,items}=snapshot('wikidata-receipt.json'),muscles=snapshot('wikidata-muscles-receipt.json');
 delete require.cache[require.resolve(target)];
 const pilot=require(target).concepts.filter(c=>!c.labelSource);
 assert.equal(pilot.length,100,'hand-written pilot');
@@ -39,13 +44,13 @@ function candidates(){
   }).map(r=>r.id);
 }
 
-function review(){
+function review(file,source){
   const rows=[];
-  for(const line of fs.readFileSync(path.join(dir,'review-v62.txt'),'utf8').split('\n')){
+  for(const line of fs.readFileSync(path.join(dir,file),'utf8').split('\n')){
     if(!line.trim()||line.startsWith('#'))continue;
     const f=line.split('|');assert.equal(f.length,12,line);
     const [qid,decision,slug,category,tr,trAliases,en,enAliases,la,abbr,note,reason]=f.map(s=>s.trim());
-    assert.ok(items.has(qid),qid);assert.ok(['A','R'].includes(decision),qid);
+    assert.ok(source.has(qid),qid);assert.ok(['A','R'].includes(decision),qid);
     if(decision==='R'){assert.ok(reason,qid+' reject reason');rows.push({qid,decision,reason});continue}
     assert.match(slug,/^[a-z0-9]+(-[a-z0-9]+)*$/,qid);assert.ok(CATEGORIES.has(category),qid+' '+category);
     for(const x of [tr,en,la])assert.ok(x,qid);
@@ -55,12 +60,14 @@ function review(){
   return rows;
 }
 
-function concepts(rows){
+// edited: Wikidata had this label and the editor changed it; added: Wikidata had none.
+function concepts(rows,source){
   const same=(a,b,lang)=>a.toLocaleLowerCase(lang).trim()===b.toLocaleLowerCase(lang).trim();
   return rows.filter(r=>r.decision==='A').map(r=>{
-    const w=items.get(r.qid),edited=['tr','en','la'].filter(l=>!same(r.labels[l],w[l],l==='tr'?'tr-TR':'en-US'));
+    const w=source.get(r.qid),lang=l=>l==='tr'?'tr-TR':'en-US';
+    const edited=['tr','en','la'].filter(l=>w[l]&&!same(r.labels[l],w[l],lang(l))),added=['tr','en','la'].filter(l=>!w[l]);
     return {id:r.id,category:r.category,labels:r.labels,aliases:r.aliases,abbreviations:r.abbreviations,note:r.note,reviewStatus:'draft',referenceCandidates:['fipat-ta2'],verifiedSources:[],
-      labelSource:{id:'wikidata',item:r.qid,...(w.ta98?{ta98:w.ta98}:{}),...(w.ta2?{ta2:w.ta2}:{}),edited}};
+      labelSource:{id:'wikidata',item:r.qid,...(w.ta98?{ta98:w.ta98}:{}),...(w.ta2?{ta2:w.ta2}:{}),edited,added}};
   });
 }
 
@@ -75,10 +82,15 @@ function checkLabels(all){
 
 const mode=process.argv[2];
 if(mode==='candidates'){console.log(JSON.stringify(candidates()));process.exit(0)}
-const rows=review(),reviewed=rows.map(r=>r.qid);
+const rows=review('review-v62.txt',items),reviewed=rows.map(r=>r.qid);
 assert.equal(new Set(reviewed).size,reviewed.length,'each candidate reviewed once');
 assert.deepEqual([...reviewed].sort(),candidates().sort(),'review covers exactly the recomputed candidates');
-const added=concepts(rows),all=[...pilot,...added];
+// Muscles: editor-selected A04 items that Wikidata names in English and Latin; the
+// Turkish-labelled candidate review does not overlap them.
+const muscleRows=review('review-v62-muscles.txt',muscles.items);
+assert.equal(new Set(muscleRows.map(r=>r.qid)).size,muscleRows.length,'each muscle reviewed once');
+for(const r of muscleRows){const w=muscles.items.get(r.qid);assert.ok(w.ta98.startsWith('A04')&&w.en&&w.la,r.qid);assert.ok(!reviewed.includes(r.qid),r.qid);if(r.decision==='A')assert.equal(r.category,'kas',r.qid)}
+const added=[...concepts(rows,items),...concepts(muscleRows,muscles.items)],all=[...pilot,...added];
 const clashes=checkLabels(all);
 if(clashes.length){console.error(clashes.join('\n'));throw Error(clashes.length+' label clashes across concepts')}
 if(mode==='terms'){
@@ -93,10 +105,11 @@ const books=Object.keys(library.books).sort();
 assert.deepEqual(books,catalog.sources.map(s=>s.id).sort(),'page index covers the library catalogue');
 const libraryBooks=Object.fromEntries(books.map(id=>[id,catalog.sources.find(s=>s.id===id).title]));
 const pages=Object.fromEntries(all.map(c=>{const p=library.pages[c.id];return [c.id,{term:p.term,books:Object.fromEntries(Object.entries(p.books).filter(([,n])=>n>0))}]}));
-const sources=[{id:'wikidata',title:'Wikidata',url:'https://www.wikidata.org/',role:'label-source',rights:'CC0 1.0 (yapılandırılmış veri)',retrieved:receipt.retrieved_at.slice(0,10)}];
+const sources=[{id:'wikidata',title:'Wikidata',url:'https://www.wikidata.org/',role:'label-source',rights:'CC0 1.0 (yapılandırılmış veri)',retrieved:[receipt,muscles.receipt].map(r=>r.retrieved_at.slice(0,10)).join(', ')}];
 const block=BEGIN+
-  '  // Labels from a pinned Wikidata snapshot, chosen and corrected in work/terminology/review-v62.txt.\n'+
-  '  // labelSource.edited lists the labels that differ from Wikidata. None of this is expert review.\n'+
+  '  // Labels from pinned Wikidata snapshots, chosen and corrected in work/terminology/review-v62*.txt.\n'+
+  '  // labelSource.edited: labels the editor changed; labelSource.added: labels Wikidata lacked and the\n'+
+  '  // editor wrote. None of this is expert review.\n'+
   '  const wikidataConcepts = [\n'+added.map(c=>'    '+JSON.stringify(c)).join(',\n')+'\n  ];\n'+
   '  // Per concept: the English label or alias the library search matches on most pages, and those pages per book.\n'+
   '  const libraryPages = '+JSON.stringify(pages)+';\n'+
@@ -107,4 +120,6 @@ assert.ok(a>0&&b>a,'generated block markers');
 const next=text.slice(0,a)+block+text.slice(b+END.length);
 if(mode==='check'){assert.equal(next,text,'terminology-data.js block is not the build output of work/terminology/');console.log('generated block matches pinned inputs');process.exit(0)}
 fs.writeFileSync(target,next);
-console.log(JSON.stringify({pilot:pilot.length,added:added.length,rejected:rows.length-added.length,total:all.length,edited:added.filter(c=>c.labelSource.edited.length).length}));
+const accepted=r=>r.filter(x=>x.decision==='A').length;
+console.log(JSON.stringify({pilot:pilot.length,added:added.length,fromTurkishLabels:accepted(rows),muscles:accepted(muscleRows),rejected:rows.length+muscleRows.length-added.length,total:all.length,
+  edited:added.filter(c=>c.labelSource.edited.length).length,turkishWrittenByEditor:added.filter(c=>c.labelSource.added.includes('tr')).length}));

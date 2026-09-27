@@ -1858,5 +1858,326 @@
   "terms": [
    "thymus"
   ]
+ },
+ {
+  "id": "anatomy.temporalis",
+  "terms": [
+   "temporal muscle",
+   "temporalis"
+  ]
+ },
+ {
+  "id": "anatomy.orbicularis-oculi",
+  "terms": [
+   "orbicularis oculi muscle"
+  ]
+ },
+ {
+  "id": "anatomy.orbicularis-oris",
+  "terms": [
+   "orbicularis oris muscle"
+  ]
+ },
+ {
+  "id": "anatomy.buccinator",
+  "terms": [
+   "buccinator muscle"
+  ]
+ },
+ {
+  "id": "anatomy.platysma",
+  "terms": [
+   "platysma muscle",
+   "platysma"
+  ]
+ },
+ {
+  "id": "anatomy.occipitofrontalis",
+  "terms": [
+   "occipitofrontalis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.digastric",
+  "terms": [
+   "digastric muscle"
+  ]
+ },
+ {
+  "id": "anatomy.scalenus-anterior",
+  "terms": [
+   "scalenus anterior",
+   "anterior scalene muscle"
+  ]
+ },
+ {
+  "id": "anatomy.pectoralis-minor",
+  "terms": [
+   "pectoralis minor muscle"
+  ]
+ },
+ {
+  "id": "anatomy.serratus-anterior",
+  "terms": [
+   "serratus anterior muscle"
+  ]
+ },
+ {
+  "id": "anatomy.external-intercostal-muscles",
+  "terms": [
+   "external intercostal muscles"
+  ]
+ },
+ {
+  "id": "anatomy.internal-intercostal-muscles",
+  "terms": [
+   "internal intercostal muscles"
+  ]
+ },
+ {
+  "id": "anatomy.external-oblique",
+  "terms": [
+   "abdominal external oblique muscle",
+   "external oblique"
+  ]
+ },
+ {
+  "id": "anatomy.internal-oblique",
+  "terms": [
+   "abdominal internal oblique muscle",
+   "internal oblique"
+  ]
+ },
+ {
+  "id": "anatomy.transversus-abdominis",
+  "terms": [
+   "transversus abdominis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.erector-spinae",
+  "terms": [
+   "erector spinae muscles",
+   "erector spinae"
+  ]
+ },
+ {
+  "id": "anatomy.rhomboid-major",
+  "terms": [
+   "rhomboid major muscle"
+  ]
+ },
+ {
+  "id": "anatomy.levator-scapulae",
+  "terms": [
+   "levator scapulae muscle"
+  ]
+ },
+ {
+  "id": "anatomy.levator-ani",
+  "terms": [
+   "levator ani"
+  ]
+ },
+ {
+  "id": "anatomy.quadratus-lumborum",
+  "terms": [
+   "quadratus lumborum muscle"
+  ]
+ },
+ {
+  "id": "anatomy.psoas-major",
+  "terms": [
+   "psoas major muscle"
+  ]
+ },
+ {
+  "id": "anatomy.iliacus",
+  "terms": [
+   "iliacus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.iliopsoas",
+  "terms": [
+   "iliopsoas"
+  ]
+ },
+ {
+  "id": "anatomy.infraspinatus",
+  "terms": [
+   "infraspinatus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.teres-major",
+  "terms": [
+   "teres major muscle"
+  ]
+ },
+ {
+  "id": "anatomy.teres-minor",
+  "terms": [
+   "teres minor muscle"
+  ]
+ },
+ {
+  "id": "anatomy.subscapularis",
+  "terms": [
+   "subscapularis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.coracobrachialis",
+  "terms": [
+   "coracobrachialis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.brachialis",
+  "terms": [
+   "brachialis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.brachioradialis",
+  "terms": [
+   "brachioradialis"
+  ]
+ },
+ {
+  "id": "anatomy.pronator-teres",
+  "terms": [
+   "pronator teres muscle"
+  ]
+ },
+ {
+  "id": "anatomy.flexor-carpi-radialis",
+  "terms": [
+   "flexor carpi radialis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.flexor-carpi-ulnaris",
+  "terms": [
+   "flexor carpi ulnaris muscle"
+  ]
+ },
+ {
+  "id": "anatomy.extensor-digitorum",
+  "terms": [
+   "extensor digitorum muscle of hand",
+   "extensor digitorum"
+  ]
+ },
+ {
+  "id": "anatomy.gluteus-medius",
+  "terms": [
+   "gluteus medius muscle"
+  ]
+ },
+ {
+  "id": "anatomy.gluteus-minimus",
+  "terms": [
+   "gluteus minimus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.tensor-fasciae-latae",
+  "terms": [
+   "tensor fasciae latae muscle"
+  ]
+ },
+ {
+  "id": "anatomy.piriformis",
+  "terms": [
+   "piriformis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.rectus-femoris",
+  "terms": [
+   "rectus femoris muscle"
+  ]
+ },
+ {
+  "id": "anatomy.vastus-lateralis",
+  "terms": [
+   "vastus lateralis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.vastus-medialis",
+  "terms": [
+   "vastus medialis"
+  ]
+ },
+ {
+  "id": "anatomy.vastus-intermedius",
+  "terms": [
+   "vastus intermedius muscle"
+  ]
+ },
+ {
+  "id": "anatomy.adductor-longus",
+  "terms": [
+   "adductor longus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.adductor-magnus",
+  "terms": [
+   "adductor magnus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.gracilis",
+  "terms": [
+   "gracilis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.biceps-femoris",
+  "terms": [
+   "biceps femoris muscle"
+  ]
+ },
+ {
+  "id": "anatomy.semitendinosus",
+  "terms": [
+   "semitendinosus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.semimembranosus",
+  "terms": [
+   "semimembranosus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.fibularis-longus",
+  "terms": [
+   "fibularis longus",
+   "peroneus longus"
+  ]
+ },
+ {
+  "id": "anatomy.tibialis-posterior",
+  "terms": [
+   "tibialis posterior muscle"
+  ]
+ },
+ {
+  "id": "anatomy.popliteus",
+  "terms": [
+   "popliteus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.triceps-surae",
+  "terms": [
+   "triceps surae",
+   "calf muscle"
+  ]
  }
 ]

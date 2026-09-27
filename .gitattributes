@@ -3,4 +3,6 @@
 work/bilge-defter-test/** -text
 fixtures/** -text
 work/library-pilot/** -text
+# Pinned terminology inputs are hash-checked by work/build-terminology.cjs.
+work/terminology/** -text
 *.sh text eol=lf
