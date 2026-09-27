@@ -31,6 +31,7 @@ async function run(browser,name,width){
  pass(`${name} ${width}: corrected Turkish labels and Turkish labels Wikidata lacked are named differently`);
  c=await card('yemek borusu','oesophagus');
  assert.equal(await c.locator('a.dict-reference',{hasText:'Wikidata'}).count(),0);assert.equal(await c.locator('a.dict-reference',{hasText:'Kaynak adayı'}).count(),1);
+ assert.equal(await c.locator('a.dict-reference',{hasText:'Kaynak adayı'}).getAttribute('href'),'https://cdn.dal.ca/content/dam/dalhousie/pdf/library/FIPAT/TA2/FIPAT-TA2-Front-Matter.pdf');
  assert.match(await c.locator('.dict-library').textContent(),/^Kütüphane araması “esophagus”: /);
  assert.equal(await page.evaluate(()=>libraryOpens.length),0);
  await c.locator('button').click();await page.locator('#dictLibrary').click();

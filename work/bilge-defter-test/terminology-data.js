@@ -105,7 +105,8 @@
     ['acl','ön çapraz bağ','anterior cruciate ligament','ligamentum cruciatum anterius','bağ','ÖÇB','','ACL'],
     ['pcl','arka çapraz bağ','posterior cruciate ligament','ligamentum cruciatum posterius','bağ','AÇB','','PCL']
   ];
-  const sources = [{id:'fipat-ta2',title:'FIPAT Terminologia Anatomica, 2. baskı (2019; 2020 kabulü)',url:'https://fipat.library.dal.ca/wp-content/uploads/2021/08/FIPAT-TA2-Front-Matter.pdf',role:'reference-candidate',rights:'Tekil terimler: kamu malı; yayın: CC BY-ND 4.0. Bu pilot yayının çevirisi değildir.'}];
+  // fipat.library.dal.ca stopped resolving (NXDOMAIN, 27 Sep 2026); Dalhousie's CDN serves the same TA2 front matter.
+  const sources = [{id:'fipat-ta2',title:'FIPAT Terminologia Anatomica, 2. baskı (2019; 2020 kabulü)',url:'https://cdn.dal.ca/content/dam/dalhousie/pdf/library/FIPAT/TA2/FIPAT-TA2-Front-Matter.pdf',role:'reference-candidate',rights:'Tekil terimler: kamu malı; yayın: CC BY-ND 4.0. Bu pilot yayının çevirisi değildir.'}];
   const notes = {
     arm:'Anatomik kol bölgesi omuz ile dirsek arasındadır; günlük kullanım daha geniş olabilir.',
     leg:'Anatomik bacak bölgesi diz ile ayak bileği arasındadır; günlük kullanım daha geniş olabilir.',

@@ -9,6 +9,7 @@ test('356 unique draft concepts: 100 independent pilot + 204 reviewed Turkish-la
   assert.equal(data.concepts.filter(c=>c.category==='kas').length,75);
   for(const c of data.concepts){assert.equal(c.reviewStatus,'draft');assert.deepEqual(c.verifiedSources,[]);for(const lang of ['tr','en','la'])assert.ok(c.labels[lang]?.trim());for(const ref of c.referenceCandidates)assert.ok(data.sources.some(s=>s.id===ref));}
 });
+test('The FIPAT reference candidate points to the live TA2 front matter, not the retired fipat.library.dal.ca',()=>{const f=data.sources.find(s=>s.id==='fipat-ta2');assert.equal(f.url,'https://cdn.dal.ca/content/dam/dalhousie/pdf/library/FIPAT/TA2/FIPAT-TA2-Front-Matter.pdf');assert.ok(!JSON.stringify(data).includes('fipat.library.dal.ca'))});
 test('Every Wikidata concept names its item and TA id and separates label edits from additions',()=>{
   assert.ok(data.sources.some(s=>s.id==='wikidata'&&/CC0/.test(s.rights)));
   for(const c of wikidata){const s=c.labelSource;assert.equal(s.id,'wikidata');assert.match(s.item,/^Q[0-9]+$/);assert.ok(s.ta98||s.ta2,c.id);for(const k of ['edited','added'])assert.ok(s[k].every(l=>['tr','en','la'].includes(l)),c.id);assert.ok(!s.edited.some(l=>s.added.includes(l)),c.id);assert.ok(!s.added.includes('en')&&!s.added.includes('la'),c.id)}
