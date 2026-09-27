@@ -116,6 +116,36 @@ def test_accounts_cannot_read_each_other(env):
     assert c.get(BASE+"/backup",headers=b).status_code==404
     assert c.get(BASE+"/backup",headers={**b,"X-Bilge-Account":a["X-Bilge-Account"]}).status_code==409
 
+
+def test_conditional_read_preserves_authorization_and_cas(env):
+    a,b=approved(env),approved(env,SECOND);c=env[0]
+    created=c.post(BASE+"/backup",headers={**a,"If-None-Match":"*"},json=payload())
+    tag=created.headers["ETag"]
+    for condition in [tag, "W/"+tag, '"older", '+tag, "*"]:
+        r=c.get(BASE+"/backup",headers={**a,"If-None-Match":condition})
+        assert r.status_code==304 and r.content==b""
+        assert r.headers["ETag"]==tag and r.headers["Cache-Control"]=="no-store"
+        assert r.headers["X-Bilge-Sync-Protocol"]=="cas-v1"
+    assert c.get(BASE+"/backup",headers={"If-None-Match":tag}).status_code==401
+    assert c.get(BASE+"/backup",headers={**b,"If-None-Match":tag}).status_code==404
+    assert c.get(BASE+"/backup",headers={**a,"If-None-Match":'"different"'}).status_code==200
+    updated=c.post(BASE+"/backup",headers={**a,"If-Match":tag},json=payload(b"new"))
+    r=c.get(BASE+"/backup",headers={**a,"If-None-Match":tag})
+    assert r.status_code==200 and r.headers["ETag"]==updated.headers["ETag"]
+    assert c.post(BASE+"/backup",headers={**a,"If-Match":tag},json=payload()).status_code==412
+
+
+def test_conditional_legacy_and_no_ciphertext_read(env):
+    h=approved(env);db=bd.get_conn(bd._db_path());bd._ensure_backup_table(db)
+    p=payload();db.execute("INSERT INTO bilge_defter_backups VALUES(?,?,?,?,?,?,?)",(STUDENT,p["ciphertext"],p["iv"],p["salt"],p["kdf"],p["updated_at"],"legacy"));db.commit();db.close()
+    r=env[0].get(BASE+"/backup",headers=h);tag=r.headers["ETag"]
+    assert env[0].get(BASE+"/backup",headers={**h,"If-None-Match":tag}).status_code==304
+    written=env[0].post(BASE+"/backup",headers={**h,"If-Match":tag},json=payload())
+    db=bd.get_conn(bd._db_path());queries=[];db.set_trace_callback(queries.append)
+    data, headers_out=bd.backup_store.read(db,STUDENT,written.headers["ETag"]);db.close()
+    assert data is None
+    assert not any("SELECT ciphertext" in q for q in queries)
+
 def test_concurrent_create_and_update_only_one_wins(env):
     h=approved(env);c=env[0]
     def post(i,condition): return c.post(BASE+"/backup",headers={**h,**condition},json=payload(str(i).encode()))

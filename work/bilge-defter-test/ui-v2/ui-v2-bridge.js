@@ -261,6 +261,7 @@
       'trash.open': () => {
         document.querySelector('#openTrash')?.click();
       },
+      'backup.status': () => window.openReliability?.(),
       'backup.export': () => {
         document.querySelector('#exportBtn')?.click();
       },

@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v64</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v65</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -140,7 +140,7 @@
   </form>
 </dialog>
 <dialog id="notebookDialog" aria-labelledby="notebookTitle"><div class="tools-heading"><h2 id="notebookTitle">Yeni defter</h2><button class="btn" id="notebookClose" aria-label="Defter işlemlerini kapat">× Kapat</button></div><div class="tools-content"><form id="notebookForm"><label for="notebookName">Defter / ders adı</label><input id="notebookName" type="text" maxlength="80" required autocomplete="off" placeholder="Örn. Anatomi"><button class="btn primary" type="submit">Defteri kaydet</button></form><button class="btn danger" id="deleteNotebook" hidden>Boş defteri sil</button><p class="recovery-note">Genel defteri kalıcıdır. Diğer defterler yalnız boşken silinebilir; sayfalar otomatik silinmez.</p></div></dialog>
-<dialog id="eraserDialog" aria-labelledby="eraserTitle"><div class="tools-heading"><h2 id="eraserTitle">Silgi boyutu</h2><button class="btn" id="eraserClose" aria-label="Silgi boyutunu kapat">× Kapat</button></div><div class="tools-content"><div class="eraser-presets" role="group" aria-label="Hızlı silgi boyutları"><button class="btn" data-eraser-size="8">8</button><button class="btn" data-eraser-size="16">16</button><button class="btn" data-eraser-size="32">32</button><button class="btn" data-eraser-size="64">64</button></div><label for="eraserSize">Silme çapı · <output id="eraserSizeValue" for="eraserSize">12 px</output></label><input id="eraserSize" type="range" min="1" max="64" value="12"><div class="eraser-sample" role="img" aria-label="Silgi çapı önizlemesi"><div id="eraserCircle"></div></div><p class="recovery-note">Yalnız silgi boyutu değişir. Kalem kalınlığı korunur. Bu ayar açık oturumda hatırlanır.</p><button class="btn primary" id="eraserDone">Silmeye dön</button></div></dialog>
+<dialog id="eraserDialog" aria-labelledby="eraserTitle"><div class="tools-heading"><h2 id="eraserTitle">Silgi boyutu</h2><button class="btn" id="eraserClose" aria-label="Silgi boyutunu kapat">× Kapat</button></div><div class="tools-content"><div class="eraser-presets" role="group" aria-label="Hızlı silgi boyutları"><button class="btn" data-eraser-size="8">8</button><button class="btn" data-eraser-size="16">16</button><button class="btn" data-eraser-size="32">32</button><button class="btn" data-eraser-size="64">64</button></div><label for="eraserSize">Silme çapı · <output id="eraserSizeValue" for="eraserSize">12 px</output></label><input id="eraserSize" type="range" min="1" max="64" value="12"><div class="eraser-sample" role="img" aria-label="Silgi çapı önizlemesi"><div id="eraserCircle"></div></div><p class="recovery-note">Yalnız silgi boyutu değişir. Kalem kalınlığı korunur. Bu ayar bu cihazda ve hesapta hatırlanır; tarayıcı depolaması kapalıysa kalıcı olmayabilir.</p><button class="btn primary" id="eraserDone">Silmeye dön</button></div></dialog>
 <dialog id="trashDialog" aria-labelledby="trashTitle"><div class="tools-heading"><h2 id="trashTitle">Çöp Kutusu</h2><button class="btn" id="trashClose" aria-label="Çöp Kutusunu kapat">× Kapat</button></div><div class="tools-content"><p class="recovery-note">Silinen sayfalar burada kalır; otomatik temizlenmez. JSON yedeğine dahildir. Tarayıcı verileri silinirse bu kopyalar da kaybolur; bağımsız yedek alın.</p><div id="trashList"></div></div></dialog>
 <dialog id="backupDialog" aria-labelledby="backupTitle" aria-describedby="backupWarning">
   <div class="tools-heading"><h2 id="backupTitle">Yedeği kontrol edin</h2><button class="btn" id="backupClose" aria-label="Yedek önizlemesini kapat">× Kapat</button></div>
@@ -168,6 +168,7 @@ const clearedPages=new Map();
 const toolWidths={pen:4,marker:4,eraser:12};
 // Pen and highlighter keep their own colours; the colour input always shows the current tool's.
 const toolColors={pen:'#173b36',marker:'#f5c400'};
+let preferencesReady=false;
 function penColor(){return tool==='pen'?document.querySelector('#color').value:toolColors.pen}
 const touchPoints=new Map(),strokeBounds=new WeakMap();let pan=null,suppressTouch=false,activeInputType=null,pinchT=null,pinchDirty=false;
 let viewportFrame=null;
@@ -333,7 +334,8 @@ function validState(x){
 }
 function isDirty(){return editRevision!==savedRevision}
 function renderSaveStatus(){
-  saveEl.textContent=saveConflict?'Başka sekmede değişiklik var — yedek alın':saveFailed?'Kaydedilemedi — yedek alın':importing?'Yedek kaydediliyor…':drawing||isDirty()?'Kaydediliyor…':'Bu cihazda kaydedildi';
+  const nextSaveText=saveConflict?'Başka sekmede değişiklik var — yedek alın':saveFailed?'Kaydedilemedi — yedek alın':importing?'Yedek kaydediliyor…':drawing||isDirty()?'Kaydediliyor…':'Bu cihazda kaydedildi';
+  if(saveEl.textContent!==nextSaveText)saveEl.textContent=nextSaveText;
   document.querySelector('#saveRecovery').hidden=!saveFailed&&!saveConflict;
   document.querySelector('#saveRecoveryMessage').textContent=saveConflict?'Başka bir sekme defteri değiştirdi. Üzerine yazmamak için bu sekmede düzenleme durduruldu. Önce bu sekmenin yedeğini alın, sonra kayıtlı defteri yeniden açın.':failureMessage||'Son değişiklikler henüz kaydedilemedi. Ekrandaki notlar korunuyor; yeniden deneyin veya bu sekmenin yedeğini alın. Kaydetmeden kapatmayın.';
   document.querySelector('#retrySave').hidden=saveConflict;document.querySelector('#retrySave').disabled=!!savePromise||importing;
@@ -520,7 +522,7 @@ function allowed(e){return !document.querySelector('#penOnly').checked||e.pointe
 function selectedWidth(base=+document.querySelector('#width').value){return base*(tool==='marker'?2.5:1)}
 function updateWidthPreview(){
   const base=+document.querySelector('#width').value,color=tool==='eraser'?'#657973':document.querySelector('#color').value;
-  toolWidths[tool]=base;if(tool!=='eraser')toolColors[tool]=document.querySelector('#color').value;updateEraserControls();
+  toolWidths[tool]=base;if(tool!=='eraser')toolColors[tool]=document.querySelector('#color').value;updateEraserControls();persistToolPreferences();
   const name={pen:'Kalem',marker:'Fosforlu',eraser:'Silgi'}[tool],label=width=>`${width.toLocaleString('tr-TR')} px`;
   const paint=(line,width)=>{line.setAttribute('stroke-width',width);line.setAttribute('stroke',color);line.setAttribute('opacity',tool==='marker'?.25:1)};
   document.querySelectorAll('[data-width]').forEach(b=>{const width=selectedWidth(+b.dataset.width);paint(b.querySelector('line'),width);b.querySelector('span').textContent=label(width);b.setAttribute('aria-label',`${name} ${label(width)}`);b.setAttribute('aria-pressed',String(+b.dataset.width===base))});
@@ -745,7 +747,7 @@ document.querySelector('#emptyNewPage').onclick=()=>document.querySelector('#new
 function notebookSnapshot(){
   const exportedAt=new Date().toISOString();
   // Format 3 keeps older importers from discarding archived pages.
-  return {version:state.version,pages:state.pages,active:activeId,...notebookFields(state),backupFormat:'bilge-defter',backupVersion:state.version===6?8:state.version===5?7:state.version===4?6:state.version===3?5:state.version===2?4:state.trash?.length?3:state.notebooks?.length?2:1,appVersion:'v64',exportedAt};
+  return {version:state.version,pages:state.pages,active:activeId,...notebookFields(state),backupFormat:'bilge-defter',backupVersion:state.version===6?8:state.version===5?7:state.version===4?6:state.version===3?5:state.version===2?4:state.trash?.length?3:state.notebooks?.length?2:1,appVersion:'v65',exportedAt};
 }
 function exportNotebook(){
   if(!state||!validState(state))return;
@@ -813,17 +815,62 @@ document.querySelector('#importFile').onchange=async e=>{
   if(drawing)finishStroke();pan=null;suppressTouch=false;touchPoints.clear();
   previewBackup(info,file.name);
 };
+// Device/account-scoped preferences, never part of notebook or cloud backup.
+function persistToolPreferences(){
+  if(!preferencesReady||window.BilgeAccount?.locked)return;
+  try{localStorage.setItem('bilge-tools-v1:'+DB,JSON.stringify({widths:toolWidths,colors:toolColors,penOnly:document.querySelector('#penOnly').checked}))}catch{}
+}
+function restoreToolPreferences(){
+  try{const p=JSON.parse(localStorage.getItem('bilge-tools-v1:'+DB)||'null');
+    if(p){for(const key of ['pen','marker','eraser'])if(Number.isFinite(p.widths?.[key])&&p.widths[key]>=1&&p.widths[key]<=(key==='eraser'?64:24))toolWidths[key]=p.widths[key];
+      for(const key of ['pen','marker'])if(/^#[0-9a-f]{6}$/i.test(p.colors?.[key]||''))toolColors[key]=p.colors[key];
+      if(typeof p.penOnly==='boolean')document.querySelector('#penOnly').checked=p.penOnly}
+  }catch{}
+  document.querySelector('#width').value=toolWidths.pen;document.querySelector('#color').value=toolColors.pen;
+  preferencesReady=true;updateWidthPreview();
+}
+document.querySelector('#penOnly').addEventListener('change',persistToolPreferences);
+function downloadLocalJson(data,name){const url=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function showStartupRecovery(){
+  ready=false;saveEl.textContent='Kayıt açılamadı; mevcut veri korunuyor';
+  const dialog=document.createElement('dialog');dialog.className='tools-dialog';dialog.id='startupRecovery';dialog.setAttribute('aria-labelledby','startupRecoveryTitle');
+  dialog.innerHTML='<div class="tools-heading"><h2 id="startupRecoveryTitle">Notları silmeden kurtarma</h2></div><div class="tools-content"><p>Kayıt açılamadı. Tarayıcı verilerini silmeyin ve uygulamayı kaldırmayın. Önce mevcut kaydın kurtarma kopyasını indirmeyi deneyin. Bu dosya not içeriği içerebilir; yalnız güvendiğiniz kişiyle paylaşın.</p><div class="recovery-actions"><button class="btn primary" id="rawRecoveryExport">Kurtarma kopyasını indir</button><button class="btn" id="startupRetry">Yeniden dene</button></div><p id="startupRecoveryStatus" role="status"></p></div>';
+  document.body.append(dialog);dialog.addEventListener('cancel',e=>e.preventDefault());dialog.showModal();
+  document.querySelector('#startupRetry').onclick=()=>location.reload();
+  document.querySelector('#rawRecoveryExport').onclick=async()=>{const status=document.querySelector('#startupRecoveryStatus');try{
+    if(window.BilgeAccount?.locked||!db)throw Error('Depolama şu anda okunamıyor. Bağlantıyı ve hesap girişini kontrol edip yeniden deneyin.');
+    const data=await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readonly'),store=tx.objectStore(STORE),rows={};for(const key of ['app','before-import']){const r=store.get(key);r.onsuccess=()=>{if(r.result!==undefined)rows[key]=r.result}}tx.oncomplete=()=>resolve(rows);tx.onabort=()=>reject(tx.error);tx.onerror=()=>{}});
+    if(!Object.keys(data).length)throw Error('Okunabilen kayıt bulunamadı; hiçbir şey silinmedi.');
+    downloadLocalJson({format:'bilge-defter-recovery-v1',records:data},'bilge-defter-kurtarma.json');status.textContent='İndirme başlatıldı. Dosyanın indirilenler klasöründe olduğunu kontrol edin. Bu bir kurtarma dosyasıdır; normal yedek yüklemeye doğrudan uygun olmayabilir.';
+  }catch(e){status.textContent=e.message||'Kopya alınamadı. Mevcut kayıt silinmedi.'}};
+}
+// Opt-in, bounded in-memory timing only. No ink, text, account, URLs or network export.
+const localDiagnostics={enabled:false,drawMs:[],saveMs:[],penStarts:0,penCancels:0};
+function recordTiming(key,start){if(!localDiagnostics.enabled)return;const samples=localDiagnostics[key];samples.push(Math.round((performance.now()-start)*10)/10);if(samples.length>200)samples.shift()}
+const measuredDraw=drawAll;drawAll=function(...args){if(!localDiagnostics.enabled)return measuredDraw.apply(this,args);const start=performance.now();try{return measuredDraw.apply(this,args)}finally{recordTiming('drawMs',start)}};
+const measuredPut=dbPut;dbPut=function(...args){if(!localDiagnostics.enabled)return measuredPut.apply(this,args);const start=performance.now();return measuredPut.apply(this,args).finally(()=>recordTiming('saveMs',start))};
+for(const [event,key] of [['pointerdown','penStarts'],['pointercancel','penCancels']])canvas.addEventListener(event,e=>{if(localDiagnostics.enabled&&e.pointerType==='pen')localDiagnostics[key]++},{passive:true});
+const diagnosticsArea=document.createElement('section');diagnosticsArea.innerHTML='<label class="palm-control"><input type="checkbox" id="diagnosticsEnabled"> Bu oturumda performansı ölç</label><p class="recovery-note">Son 200 çizim/kayıt süresi ve kalem olay sayısı tutulur. Notlar, hesap bilgileri ve kalem konumları dahil edilmez; sunucuya gönderilmez. Gerçek kalem gecikmesi ölçümü değildir.</p><button class="btn" id="diagnosticsExport" disabled>Ölçüm raporunu indir</button>';
+const reliabilityDialog=document.createElement('dialog');reliabilityDialog.id='reliabilityDialog';reliabilityDialog.className='tools-dialog';reliabilityDialog.setAttribute('aria-labelledby','reliabilityTitle');
+reliabilityDialog.innerHTML='<div class="tools-heading"><h2 id="reliabilityTitle">Kayıt ve eşitleme</h2><button class="btn" id="reliabilityClose">× Kapat</button></div><div class="tools-content" id="reliabilityContent"><p>Yerel kayıt bu tarayıcıdadır. Şifreli sunucu kopyası ayrı çalışır. Bağımsız yedek için dosyayı indirip güvenli bir yerde saklayın.</p><button class="btn" id="reliabilityBackup">JSON yedeği indir</button></div>';
+document.body.append(reliabilityDialog);document.querySelector('#reliabilityContent').append(diagnosticsArea);
+document.querySelector('#reliabilityClose').onclick=()=>reliabilityDialog.close();document.querySelector('#reliabilityBackup').onclick=()=>document.querySelector('#exportBtn').click();
+window.openReliability=()=>{if(!ready||drawing||pan||window.BilgeAccount?.locked)return;window.renderSyncActions?.();reliabilityDialog.showModal()};
+document.querySelector('#diagnosticsEnabled').onchange=e=>{localDiagnostics.enabled=e.target.checked;localDiagnostics.drawMs=[];localDiagnostics.saveMs=[];localDiagnostics.penStarts=0;localDiagnostics.penCancels=0;document.querySelector('#diagnosticsExport').disabled=!e.target.checked};
+document.querySelector('#diagnosticsExport').onclick=()=>{if(localDiagnostics.enabled)downloadLocalJson({format:'bilge-performance-v1',drawMs:localDiagnostics.drawMs,saveMs:localDiagnostics.saveMs,penStarts:localDiagnostics.penStarts,penCancels:localDiagnostics.penCancels},'bilge-performans.json')};
+addEventListener('bilge-account-locked',()=>{document.querySelector('#diagnosticsEnabled').checked=false;document.querySelector('#diagnosticsEnabled').onchange({target:{checked:false}})});
 async function init(){
   DB=await window.BilgeAccount.ready;
+  restoreToolPreferences();
   await openDB();const saved=await dbGet();if(saved!==undefined&&!validState(saved))throw new Error('Kayıt yapısı okunamadı; mevcut veri korundu');
   storedJSON=saved===undefined?null:JSON.stringify(saved);
   await startSaveWorker(storedJSON);
   state=saved||blank();const selection=selectionFor(state);activeId=selection.active;activeNotebook=selection.notebook;state.active=activeId;
-  renderPages();resize();if(JSON.stringify(state)!==storedJSON)await dbPut(state);if(saveWorker)storedJSON=null;ready=true;await refreshRecovery();saveEl.textContent='Bu cihazda kaydedildi';if(typeof plannerStartReminders==='function')plannerStartReminders();
+  renderPages();resize();if(JSON.stringify(state)!==storedJSON)await dbPut(state);if(saveWorker)storedJSON=null;await refreshRecovery();ready=true;renderSaveStatus();if(typeof plannerStartReminders==='function')plannerStartReminders();
   document.querySelector('#storageState').textContent='Tarayıcı depolaması kullanılıyor';
   if(navigator.storage?.persist)navigator.storage.persist().then(yes=>{if(yes)document.querySelector('#storageState').textContent='Kalıcı depolama izni var'}).catch(()=>{});
 }
-new ResizeObserver(resize).observe(canvas.parentElement);init().catch(e=>{ready=false;saveEl.textContent='Kayıt açılamadı. ';const recoverBtn=document.createElement('button');recoverBtn.className='btn';recoverBtn.textContent='Yeni defter başlat';recoverBtn.style.cssText='margin-left:8px;font-size:12px';recoverBtn.onclick=()=>{if(!confirm('Kayıtlı defter silinecek ve yeni boş defter açılacak. Önce JSON yedeği aldıysanız devam edin.'))return;const r=indexedDB.open(DB,1);r.onsuccess=ev=>{try{ev.target.result.transaction(STORE,'readwrite').objectStore(STORE).delete('app').onsuccess=()=>location.reload()}catch{location.reload()}};r.onerror=()=>location.reload()};saveEl.after(recoverBtn);console.error(e)});
+new ResizeObserver(resize).observe(canvas.parentElement);init().catch(()=>showStartupRecovery());
 </script>
 <script src="pwa.js"></script>
 <script src="dictionary-data.js"></script>

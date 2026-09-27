@@ -314,7 +314,7 @@
     insert:{title:'Ekle',sub:'SAYFANI ZENGİNLEŞTİR',note:'İşlem açık sayfaya uygulanır. Mevcut içerik kendi motorunda korunur.',actions:['insert.text','insert.image','insert.camera','pdf.open']},
     study:{title:'Çalışma',sub:'NOTTAN ÖĞRENMEYE',note:'Bu işlemler mevcut çalışma modüllerine bağlanır. Arayüz tek başına sözlük veya yazı tanıma motoru değildir.',actions:['study.planner','study.dictionary','study.recognize','study.webSearch','study.guide']},
     page:{title:'Sayfa seçenekleri',sub:'YALNIZCA AÇIK SAYFA',note:'Temizleme ve çöp kutusu işlemleri ayrı onay ister.',actions:['page.rename','page.paper','page.top','selection.edit','page.clear','page.trash']},
-    file:{title:'Dosya ve yedek',sub:'KOPYAN SENDE KALSIN',note:'Tarayıcıdaki kayıt ve geri dönüş kopyası bağımsız yedek değildir. İndirdiğin dosyayı ayrı bir yerde sakla.',actions:['pdf.export','backup.export','backup.import','backup.rollback']},
+    file:{title:'Dosya ve yedek',sub:'KOPYAN SENDE KALSIN',note:'Tarayıcıdaki kayıt ve geri dönüş kopyası bağımsız yedek değildir. İndirdiğin dosyayı ayrı bir yerde sakla.',actions:['pdf.export','backup.export','backup.status','backup.import','backup.rollback']},
   };
   // UI komutları dışındaki bütün komutlar uygulamanın verdiği callback'e gider.
   const ACTIONS = {
@@ -335,6 +335,7 @@
     'page.clear':{label:'Sayfayı temizle',desc:'Açık sayfanın içeriğini kaldırır.',icon:'eraser',page:true,confirm:true,freeze:true},
     'page.trash':{label:'Sayfayı çöp kutusuna taşı',desc:'Kurtarma davranışı mevcut motor tarafından yönetilir.',icon:'trash',page:true,confirm:true,freeze:true},
     'pdf.export':{label:'Notlu PDF indir',desc:'Notlarını mevcut PDF dışa aktarıcısıyla al.',icon:'download',page:true},
+    'backup.status':{label:'Kayıt ve eşitleme',desc:'Şifreli sunucu yedeği, eşitleme ve isteğe bağlı performans ölçümü.',icon:'download'},
     'backup.export':{label:'Yedek al',desc:'Uygulamanın kendi yedek dosyasını indir.',icon:'download'},
     'backup.import':{label:'Yedek yükle',desc:'Dosya seç; etkilerini gör; sonra onayla.',icon:'upload'},
     'backup.rollback':{label:'Yedek yüklemesini geri al',desc:'Son yükleme öncesi kopyaya dön.',icon:'restore',confirm:true,freeze:true,recovery:true},

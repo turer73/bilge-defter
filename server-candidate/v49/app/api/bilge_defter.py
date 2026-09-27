@@ -446,15 +446,18 @@ def upload_backup(
 @router.get("/backup")
 def get_backup(
     cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion"),
+    if_none_match: str | None = Header(default=None, alias="If-None-Match"),
 ):
     """Kullanicinin en son sifreli yedegini dondur; yoksa 404."""
     identity = _require_access(cf_access_jwt_assertion)
     db = get_conn(_db_path())
     try:
         _ensure_backup_table(db)
-        data, headers = backup_store.read(db, identity["email"])
+        data, headers = backup_store.read(db, identity["email"], if_none_match)
     finally:
         db.close()
+    if data is None:
+        return Response(status_code=304, headers=headers)
     return JSONResponse(data, headers=headers)
 
 class OcrRequest(BaseModel):

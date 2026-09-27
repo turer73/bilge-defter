@@ -1,8 +1,17 @@
 # Bilge Defter — uygulama sırası ve kanıt durumu
 
-## Güncel durum — 24 Eylül 2026, v52 teslimi
+## Güncel öncelik — 27 Eylül 2026, güvenilir kullanım
 
-Bu bölüm aşağıdaki tarihsel aday/yayın açıklamalarından önceliklidir.
+- Kullanıcı kararı: yeni özellik yerine güvenilirlik ve kullanım iyileştirmesi.
+- Son denetlenen canlı sürüm v64; çalışma tabanı `e07d52b`, `repair/v57-stability`. Canlı durum tarihlidir; sonraki yayında tekrar kontrol edilir. Eski özel adres kapalı.
+- Araştırma ve rakip/GitHub kaynakları: `docs/UX_PERFORMANCE_RESEARCH_2026-09-27.md`.
+- İlk paket: koşullu eşitleme, boyut sınırı mesajı, silmeden kurtarma, kalıcı araç tercihleri, yerel isteğe bağlı süre ölçümü ve CI tanımı. Durum/test kapsamı: `docs/RELIABILITY_PACKAGE_1.md`.
+- Bu çalışma canlı yayın, GitHub push veya merge içermez. Yerel paket hâlâ v64 geliştirme tabanındadır; **mevcut v64 üzerine aynı sürümle yayınlanamaz**. Yeni sürüm ve paket kanıtı yayın öncesi hazırlanmalı.
+- Fiziksel iPad, gerçek sınıf ve OCR kalite kabulü açık. Sayfa/blob depolama göçü, yeni AI, yeni kaynak ve native uygulama bu kapsamda yok.
+
+## Tarihsel durum — 24 Eylül 2026, v52 teslimi
+
+Bu bölüm v52 tesliminin tarihsel kaydıdır; üstteki güncel öncelik bölümünün yerine geçmez.
 
 - Canlı davetli web v52, bağımsız hesap servisi v50; `server-candidate/v49`
   ve canlı veri dizinindeki v49 adı sürüm göstergesi değildir. Özel adres v46.

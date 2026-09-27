@@ -19,14 +19,28 @@ def etag(db, email, row):
     return '"' + token + '"'
 
 
-def read(db, email):
+def matches_tag(condition, tag):
+    # GET uses weak comparison. Write preconditions remain strong and unchanged.
+    return bool(condition) and any(value.strip().removeprefix("W/") in ("*", tag) for value in condition.split(","))
+
+
+def read(db, email, if_none_match=None):
     setup(db)
     db.execute("BEGIN")
     try:
+        revision = db.execute("SELECT revision FROM bilge_defter_backup_revisions WHERE email=?", (email,)).fetchone()
+        if revision:
+            tag = '"' + revision["revision"] + '"'
+            # Avoid reading the ciphertext BLOB on unchanged polls. Same transaction
+            # as the fallback SELECT; authorization was checked by the route first.
+            exists = db.execute("SELECT 1 FROM bilge_defter_backups WHERE email=?", (email,)).fetchone()
+            if exists and matches_tag(if_none_match, tag):
+                return None, {**HEADERS, "ETag": tag}
         row = db.execute("SELECT ciphertext,iv,salt,kdf,updated_at,stored_at FROM bilge_defter_backups WHERE email=?", (email,)).fetchone()
         if row is None:
             raise HTTPException(404, "Sunucuda yedek yok", headers=HEADERS)
-        return dict(row), {**HEADERS, "ETag": etag(db, email, row)}
+        tag = etag(db, email, row)
+        return (None if matches_tag(if_none_match, tag) else dict(row)), {**HEADERS, "ETag": tag}
     finally:
         db.rollback()
 
