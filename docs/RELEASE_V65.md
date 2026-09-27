@@ -44,3 +44,12 @@ ve imajlarını silmemeli; her yeni yayından önce varlıkları yeniden kontrol
 - Fiziksel iPad/Pencil, gerçek e-posta oturumu ve sınıf kabulü bu otomatik testlerle kanıtlanmaz.
 - GitHub push/master birleştirmesi bu yayın kapsamına dahil değildir; ücretli veya
   kotası doğrulanmamış GitHub Actions çalıştırılmaz.
+
+## Hazırlık sırasında bulunan hata
+
+İlk Linux koşusunda 79 API testi geçti; ancak doğrudan başlatılan izole proxy
+test sunucusu `/srv` Python modül yolunda olmadığı için açılmadı. Sorun yalnız
+test başlatıcısındaydı (`ModuleNotFoundError: app`). Test başlatıcısına açık modül
+yolu eklendi; üretim uygulaması veya kimlik doğrulaması gevşetilmedi. Bu hata
+canlı geçişten önce yakalandı ve v64 çalışmaya devam etti. İlk adayın alındısı ve
+build/test kayıtları sunucuda ayrı deneme klasöründe korunur.

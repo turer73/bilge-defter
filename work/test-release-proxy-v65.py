@@ -9,6 +9,10 @@ from pathlib import Path
 import sys
 import tempfile
 
+# Direct execution sets sys.path to /srv/tests; pytest normally adds /srv for us.
+# This path adjustment is confined to the isolated verify-image test harness.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 HEADERS = Path('/tmp/v65-synthetic-headers.json')
 BASE = '/api/v1/bilge-defter'
 
