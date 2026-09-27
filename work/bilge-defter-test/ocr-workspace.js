@@ -89,6 +89,6 @@
   insert.onclick=()=>{
     const text=result.value.trim();if(!text||!invited()||!current()||!mediaAvailable())return;
     dialog.close();
-    beginPendingMedia({tool:'text',text,fontSize:24,color:document.querySelector('#color').value,width:Math.max(80,Math.min(440,(canvas.getBoundingClientRect().width-60)/paperScale())),points:[{x:viewX()+24/paperScale(),y:viewY()+48/paperScale()}]});
+    beginPendingMedia({tool:'text',text,fontSize:24,color:penColor(),width:Math.max(80,Math.min(440,(canvas.getBoundingClientRect().width-60)/paperScale())),points:[{x:viewX()+24/paperScale(),y:viewY()+48/paperScale()}]});
   };
 })();

@@ -1,0 +1,1 @@
+"""Private account database adapter."""

@@ -1,0 +1,2183 @@
+[
+ {
+  "id": "anatomy.heart",
+  "terms": [
+   "heart"
+  ]
+ },
+ {
+  "id": "anatomy.lung",
+  "terms": [
+   "lung"
+  ]
+ },
+ {
+  "id": "anatomy.liver",
+  "terms": [
+   "liver"
+  ]
+ },
+ {
+  "id": "anatomy.kidney",
+  "terms": [
+   "kidney"
+  ]
+ },
+ {
+  "id": "anatomy.stomach",
+  "terms": [
+   "stomach"
+  ]
+ },
+ {
+  "id": "anatomy.spleen",
+  "terms": [
+   "spleen"
+  ]
+ },
+ {
+  "id": "anatomy.pancreas",
+  "terms": [
+   "pancreas"
+  ]
+ },
+ {
+  "id": "anatomy.brain",
+  "terms": [
+   "brain"
+  ]
+ },
+ {
+  "id": "anatomy.cerebellum",
+  "terms": [
+   "cerebellum"
+  ]
+ },
+ {
+  "id": "anatomy.spinal-cord",
+  "terms": [
+   "spinal cord"
+  ]
+ },
+ {
+  "id": "anatomy.trachea",
+  "terms": [
+   "trachea"
+  ]
+ },
+ {
+  "id": "anatomy.oesophagus",
+  "terms": [
+   "oesophagus",
+   "esophagus"
+  ]
+ },
+ {
+  "id": "anatomy.pharynx",
+  "terms": [
+   "pharynx"
+  ]
+ },
+ {
+  "id": "anatomy.larynx",
+  "terms": [
+   "larynx"
+  ]
+ },
+ {
+  "id": "anatomy.diaphragm",
+  "terms": [
+   "diaphragm"
+  ]
+ },
+ {
+  "id": "anatomy.tongue",
+  "terms": [
+   "tongue"
+  ]
+ },
+ {
+  "id": "anatomy.tooth",
+  "terms": [
+   "tooth"
+  ]
+ },
+ {
+  "id": "anatomy.skin",
+  "terms": [
+   "skin"
+  ]
+ },
+ {
+  "id": "anatomy.eye",
+  "terms": [
+   "eye"
+  ]
+ },
+ {
+  "id": "anatomy.ear",
+  "terms": [
+   "ear"
+  ]
+ },
+ {
+  "id": "anatomy.nose",
+  "terms": [
+   "nose"
+  ]
+ },
+ {
+  "id": "anatomy.urinary-bladder",
+  "terms": [
+   "urinary bladder"
+  ]
+ },
+ {
+  "id": "anatomy.gallbladder",
+  "terms": [
+   "gallbladder"
+  ]
+ },
+ {
+  "id": "anatomy.small-intestine",
+  "terms": [
+   "small intestine"
+  ]
+ },
+ {
+  "id": "anatomy.large-intestine",
+  "terms": [
+   "large intestine"
+  ]
+ },
+ {
+  "id": "anatomy.duodenum",
+  "terms": [
+   "duodenum"
+  ]
+ },
+ {
+  "id": "anatomy.rectum",
+  "terms": [
+   "rectum"
+  ]
+ },
+ {
+  "id": "anatomy.thyroid",
+  "terms": [
+   "thyroid gland"
+  ]
+ },
+ {
+  "id": "anatomy.pituitary",
+  "terms": [
+   "pituitary gland"
+  ]
+ },
+ {
+  "id": "anatomy.adrenal",
+  "terms": [
+   "adrenal gland"
+  ]
+ },
+ {
+  "id": "anatomy.uterus",
+  "terms": [
+   "uterus"
+  ]
+ },
+ {
+  "id": "anatomy.ovary",
+  "terms": [
+   "ovary"
+  ]
+ },
+ {
+  "id": "anatomy.testis",
+  "terms": [
+   "testis"
+  ]
+ },
+ {
+  "id": "anatomy.prostate",
+  "terms": [
+   "prostate"
+  ]
+ },
+ {
+  "id": "anatomy.ureter",
+  "terms": [
+   "ureter"
+  ]
+ },
+ {
+  "id": "anatomy.urethra",
+  "terms": [
+   "urethra"
+  ]
+ },
+ {
+  "id": "anatomy.skull",
+  "terms": [
+   "skull"
+  ]
+ },
+ {
+  "id": "anatomy.mandible",
+  "terms": [
+   "mandible"
+  ]
+ },
+ {
+  "id": "anatomy.maxilla",
+  "terms": [
+   "maxilla"
+  ]
+ },
+ {
+  "id": "anatomy.frontal-bone",
+  "terms": [
+   "frontal bone"
+  ]
+ },
+ {
+  "id": "anatomy.parietal-bone",
+  "terms": [
+   "parietal bone"
+  ]
+ },
+ {
+  "id": "anatomy.temporal-bone",
+  "terms": [
+   "temporal bone"
+  ]
+ },
+ {
+  "id": "anatomy.occipital-bone",
+  "terms": [
+   "occipital bone"
+  ]
+ },
+ {
+  "id": "anatomy.clavicle",
+  "terms": [
+   "clavicle"
+  ]
+ },
+ {
+  "id": "anatomy.scapula",
+  "terms": [
+   "scapula"
+  ]
+ },
+ {
+  "id": "anatomy.sternum",
+  "terms": [
+   "sternum"
+  ]
+ },
+ {
+  "id": "anatomy.rib",
+  "terms": [
+   "rib"
+  ]
+ },
+ {
+  "id": "anatomy.vertebra",
+  "terms": [
+   "vertebra"
+  ]
+ },
+ {
+  "id": "anatomy.vertebral-column",
+  "terms": [
+   "vertebral column",
+   "spine"
+  ]
+ },
+ {
+  "id": "anatomy.sacrum",
+  "terms": [
+   "sacrum"
+  ]
+ },
+ {
+  "id": "anatomy.coccyx",
+  "terms": [
+   "coccyx"
+  ]
+ },
+ {
+  "id": "anatomy.humerus",
+  "terms": [
+   "humerus"
+  ]
+ },
+ {
+  "id": "anatomy.radius",
+  "terms": [
+   "radius"
+  ]
+ },
+ {
+  "id": "anatomy.ulna",
+  "terms": [
+   "ulna"
+  ]
+ },
+ {
+  "id": "anatomy.femur",
+  "terms": [
+   "femur"
+  ]
+ },
+ {
+  "id": "anatomy.patella",
+  "terms": [
+   "patella"
+  ]
+ },
+ {
+  "id": "anatomy.tibia",
+  "terms": [
+   "tibia"
+  ]
+ },
+ {
+  "id": "anatomy.fibula",
+  "terms": [
+   "fibula"
+  ]
+ },
+ {
+  "id": "anatomy.talus",
+  "terms": [
+   "talus"
+  ]
+ },
+ {
+  "id": "anatomy.calcaneus",
+  "terms": [
+   "calcaneus"
+  ]
+ },
+ {
+  "id": "anatomy.hip-bone",
+  "terms": [
+   "hip bone"
+  ]
+ },
+ {
+  "id": "anatomy.hyoid",
+  "terms": [
+   "hyoid bone"
+  ]
+ },
+ {
+  "id": "anatomy.head",
+  "terms": [
+   "head"
+  ]
+ },
+ {
+  "id": "anatomy.neck",
+  "terms": [
+   "neck"
+  ]
+ },
+ {
+  "id": "anatomy.thorax",
+  "terms": [
+   "thorax",
+   "chest"
+  ]
+ },
+ {
+  "id": "anatomy.abdomen",
+  "terms": [
+   "abdomen"
+  ]
+ },
+ {
+  "id": "anatomy.pelvis",
+  "terms": [
+   "pelvis"
+  ]
+ },
+ {
+  "id": "anatomy.back",
+  "terms": [
+   "back"
+  ]
+ },
+ {
+  "id": "anatomy.arm",
+  "terms": [
+   "arm"
+  ]
+ },
+ {
+  "id": "anatomy.forearm",
+  "terms": [
+   "forearm"
+  ]
+ },
+ {
+  "id": "anatomy.hand",
+  "terms": [
+   "hand"
+  ]
+ },
+ {
+  "id": "anatomy.thigh",
+  "terms": [
+   "thigh"
+  ]
+ },
+ {
+  "id": "anatomy.leg",
+  "terms": [
+   "leg"
+  ]
+ },
+ {
+  "id": "anatomy.foot",
+  "terms": [
+   "foot"
+  ]
+ },
+ {
+  "id": "anatomy.knee",
+  "terms": [
+   "knee"
+  ]
+ },
+ {
+  "id": "anatomy.elbow",
+  "terms": [
+   "elbow"
+  ]
+ },
+ {
+  "id": "anatomy.deltoid",
+  "terms": [
+   "deltoid muscle"
+  ]
+ },
+ {
+  "id": "anatomy.biceps-brachii",
+  "terms": [
+   "biceps brachii muscle"
+  ]
+ },
+ {
+  "id": "anatomy.triceps-brachii",
+  "terms": [
+   "triceps brachii muscle"
+  ]
+ },
+ {
+  "id": "anatomy.trapezius",
+  "terms": [
+   "trapezius muscle"
+  ]
+ },
+ {
+  "id": "anatomy.latissimus-dorsi",
+  "terms": [
+   "latissimus dorsi muscle"
+  ]
+ },
+ {
+  "id": "anatomy.pectoralis-major",
+  "terms": [
+   "pectoralis major muscle"
+  ]
+ },
+ {
+  "id": "anatomy.rectus-abdominis",
+  "terms": [
+   "rectus abdominis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.gluteus-maximus",
+  "terms": [
+   "gluteus maximus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.sartorius",
+  "terms": [
+   "sartorius muscle"
+  ]
+ },
+ {
+  "id": "anatomy.gastrocnemius",
+  "terms": [
+   "gastrocnemius muscle"
+  ]
+ },
+ {
+  "id": "anatomy.soleus",
+  "terms": [
+   "soleus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.tibialis-anterior",
+  "terms": [
+   "tibialis anterior muscle"
+  ]
+ },
+ {
+  "id": "anatomy.masseter",
+  "terms": [
+   "masseter muscle"
+  ]
+ },
+ {
+  "id": "anatomy.sternocleidomastoid",
+  "terms": [
+   "sternocleidomastoid muscle"
+  ]
+ },
+ {
+  "id": "anatomy.aorta",
+  "terms": [
+   "aorta"
+  ]
+ },
+ {
+  "id": "anatomy.artery",
+  "terms": [
+   "artery"
+  ]
+ },
+ {
+  "id": "anatomy.vein",
+  "terms": [
+   "vein"
+  ]
+ },
+ {
+  "id": "anatomy.nerve",
+  "terms": [
+   "nerve"
+  ]
+ },
+ {
+  "id": "anatomy.sciatic-nerve",
+  "terms": [
+   "sciatic nerve"
+  ]
+ },
+ {
+  "id": "anatomy.vagus-nerve",
+  "terms": [
+   "vagus nerve"
+  ]
+ },
+ {
+  "id": "anatomy.optic-nerve",
+  "terms": [
+   "optic nerve"
+  ]
+ },
+ {
+  "id": "anatomy.median-nerve",
+  "terms": [
+   "median nerve"
+  ]
+ },
+ {
+  "id": "anatomy.acl",
+  "terms": [
+   "anterior cruciate ligament"
+  ]
+ },
+ {
+  "id": "anatomy.pcl",
+  "terms": [
+   "posterior cruciate ligament"
+  ]
+ },
+ {
+  "id": "anatomy.mouth",
+  "terms": [
+   "mouth"
+  ]
+ },
+ {
+  "id": "anatomy.digestive-system",
+  "terms": [
+   "digestive system"
+  ]
+ },
+ {
+  "id": "anatomy.respiratory-system",
+  "terms": [
+   "respiratory system"
+  ]
+ },
+ {
+  "id": "anatomy.genital-systems",
+  "terms": [
+   "reproductive system",
+   "genital systems"
+  ]
+ },
+ {
+  "id": "anatomy.hair",
+  "terms": [
+   "hair"
+  ]
+ },
+ {
+  "id": "anatomy.hair-follicle",
+  "terms": [
+   "hair follicle"
+  ]
+ },
+ {
+  "id": "anatomy.urinary-system",
+  "terms": [
+   "urinary system"
+  ]
+ },
+ {
+  "id": "anatomy.anus",
+  "terms": [
+   "anus"
+  ]
+ },
+ {
+  "id": "anatomy.anterior-pituitary",
+  "terms": [
+   "anterior pituitary",
+   "adenohypophysis"
+  ]
+ },
+ {
+  "id": "anatomy.integumentary-system",
+  "terms": [
+   "integumentary system"
+  ]
+ },
+ {
+  "id": "anatomy.colon",
+  "terms": [
+   "colon"
+  ]
+ },
+ {
+  "id": "anatomy.vagina",
+  "terms": [
+   "vagina"
+  ]
+ },
+ {
+  "id": "anatomy.epidermis",
+  "terms": [
+   "epidermis"
+  ]
+ },
+ {
+  "id": "anatomy.peritoneum",
+  "terms": [
+   "peritoneum"
+  ]
+ },
+ {
+  "id": "anatomy.dermis",
+  "terms": [
+   "dermis"
+  ]
+ },
+ {
+  "id": "anatomy.uterine-tube",
+  "terms": [
+   "uterine tube",
+   "fallopian tube"
+  ]
+ },
+ {
+  "id": "anatomy.thoracic-cavity",
+  "terms": [
+   "thoracic cavity"
+  ]
+ },
+ {
+  "id": "anatomy.endocrine-gland",
+  "terms": [
+   "endocrine gland"
+  ]
+ },
+ {
+  "id": "anatomy.parathyroid-gland",
+  "terms": [
+   "parathyroid gland"
+  ]
+ },
+ {
+  "id": "anatomy.ileum",
+  "terms": [
+   "ileum"
+  ]
+ },
+ {
+  "id": "anatomy.lip",
+  "terms": [
+   "lip"
+  ]
+ },
+ {
+  "id": "anatomy.nasal-cavity",
+  "terms": [
+   "nasal cavity"
+  ]
+ },
+ {
+  "id": "anatomy.palate",
+  "terms": [
+   "palate"
+  ]
+ },
+ {
+  "id": "anatomy.cervix-of-uterus",
+  "terms": [
+   "cervix",
+   "uterine cervix"
+  ]
+ },
+ {
+  "id": "anatomy.endometrium",
+  "terms": [
+   "endometrium"
+  ]
+ },
+ {
+  "id": "anatomy.bronchus",
+  "terms": [
+   "bronchus"
+  ]
+ },
+ {
+  "id": "anatomy.salivary-gland",
+  "terms": [
+   "salivary gland"
+  ]
+ },
+ {
+  "id": "anatomy.sweat-gland",
+  "terms": [
+   "sweat gland"
+  ]
+ },
+ {
+  "id": "anatomy.nail",
+  "terms": [
+   "nail"
+  ]
+ },
+ {
+  "id": "anatomy.epididymis",
+  "terms": [
+   "epididymis"
+  ]
+ },
+ {
+  "id": "anatomy.scrotum",
+  "terms": [
+   "scrotum"
+  ]
+ },
+ {
+  "id": "anatomy.nipple",
+  "terms": [
+   "nipple"
+  ]
+ },
+ {
+  "id": "anatomy.cheek",
+  "terms": [
+   "cheek"
+  ]
+ },
+ {
+  "id": "anatomy.epiglottis",
+  "terms": [
+   "epiglottis"
+  ]
+ },
+ {
+  "id": "anatomy.abdominal-cavity",
+  "terms": [
+   "abdominal cavity"
+  ]
+ },
+ {
+  "id": "anatomy.seminal-vesicle",
+  "terms": [
+   "seminal vesicle",
+   "seminal gland"
+  ]
+ },
+ {
+  "id": "anatomy.soft-palate",
+  "terms": [
+   "soft palate"
+  ]
+ },
+ {
+  "id": "anatomy.gingiva",
+  "terms": [
+   "gingiva",
+   "gum"
+  ]
+ },
+ {
+  "id": "anatomy.pineal-gland",
+  "terms": [
+   "pineal gland"
+  ]
+ },
+ {
+  "id": "anatomy.palatine-tonsil",
+  "terms": [
+   "palatine tonsil",
+   "tonsil"
+  ]
+ },
+ {
+  "id": "anatomy.vulva",
+  "terms": [
+   "vulva"
+  ]
+ },
+ {
+  "id": "anatomy.nasopharynx",
+  "terms": [
+   "nasopharynx"
+  ]
+ },
+ {
+  "id": "anatomy.peritoneal-cavity",
+  "terms": [
+   "peritoneal cavity"
+  ]
+ },
+ {
+  "id": "anatomy.clitoris",
+  "terms": [
+   "clitoris"
+  ]
+ },
+ {
+  "id": "anatomy.mediastinum",
+  "terms": [
+   "mediastinum"
+  ]
+ },
+ {
+  "id": "anatomy.anal-canal",
+  "terms": [
+   "anal canal"
+  ]
+ },
+ {
+  "id": "anatomy.pancreatic-islets",
+  "terms": [
+   "pancreatic islets",
+   "islets of Langerhans"
+  ]
+ },
+ {
+  "id": "anatomy.vermiform-appendix",
+  "terms": [
+   "vermiform appendix"
+  ]
+ },
+ {
+  "id": "anatomy.caecum",
+  "terms": [
+   "caecum",
+   "cecum"
+  ]
+ },
+ {
+  "id": "anatomy.sigmoid-colon",
+  "terms": [
+   "sigmoid colon"
+  ]
+ },
+ {
+  "id": "anatomy.common-bile-duct",
+  "terms": [
+   "common bile duct"
+  ]
+ },
+ {
+  "id": "anatomy.vocal-fold",
+  "terms": [
+   "vocal fold",
+   "vocal cord"
+  ]
+ },
+ {
+  "id": "anatomy.perineum",
+  "terms": [
+   "perineum"
+  ]
+ },
+ {
+  "id": "anatomy.glans-penis",
+  "terms": [
+   "glans penis"
+  ]
+ },
+ {
+  "id": "anatomy.mucosa",
+  "terms": [
+   "mucous membrane",
+   "mucosa"
+  ]
+ },
+ {
+  "id": "anatomy.common-hepatic-duct",
+  "terms": [
+   "common hepatic duct"
+  ]
+ },
+ {
+  "id": "anatomy.pancreatic-duct",
+  "terms": [
+   "pancreatic duct"
+  ]
+ },
+ {
+  "id": "anatomy.prepuce",
+  "terms": [
+   "foreskin",
+   "prepuce"
+  ]
+ },
+ {
+  "id": "anatomy.labium-minus",
+  "terms": [
+   "labium minus",
+   "labia minora"
+  ]
+ },
+ {
+  "id": "anatomy.cystic-duct",
+  "terms": [
+   "cystic duct"
+  ]
+ },
+ {
+  "id": "anatomy.eyebrow",
+  "terms": [
+   "eyebrow"
+  ]
+ },
+ {
+  "id": "anatomy.parotid-gland",
+  "terms": [
+   "parotid gland"
+  ]
+ },
+ {
+  "id": "anatomy.nasal-septum",
+  "terms": [
+   "nasal septum"
+  ]
+ },
+ {
+  "id": "anatomy.neuron",
+  "terms": [
+   "neuron"
+  ]
+ },
+ {
+  "id": "anatomy.nervous-system",
+  "terms": [
+   "nervous system"
+  ]
+ },
+ {
+  "id": "anatomy.central-nervous-system",
+  "terms": [
+   "central nervous system"
+  ]
+ },
+ {
+  "id": "anatomy.hypothalamus",
+  "terms": [
+   "hypothalamus"
+  ]
+ },
+ {
+  "id": "anatomy.autonomic-nervous-system",
+  "terms": [
+   "autonomic nervous system"
+  ]
+ },
+ {
+  "id": "anatomy.thalamus",
+  "terms": [
+   "thalamus"
+  ]
+ },
+ {
+  "id": "anatomy.cerebrum",
+  "terms": [
+   "cerebrum",
+   "telencephalon"
+  ]
+ },
+ {
+  "id": "anatomy.cranial-nerve",
+  "terms": [
+   "cranial nerve"
+  ]
+ },
+ {
+  "id": "anatomy.cerebral-cortex",
+  "terms": [
+   "cerebral cortex"
+  ]
+ },
+ {
+  "id": "anatomy.cerebrospinal-fluid",
+  "terms": [
+   "cerebrospinal fluid"
+  ]
+ },
+ {
+  "id": "anatomy.spinal-nerve",
+  "terms": [
+   "spinal nerve"
+  ]
+ },
+ {
+  "id": "anatomy.midbrain",
+  "terms": [
+   "midbrain",
+   "mesencephalon"
+  ]
+ },
+ {
+  "id": "anatomy.diencephalon",
+  "terms": [
+   "diencephalon"
+  ]
+ },
+ {
+  "id": "anatomy.neuroglia",
+  "terms": [
+   "neuroglia"
+  ]
+ },
+ {
+  "id": "anatomy.meninges",
+  "terms": [
+   "meninges"
+  ]
+ },
+ {
+  "id": "anatomy.frontal-lobe",
+  "terms": [
+   "frontal lobe"
+  ]
+ },
+ {
+  "id": "anatomy.forebrain",
+  "terms": [
+   "forebrain",
+   "prosencephalon"
+  ]
+ },
+ {
+  "id": "anatomy.basal-nuclei",
+  "terms": [
+   "basal nuclei",
+   "basal ganglia"
+  ]
+ },
+ {
+  "id": "anatomy.hippocampus",
+  "terms": [
+   "hippocampus"
+  ]
+ },
+ {
+  "id": "anatomy.amygdala",
+  "terms": [
+   "amygdala"
+  ]
+ },
+ {
+  "id": "anatomy.occipital-lobe",
+  "terms": [
+   "occipital lobe"
+  ]
+ },
+ {
+  "id": "anatomy.trigeminal-nerve",
+  "terms": [
+   "trigeminal nerve"
+  ]
+ },
+ {
+  "id": "anatomy.facial-nerve",
+  "terms": [
+   "facial nerve"
+  ]
+ },
+ {
+  "id": "anatomy.oculomotor-nerve",
+  "terms": [
+   "oculomotor nerve"
+  ]
+ },
+ {
+  "id": "anatomy.vestibulocochlear-nerve",
+  "terms": [
+   "vestibulocochlear nerve"
+  ]
+ },
+ {
+  "id": "anatomy.hypoglossal-nerve",
+  "terms": [
+   "hypoglossal nerve"
+  ]
+ },
+ {
+  "id": "anatomy.glossopharyngeal-nerve",
+  "terms": [
+   "glossopharyngeal nerve"
+  ]
+ },
+ {
+  "id": "anatomy.sensory-nerve",
+  "terms": [
+   "sensory nerve"
+  ]
+ },
+ {
+  "id": "anatomy.accessory-nerve",
+  "terms": [
+   "accessory nerve"
+  ]
+ },
+ {
+  "id": "anatomy.olfactory-nerve",
+  "terms": [
+   "olfactory nerve"
+  ]
+ },
+ {
+  "id": "anatomy.abducens-nerve",
+  "terms": [
+   "abducens nerve"
+  ]
+ },
+ {
+  "id": "anatomy.trochlear-nerve",
+  "terms": [
+   "trochlear nerve"
+  ]
+ },
+ {
+  "id": "anatomy.nucleus-accumbens",
+  "terms": [
+   "nucleus accumbens"
+  ]
+ },
+ {
+  "id": "anatomy.medial-lemniscus",
+  "terms": [
+   "medial lemniscus"
+  ]
+ },
+ {
+  "id": "anatomy.blood",
+  "terms": [
+   "blood"
+  ]
+ },
+ {
+  "id": "anatomy.blood-vessel",
+  "terms": [
+   "blood vessel"
+  ]
+ },
+ {
+  "id": "anatomy.capillary",
+  "terms": [
+   "capillary"
+  ]
+ },
+ {
+  "id": "anatomy.arteriole",
+  "terms": [
+   "arteriole"
+  ]
+ },
+ {
+  "id": "anatomy.lymph",
+  "terms": [
+   "lymph"
+  ]
+ },
+ {
+  "id": "anatomy.inferior-vena-cava",
+  "terms": [
+   "inferior vena cava"
+  ]
+ },
+ {
+  "id": "anatomy.pulmonary-vein",
+  "terms": [
+   "pulmonary vein"
+  ]
+ },
+ {
+  "id": "anatomy.superior-vena-cava",
+  "terms": [
+   "superior vena cava"
+  ]
+ },
+ {
+  "id": "anatomy.hepatic-portal-vein",
+  "terms": [
+   "hepatic portal vein"
+  ]
+ },
+ {
+  "id": "anatomy.abdominal-aorta",
+  "terms": [
+   "abdominal aorta"
+  ]
+ },
+ {
+  "id": "anatomy.dural-venous-sinuses",
+  "terms": [
+   "dural venous sinuses"
+  ]
+ },
+ {
+  "id": "anatomy.subclavian-vein",
+  "terms": [
+   "subclavian vein"
+  ]
+ },
+ {
+  "id": "anatomy.radial-artery",
+  "terms": [
+   "radial artery"
+  ]
+ },
+ {
+  "id": "anatomy.internal-carotid-artery",
+  "terms": [
+   "internal carotid artery"
+  ]
+ },
+ {
+  "id": "anatomy.femoral-artery",
+  "terms": [
+   "femoral artery"
+  ]
+ },
+ {
+  "id": "anatomy.cerebral-arterial-circle",
+  "terms": [
+   "cerebral arterial circle",
+   "circle of Willis"
+  ]
+ },
+ {
+  "id": "anatomy.subclavian-artery",
+  "terms": [
+   "subclavian artery"
+  ]
+ },
+ {
+  "id": "anatomy.thoracic-duct",
+  "terms": [
+   "thoracic duct"
+  ]
+ },
+ {
+  "id": "anatomy.coeliac-trunk",
+  "terms": [
+   "coeliac trunk",
+   "celiac trunk",
+   "celiac artery"
+  ]
+ },
+ {
+  "id": "anatomy.common-carotid-artery",
+  "terms": [
+   "common carotid artery"
+  ]
+ },
+ {
+  "id": "anatomy.axillary-vein",
+  "terms": [
+   "axillary vein"
+  ]
+ },
+ {
+  "id": "anatomy.brachiocephalic-trunk",
+  "terms": [
+   "brachiocephalic trunk",
+   "brachiocephalic artery"
+  ]
+ },
+ {
+  "id": "anatomy.internal-jugular-vein",
+  "terms": [
+   "internal jugular vein"
+  ]
+ },
+ {
+  "id": "anatomy.axillary-artery",
+  "terms": [
+   "axillary artery"
+  ]
+ },
+ {
+  "id": "anatomy.brachiocephalic-vein",
+  "terms": [
+   "brachiocephalic vein"
+  ]
+ },
+ {
+  "id": "anatomy.hepatic-vein",
+  "terms": [
+   "hepatic vein"
+  ]
+ },
+ {
+  "id": "anatomy.ulnar-artery",
+  "terms": [
+   "ulnar artery"
+  ]
+ },
+ {
+  "id": "anatomy.right-coronary-artery",
+  "terms": [
+   "right coronary artery"
+  ]
+ },
+ {
+  "id": "anatomy.splenic-artery",
+  "terms": [
+   "splenic artery"
+  ]
+ },
+ {
+  "id": "anatomy.external-jugular-vein",
+  "terms": [
+   "external jugular vein"
+  ]
+ },
+ {
+  "id": "anatomy.bone",
+  "terms": [
+   "bone"
+  ]
+ },
+ {
+  "id": "anatomy.cartilage",
+  "terms": [
+   "cartilage"
+  ]
+ },
+ {
+  "id": "anatomy.palatine-bone",
+  "terms": [
+   "palatine bone"
+  ]
+ },
+ {
+  "id": "anatomy.orbit",
+  "terms": [
+   "orbit"
+  ]
+ },
+ {
+  "id": "anatomy.lumbar-vertebra",
+  "terms": [
+   "lumbar vertebra"
+  ]
+ },
+ {
+  "id": "anatomy.ilium",
+  "terms": [
+   "ilium"
+  ]
+ },
+ {
+  "id": "anatomy.metacarpal-bones",
+  "terms": [
+   "metacarpal bones"
+  ]
+ },
+ {
+  "id": "anatomy.thoracic-vertebra",
+  "terms": [
+   "thoracic vertebra"
+  ]
+ },
+ {
+  "id": "anatomy.tarsal-bones",
+  "terms": [
+   "tarsal bones"
+  ]
+ },
+ {
+  "id": "anatomy.forehead",
+  "terms": [
+   "forehead"
+  ]
+ },
+ {
+  "id": "anatomy.metatarsal-bones",
+  "terms": [
+   "metatarsal bones"
+  ]
+ },
+ {
+  "id": "anatomy.sphenoid-bone",
+  "terms": [
+   "sphenoid bone"
+  ]
+ },
+ {
+  "id": "anatomy.atlas",
+  "terms": [
+   "atlas"
+  ]
+ },
+ {
+  "id": "anatomy.ethmoid-bone",
+  "terms": [
+   "ethmoid bone"
+  ]
+ },
+ {
+  "id": "anatomy.zygomatic-bone",
+  "terms": [
+   "zygomatic bone"
+  ]
+ },
+ {
+  "id": "anatomy.trapezium",
+  "terms": [
+   "trapezium"
+  ]
+ },
+ {
+  "id": "anatomy.pisiform-bone",
+  "terms": [
+   "pisiform bone"
+  ]
+ },
+ {
+  "id": "anatomy.auditory-ossicles",
+  "terms": [
+   "auditory ossicles"
+  ]
+ },
+ {
+  "id": "anatomy.skeleton",
+  "terms": [
+   "skeleton"
+  ]
+ },
+ {
+  "id": "anatomy.xiphoid-process",
+  "terms": [
+   "xiphoid process"
+  ]
+ },
+ {
+  "id": "anatomy.olecranon",
+  "terms": [
+   "olecranon"
+  ]
+ },
+ {
+  "id": "anatomy.vomer",
+  "terms": [
+   "vomer"
+  ]
+ },
+ {
+  "id": "anatomy.nasal-bone",
+  "terms": [
+   "nasal bone"
+  ]
+ },
+ {
+  "id": "anatomy.human-body",
+  "terms": [
+   "human body"
+  ]
+ },
+ {
+  "id": "anatomy.buttock",
+  "terms": [
+   "buttock",
+   "buttocks"
+  ]
+ },
+ {
+  "id": "anatomy.face",
+  "terms": [
+   "face"
+  ]
+ },
+ {
+  "id": "anatomy.lumbar-region",
+  "terms": [
+   "lumbar region",
+   "lower back"
+  ]
+ },
+ {
+  "id": "anatomy.toe",
+  "terms": [
+   "toe"
+  ]
+ },
+ {
+  "id": "anatomy.wrist",
+  "terms": [
+   "wrist"
+  ]
+ },
+ {
+  "id": "anatomy.thumb",
+  "terms": [
+   "thumb"
+  ]
+ },
+ {
+  "id": "anatomy.index-finger",
+  "terms": [
+   "index finger"
+  ]
+ },
+ {
+  "id": "anatomy.upper-limb",
+  "terms": [
+   "upper limb",
+   "upper extremity"
+  ]
+ },
+ {
+  "id": "anatomy.axilla",
+  "terms": [
+   "axilla",
+   "armpit"
+  ]
+ },
+ {
+  "id": "anatomy.little-finger",
+  "terms": [
+   "little finger"
+  ]
+ },
+ {
+  "id": "anatomy.calf",
+  "terms": [
+   "calf"
+  ]
+ },
+ {
+  "id": "anatomy.umbilicus",
+  "terms": [
+   "navel",
+   "umbilicus"
+  ]
+ },
+ {
+  "id": "anatomy.chin",
+  "terms": [
+   "chin"
+  ]
+ },
+ {
+  "id": "anatomy.middle-finger",
+  "terms": [
+   "middle finger"
+  ]
+ },
+ {
+  "id": "anatomy.retina",
+  "terms": [
+   "retina"
+  ]
+ },
+ {
+  "id": "anatomy.pupil",
+  "terms": [
+   "pupil"
+  ]
+ },
+ {
+  "id": "anatomy.choroid",
+  "terms": [
+   "choroid"
+  ]
+ },
+ {
+  "id": "anatomy.malleus",
+  "terms": [
+   "malleus"
+  ]
+ },
+ {
+  "id": "anatomy.eyelid",
+  "terms": [
+   "eyelid"
+  ]
+ },
+ {
+  "id": "anatomy.cochlea",
+  "terms": [
+   "cochlea"
+  ]
+ },
+ {
+  "id": "anatomy.taste-bud",
+  "terms": [
+   "taste bud"
+  ]
+ },
+ {
+  "id": "anatomy.tympanic-membrane",
+  "terms": [
+   "tympanic membrane",
+   "eardrum"
+  ]
+ },
+ {
+  "id": "anatomy.macula-lutea",
+  "terms": [
+   "macula of retina",
+   "macula lutea"
+  ]
+ },
+ {
+  "id": "anatomy.stapes",
+  "terms": [
+   "stapes"
+  ]
+ },
+ {
+  "id": "anatomy.auditory-tube",
+  "terms": [
+   "auditory tube",
+   "Eustachian tube"
+  ]
+ },
+ {
+  "id": "anatomy.incus",
+  "terms": [
+   "incus"
+  ]
+ },
+ {
+  "id": "anatomy.ciliary-body",
+  "terms": [
+   "ciliary body"
+  ]
+ },
+ {
+  "id": "anatomy.muscle",
+  "terms": [
+   "muscle"
+  ]
+ },
+ {
+  "id": "anatomy.tendon",
+  "terms": [
+   "tendon"
+  ]
+ },
+ {
+  "id": "anatomy.pulmonary-trunk",
+  "terms": [
+   "pulmonary trunk",
+   "pulmonary artery"
+  ]
+ },
+ {
+  "id": "anatomy.pulmonary-circulation",
+  "terms": [
+   "pulmonary circulation"
+  ]
+ },
+ {
+  "id": "anatomy.facial-skeleton",
+  "terms": [
+   "facial skeleton"
+  ]
+ },
+ {
+  "id": "anatomy.musculoskeletal-system",
+  "terms": [
+   "musculoskeletal system"
+  ]
+ },
+ {
+  "id": "anatomy.joint",
+  "terms": [
+   "joint"
+  ]
+ },
+ {
+  "id": "anatomy.ligament",
+  "terms": [
+   "ligament"
+  ]
+ },
+ {
+  "id": "anatomy.patellar-ligament",
+  "terms": [
+   "patellar ligament",
+   "patellar tendon"
+  ]
+ },
+ {
+  "id": "anatomy.meniscus",
+  "terms": [
+   "meniscus"
+  ]
+ },
+ {
+  "id": "anatomy.synovial-membrane",
+  "terms": [
+   "synovial membrane"
+  ]
+ },
+ {
+  "id": "anatomy.synovial-bursa",
+  "terms": [
+   "synovial bursa"
+  ]
+ },
+ {
+  "id": "anatomy.atrium",
+  "terms": [
+   "atrium"
+  ]
+ },
+ {
+  "id": "anatomy.sinoatrial-node",
+  "terms": [
+   "sinoatrial node",
+   "SA node"
+  ]
+ },
+ {
+  "id": "anatomy.myocardium",
+  "terms": [
+   "myocardium"
+  ]
+ },
+ {
+  "id": "anatomy.pericardium",
+  "terms": [
+   "pericardium"
+  ]
+ },
+ {
+  "id": "anatomy.ventricle-of-heart",
+  "terms": [
+   "ventricle of heart"
+  ]
+ },
+ {
+  "id": "anatomy.muscular-system",
+  "terms": [
+   "muscular system"
+  ]
+ },
+ {
+  "id": "anatomy.fascia",
+  "terms": [
+   "fascia"
+  ]
+ },
+ {
+  "id": "anatomy.quadriceps-femoris",
+  "terms": [
+   "quadriceps femoris muscle",
+   "quadriceps"
+  ]
+ },
+ {
+  "id": "anatomy.external-anal-sphincter",
+  "terms": [
+   "external anal sphincter"
+  ]
+ },
+ {
+  "id": "anatomy.supraspinatus",
+  "terms": [
+   "supraspinatus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.bone-marrow",
+  "terms": [
+   "bone marrow"
+  ]
+ },
+ {
+  "id": "anatomy.lymphatic-system",
+  "terms": [
+   "lymphatic system"
+  ]
+ },
+ {
+  "id": "anatomy.lymph-node",
+  "terms": [
+   "lymph node"
+  ]
+ },
+ {
+  "id": "anatomy.thymus",
+  "terms": [
+   "thymus"
+  ]
+ },
+ {
+  "id": "anatomy.temporalis",
+  "terms": [
+   "temporal muscle",
+   "temporalis"
+  ]
+ },
+ {
+  "id": "anatomy.orbicularis-oculi",
+  "terms": [
+   "orbicularis oculi muscle"
+  ]
+ },
+ {
+  "id": "anatomy.orbicularis-oris",
+  "terms": [
+   "orbicularis oris muscle"
+  ]
+ },
+ {
+  "id": "anatomy.buccinator",
+  "terms": [
+   "buccinator muscle"
+  ]
+ },
+ {
+  "id": "anatomy.platysma",
+  "terms": [
+   "platysma muscle",
+   "platysma"
+  ]
+ },
+ {
+  "id": "anatomy.occipitofrontalis",
+  "terms": [
+   "occipitofrontalis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.digastric",
+  "terms": [
+   "digastric muscle"
+  ]
+ },
+ {
+  "id": "anatomy.scalenus-anterior",
+  "terms": [
+   "scalenus anterior",
+   "anterior scalene muscle"
+  ]
+ },
+ {
+  "id": "anatomy.pectoralis-minor",
+  "terms": [
+   "pectoralis minor muscle"
+  ]
+ },
+ {
+  "id": "anatomy.serratus-anterior",
+  "terms": [
+   "serratus anterior muscle"
+  ]
+ },
+ {
+  "id": "anatomy.external-intercostal-muscles",
+  "terms": [
+   "external intercostal muscles"
+  ]
+ },
+ {
+  "id": "anatomy.internal-intercostal-muscles",
+  "terms": [
+   "internal intercostal muscles"
+  ]
+ },
+ {
+  "id": "anatomy.external-oblique",
+  "terms": [
+   "abdominal external oblique muscle",
+   "external oblique"
+  ]
+ },
+ {
+  "id": "anatomy.internal-oblique",
+  "terms": [
+   "abdominal internal oblique muscle",
+   "internal oblique"
+  ]
+ },
+ {
+  "id": "anatomy.transversus-abdominis",
+  "terms": [
+   "transversus abdominis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.erector-spinae",
+  "terms": [
+   "erector spinae muscles",
+   "erector spinae"
+  ]
+ },
+ {
+  "id": "anatomy.rhomboid-major",
+  "terms": [
+   "rhomboid major muscle"
+  ]
+ },
+ {
+  "id": "anatomy.levator-scapulae",
+  "terms": [
+   "levator scapulae muscle"
+  ]
+ },
+ {
+  "id": "anatomy.levator-ani",
+  "terms": [
+   "levator ani"
+  ]
+ },
+ {
+  "id": "anatomy.quadratus-lumborum",
+  "terms": [
+   "quadratus lumborum muscle"
+  ]
+ },
+ {
+  "id": "anatomy.psoas-major",
+  "terms": [
+   "psoas major muscle"
+  ]
+ },
+ {
+  "id": "anatomy.iliacus",
+  "terms": [
+   "iliacus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.iliopsoas",
+  "terms": [
+   "iliopsoas"
+  ]
+ },
+ {
+  "id": "anatomy.infraspinatus",
+  "terms": [
+   "infraspinatus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.teres-major",
+  "terms": [
+   "teres major muscle"
+  ]
+ },
+ {
+  "id": "anatomy.teres-minor",
+  "terms": [
+   "teres minor muscle"
+  ]
+ },
+ {
+  "id": "anatomy.subscapularis",
+  "terms": [
+   "subscapularis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.coracobrachialis",
+  "terms": [
+   "coracobrachialis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.brachialis",
+  "terms": [
+   "brachialis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.brachioradialis",
+  "terms": [
+   "brachioradialis"
+  ]
+ },
+ {
+  "id": "anatomy.pronator-teres",
+  "terms": [
+   "pronator teres muscle"
+  ]
+ },
+ {
+  "id": "anatomy.flexor-carpi-radialis",
+  "terms": [
+   "flexor carpi radialis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.flexor-carpi-ulnaris",
+  "terms": [
+   "flexor carpi ulnaris muscle"
+  ]
+ },
+ {
+  "id": "anatomy.extensor-digitorum",
+  "terms": [
+   "extensor digitorum muscle of hand",
+   "extensor digitorum"
+  ]
+ },
+ {
+  "id": "anatomy.gluteus-medius",
+  "terms": [
+   "gluteus medius muscle"
+  ]
+ },
+ {
+  "id": "anatomy.gluteus-minimus",
+  "terms": [
+   "gluteus minimus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.tensor-fasciae-latae",
+  "terms": [
+   "tensor fasciae latae muscle"
+  ]
+ },
+ {
+  "id": "anatomy.piriformis",
+  "terms": [
+   "piriformis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.rectus-femoris",
+  "terms": [
+   "rectus femoris muscle"
+  ]
+ },
+ {
+  "id": "anatomy.vastus-lateralis",
+  "terms": [
+   "vastus lateralis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.vastus-medialis",
+  "terms": [
+   "vastus medialis"
+  ]
+ },
+ {
+  "id": "anatomy.vastus-intermedius",
+  "terms": [
+   "vastus intermedius muscle"
+  ]
+ },
+ {
+  "id": "anatomy.adductor-longus",
+  "terms": [
+   "adductor longus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.adductor-magnus",
+  "terms": [
+   "adductor magnus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.gracilis",
+  "terms": [
+   "gracilis muscle"
+  ]
+ },
+ {
+  "id": "anatomy.biceps-femoris",
+  "terms": [
+   "biceps femoris muscle"
+  ]
+ },
+ {
+  "id": "anatomy.semitendinosus",
+  "terms": [
+   "semitendinosus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.semimembranosus",
+  "terms": [
+   "semimembranosus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.fibularis-longus",
+  "terms": [
+   "fibularis longus",
+   "peroneus longus"
+  ]
+ },
+ {
+  "id": "anatomy.tibialis-posterior",
+  "terms": [
+   "tibialis posterior muscle"
+  ]
+ },
+ {
+  "id": "anatomy.popliteus",
+  "terms": [
+   "popliteus muscle"
+  ]
+ },
+ {
+  "id": "anatomy.triceps-surae",
+  "terms": [
+   "triceps surae",
+   "calf muscle"
+  ]
+ }
+]

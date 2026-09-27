@@ -1,0 +1,60 @@
+# Editorial muscle selection for the v62 pilot. The library books rarely name individual
+# muscles, so no page threshold applies here: the editor chose commonly taught skeletal
+# muscles from the pinned Wikidata snapshot of TA98 chapter A04 items with English and Latin
+# labels (wikidata-muscles-2026-09-27.json). Wikidata has Turkish labels for few of them;
+# Turkish names below are written by the editor, where unsure the established Latin-based
+# name is used instead of a coined translation. Nothing here is expert review.
+# Columns as in review-v62.txt:
+# qid | A=accept, R=reject | id | category | tr | tr aliases (;) | en | en aliases (;) | la | abbreviations (;) | note | reason
+Q599406|A|temporalis|kas|şakak kası|temporal kas|temporal muscle|temporalis|musculus temporalis||Şakak kemiği (temporal bone) ile karıştırmayın.|Aday süzgecinde şakak kemiğiyle yanlışlıkla aynı sayılmıştı.
+Q530279|A|orbicularis-oculi|kas|göz çevresi halka kası|orbikularis okuli kası|orbicularis oculi muscle||musculus orbicularis oculi|||
+Q302950|A|orbicularis-oris|kas|ağız çevresi halka kası|orbikularis oris kası|orbicularis oris muscle||musculus orbicularis oris|||
+Q846480|A|buccinator|kas|buksinatör kası||buccinator muscle||musculus buccinator|||
+Q841422|A|platysma|kas|platisma||platysma muscle|platysma|platysma|||
+Q932557|A|occipitofrontalis|kas|oksipitofrontal kas||occipitofrontalis muscle||musculus occipitofrontalis|||
+Q645694|A|digastric|kas|iki karınlı kas|digastrik kas|digastric muscle||musculus digastricus|||
+Q914148|A|scalenus-anterior|kas|ön skalen kas||scalenus anterior|anterior scalene muscle|musculus scalenus anterior|||
+Q757083|A|pectoralis-minor|kas|küçük göğüs kası|pektoralis minör|pectoralis minor muscle||musculus pectoralis minor|||
+Q743294|A|serratus-anterior|kas|ön dişli kas|ön testere kası|serratus anterior muscle||musculus serratus anterior|||
+Q834781|A|external-intercostal-muscles|kas|dış kaburgalar arası kaslar|dış interkostal kaslar|external intercostal muscles||musculi intercostales externi|||
+Q1954132|A|internal-intercostal-muscles|kas|iç kaburgalar arası kaslar|iç interkostal kaslar|internal intercostal muscles||musculi intercostales interni|||İngilizce çoğul ad (Latince ile uyumlu).
+Q746123|A|external-oblique|kas|dış eğik karın kası|eksternal oblik kas|abdominal external oblique muscle|external oblique|musculus obliquus externus abdominis|||
+Q1334595|A|internal-oblique|kas|iç eğik karın kası|internal oblik kas|abdominal internal oblique muscle|internal oblique|musculus obliquus internus abdominis|||
+Q1427665|A|transversus-abdominis|kas|enine karın kası|transversus abdominis|transversus abdominis muscle||musculus transversus abdominis|||
+Q774933|A|erector-spinae|kas|omurga dikleştirici kas|erektör spina|erector spinae muscles|erector spinae|musculus erector spinae|||
+Q617389|A|rhomboid-major|kas|büyük eşkenar dörtgen kas|büyük romboid kas|rhomboid major muscle||musculus rhomboideus major|||
+Q755141|A|levator-scapulae|kas|kürek kemiği kaldırıcı kas|levator skapula|levator scapulae muscle||musculus levator scapulae|||Türkçe anatomik ad öne alındı.
+Q537123|A|levator-ani|kas|anüs kaldırıcı kas|levator ani|levator ani||musculus levator ani|||Türkçe anatomik ad öne alındı.
+Q1426052|A|quadratus-lumborum|kas|kare bel kası|kuadratus lumborum|quadratus lumborum muscle||musculus quadratus lumborum|||
+Q1550323|A|psoas-major|kas|büyük bel kası|psoas major|psoas major muscle||musculus psoas major|||
+Q1508879|A|iliacus|kas|iliak kas|iliakus|iliacus muscle||musculus iliacus|||
+Q2083654|A|iliopsoas|kas|iliopsoas kası||iliopsoas||musculus iliopsoas|||
+Q19087|A|infraspinatus|kas|infraspinatus kası|diken altı kası|infraspinatus muscle||musculus infraspinatus|||
+Q56658|A|teres-major|kas|büyük yuvarlak kas|teres major|teres major muscle||musculus teres major|||
+Q74963|A|teres-minor|kas|küçük yuvarlak kas|teres minor|teres minor muscle||musculus teres minor|||
+Q130050|A|subscapularis|kas|kürek altı kası|subskapular kas|subscapularis muscle||musculus subscapularis|||
+Q730359|A|coracobrachialis|kas|korakobrakiyal kas||coracobrachialis muscle||musculus coracobrachialis|||
+Q752441|A|brachialis|kas|brakiyal kas|brachialis kası|brachialis muscle||musculus brachialis||İki başlı kol kası (biceps brachii) ile aynı kas değildir.|
+Q385484|A|brachioradialis|kas|brakiyoradiyal kas||brachioradialis||musculus brachioradialis|||
+Q828232|A|pronator-teres|kas|yuvarlak pronatör kas|pronator teres kası|pronator teres muscle||musculus pronator teres|||Türkçe anatomik ad öne alındı.
+Q914475|A|flexor-carpi-radialis|kas|fleksör karpi radialis kası||flexor carpi radialis muscle||musculus flexor carpi radialis|||
+Q279039|A|flexor-carpi-ulnaris|kas|fleksör karpi ulnaris kası||flexor carpi ulnaris muscle||musculus flexor carpi ulnaris|||Türkçe yazım.
+Q901101|A|extensor-digitorum|kas|ekstansör digitorum kası||extensor digitorum muscle of hand|extensor digitorum|musculus extensor digitorum|||
+Q1126170|A|gluteus-medius|kas|orta kalça kası|gluteus medius|gluteus medius muscle||musculus glutaeus medius|||
+Q523799|A|gluteus-minimus|kas|küçük kalça kası|gluteus minimus|gluteus minimus muscle||musculus glutaeus minimus|||
+Q1429453|A|tensor-fasciae-latae|kas|geniş fasya gerici kas|tensor fasya lata|tensor fasciae latae muscle||musculus tensor fasciae latae|||
+Q1144893|A|piriformis|kas|armut biçimli kas|piriformis|piriformis muscle||musculus piriformis|||
+Q1633822|A|rectus-femoris|kas|düz uyluk kası|rektus femoris|rectus femoris muscle||musculus rectus femoris||Dört başlı uyluk kasının bir başıdır.|
+Q975459|A|vastus-lateralis|kas|dış geniş kas|vastus lateralis|vastus lateralis muscle||musculus vastus lateralis||Dört başlı uyluk kasının bir başıdır.|
+Q1590935|A|vastus-medialis|kas|iç geniş kas|vastus medialis|vastus medialis||musculus vastus medialis||Dört başlı uyluk kasının bir başıdır.|
+Q1812578|A|vastus-intermedius|kas|ara geniş kas|vastus intermedius|vastus intermedius muscle||musculus vastus intermedius||Dört başlı uyluk kasının bir başıdır.|
+Q1428231|A|adductor-longus|kas|uzun yaklaştırıcı kas|adduktor longus|adductor longus muscle||musculus adductor longus|||Türkçe anatomik ad öne alındı.
+Q478040|A|adductor-magnus|kas|büyük yaklaştırıcı kas|adduktor magnus|adductor magnus muscle||musculus adductor magnus|||
+Q1428669|A|gracilis|kas|ince kas|gracilis kası|gracilis muscle||musculus gracilis|||Türkçe anatomik ad öne alındı.
+Q601016|A|biceps-femoris|kas|iki başlı uyluk kası|biseps femoris|biceps femoris muscle||musculus biceps femoris||İki başlı kol kası (biceps brachii) ile karıştırmayın.|
+Q1163035|A|semitendinosus|kas|yarı kirişli kas|semitendinozus|semitendinosus muscle||musculus semitendinosus|||
+Q1270633|A|semimembranosus|kas|yarı zarlı kas|semimembranozus|semimembranosus muscle||musculus semimembranosus|||
+Q1386945|A|fibularis-longus|kas|uzun fibular kas|uzun peroneal kas|fibularis longus|peroneus longus|musculus fibularis longus|||
+Q1551145|A|tibialis-posterior|kas|arka tibial kas|tibialis posterior|tibialis posterior muscle||musculus tibialis posterior|||
+Q1308051|A|popliteus|kas|diz arkası kası|popliteus|popliteus muscle||musculus popliteus|||
+Q431282|A|triceps-surae|kas|üç başlı baldır kası|triseps surae|triceps surae|calf muscle|musculus triceps surae||Gastroknemius ve soleus kaslarının ortak adıdır.|

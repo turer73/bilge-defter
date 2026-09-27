@@ -75,17 +75,24 @@ async function validatePdfImages(book){
 }
 function validPdfView(p){return (p.fitScale===undefined||(!p.pdf&&Number.isFinite(p.fitScale)&&p.fitScale>=0.2&&p.fitScale<=1))&&(p.pdfZoom===undefined||(!!p.pdf&&Number.isFinite(p.pdfZoom)&&p.pdfZoom>=1&&p.pdfZoom<=3))&&(p.viewX===undefined||(!!p.pdf&&Number.isFinite(p.viewX)&&p.viewX>=0&&p.viewX<=1000*(1-1/(p.pdfZoom??1))+1e-7))}
 function pdfZoom(){return page()?.pdf?(page().pdfZoom??1):1}
-function maxViewX(){return page()?.pdf?page().pdf.width*(1-1/pdfZoom()):0}
-function viewX(){return Math.min(maxViewX(),Math.max(0,page()?.viewX||0))}
-function paperScale(){return page()?.pdf?Math.max(1,canvas.getBoundingClientRect().width)/page().pdf.width*pdfZoom():(page()?.fitScale||1)}
-function updatePdfZoom(){const zoom=pdfZoom();document.querySelector('#pdfZoomValue').textContent=`%${Math.round(zoom*100)}`;document.querySelector('#pdfZoomOut').disabled=zoom<=1;document.querySelector('#pdfZoomIn').disabled=zoom>=3}
-function setPdfZoom(value){
-  if(!canEdit()||drawing||pan||!page()?.pdf||!Number.isFinite(value))return;
-  const next=Math.max(1,Math.min(3,Math.round(value*4)/4));if(next===pdfZoom())return;
+// Plain pages zoom for this session only: their saved shape stays the one v60 reads,
+// so rollback and older copies keep working. PDF zoom and position are saved as before.
+const plainViews=new WeakMap();
+function viewZoom(){const p=page();return p?.pdf?pdfZoom():(plainViews.get(p)?.zoom??1)}
+function maxViewX(){const p=page(),zoom=viewZoom();if(!p||zoom===1)return 0;return (p.pdf?p.pdf.width:Math.max(1,canvas.getBoundingClientRect().width)/(p.fitScale||1))*(1-1/zoom)}
+function viewX(){const p=page();return Math.min(maxViewX(),Math.max(0,(p?.pdf?p.viewX:plainViews.get(p)?.x)||0))}
+function setViewX(x){const p=page();if(!p)return;if(p.pdf){p.viewX=x;return}const v=plainViews.get(p);if(v)v.x=x}
+function paperScale(){const p=page();return p?.pdf?Math.max(1,canvas.getBoundingClientRect().width)/p.pdf.width*pdfZoom():(p?.fitScale||1)*viewZoom()}
+function updatePdfZoom(){const zoom=viewZoom();document.querySelector('#pdfZoomValue').textContent=`%${Math.round(zoom*100)}`;document.querySelector('#pdfZoomOut').disabled=zoom<=1;document.querySelector('#pdfZoomIn').disabled=zoom>=3}
+function setViewZoom(value){
+  const p=page();if(!canEdit()||drawing||pan||!p||!Number.isFinite(value))return;
+  const next=Math.max(1,Math.min(3,Math.round(value*4)/4));if(next===viewZoom())return;
   const r=canvas.getBoundingClientRect(),oldScale=paperScale(),cx=viewX()+r.width/(2*oldScale),cy=viewY()+r.height/(2*oldScale);
-  page().pdfZoom=next;const scale=paperScale();page().viewX=Math.max(0,Math.min(maxViewX(),cx-r.width/(2*scale)));page().viewY=Math.max(0,cy-r.height/(2*scale));
-  updatePdfZoom();drawAll();scheduleSave();document.querySelector('#inputState').textContent=`PDF %${Math.round(next*100)} · iki parmakla her yöne kaydırın`;
+  if(p.pdf)p.pdfZoom=next;else{const v=plainViews.get(p)||{zoom:1,x:0};v.zoom=next;plainViews.set(p,v)}
+  const scale=paperScale();setViewX(Math.max(0,Math.min(maxViewX(),cx-r.width/(2*scale))));p.viewY=Math.max(0,cy-r.height/(2*scale));
+  updatePdfZoom();drawAll();scheduleSave();document.querySelector('#inputState').textContent=`${p.pdf?'PDF ':''}%${Math.round(next*100)} · iki parmakla her yöne kaydırın`;
 }
+function setPdfZoom(value){if(page()?.pdf)setViewZoom(value)}
 document.querySelector('#pdfZoomOut').onclick=()=>setPdfZoom(pdfZoom()-.25);document.querySelector('#pdfZoomIn').onclick=()=>setPdfZoom(pdfZoom()+.25);document.querySelector('#pdfFit').onclick=()=>setPdfZoom(1);
 function pdfBackgroundReady(){return !page()?.pdf||(pdfImageSource===page().pdf.image&&pdfImage?.complete&&pdfImage.naturalWidth>0&&!pdfImageFailed)}
 function drawPdfBackground(){

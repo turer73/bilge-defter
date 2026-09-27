@@ -1,0 +1,11 @@
+{
+  "reviewed_on": "2026-09-25",
+  "review": "Publisher and PDF license notices checked for this noncommercial local pilot. Third-party exceptions retained. Not legal advice or academic/clinical acceptance.",
+  "sources": {
+    "lmu-human-physiology": {"sha256": "f1a6444e78ce3ef5569325fce30868b9efcae81d3e7acdb361fde6eb0e478123", "license_pdf_page": 3},
+    "msu-neuroscience": {"sha256": "7c0b8818463a4f9326c9d40db47b3e8c2cc231008e0c7523621636ec7c0d7fcd", "license_pdf_page": 4},
+    "rotel-anatomy-lab": {"sha256": "1b012e5636e51738459763e8a0db5b51f663dd1bd1aca92bba1e2b4fb802e44b", "license_pdf_page": 4},
+    "iowa-physiology-research": {"sha256": "1732f7a842b56646015ea58bfaf1482ba702e821b61f2c4b3a9422d7f18b7f53", "license_pdf_page": 2},
+    "wistech-anatomy": {"sha256": "fe103d7109e60599f2265e14603cf60f8127f214b319cdbe4e799fa5164886e4", "license_pdf_page": 4}
+  }
+}

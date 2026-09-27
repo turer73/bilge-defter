@@ -11,7 +11,7 @@
   }
   const status=document.querySelector('#pwaStatus'),update=document.querySelector('#pwaUpdate');
   if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{
-    if(event.data?.type==='UPDATE_DEFERRED')update.textContent='Güncelleme bekliyor. Diğer Bilge Defter sekme ve uygulama pencerelerini kaydedip kapatın, sonra tekrar deneyin. Açık notlar ve taslaklar korunuyor.';
+    if(event.data?.type==='UPDATE_DEFERRED')update.textContent='Güncelleme bekliyor: başka bir defter sekmesi veya uygulama penceresi açık. Onu kaydedip kapatın, sonra tekrar deneyin. Kütüphane sekmeleri engel değildir; açık notlar ve taslaklar korunuyor.';
   });
   // Oturum kapandiginda gorunen kalici uyari: notlar yerinde kalir, giris yenilenir.
   const sessionBanner=document.createElement('div');sessionBanner.id='accessSession';sessionBanner.hidden=true;sessionBanner.setAttribute('role','alert');

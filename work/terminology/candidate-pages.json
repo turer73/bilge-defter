@@ -1,0 +1,4947 @@
+{
+ "method": "Pages whose normalized text contains the Wikidata English label or an English alias (>2 chars) as a whole phrase, optional plural s/es. Used only to select review candidates.",
+ "books": {
+  "iowa-physiology-research": "a9b4554a2a1585b2e2da571091a372d7fa13f61f66fec8294313181a2a366ae1",
+  "lmu-human-physiology": "0f6d4e679bf6cbbeb71122327e17ced2812e0f4e577b66582320a856fd3205c0",
+  "msu-neuroscience": "0aa7d1314f3b9b0f3d78d5a797afdda69e5c54dec48d3183e6d3747affd87d89",
+  "rotel-anatomy-lab": "4a2f8a21f3f896bf037890a1aa26185a0dfda6626631e3e2d2044d0b9f23b0b9",
+  "wistech-anatomy": "ccabcf3ee78078400fd7104ae095a150716e267efd55e4892d3f7251a2a210f0"
+ },
+ "pages": {
+  "Q83379": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 6
+  },
+  "Q84133": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 22,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 12
+  },
+  "Q212344": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 11
+  },
+  "Q212721": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 2
+  },
+  "Q75839": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 28,
+   "msu-neuroscience": 7,
+   "rotel-anatomy-lab": 11,
+   "wistech-anatomy": 18
+  },
+  "Q75855": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 46,
+   "msu-neuroscience": 7,
+   "rotel-anatomy-lab": 10,
+   "wistech-anatomy": 16
+  },
+  "Q75865": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q82714": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 1
+  },
+  "Q103142": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 131,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 15,
+   "wistech-anatomy": 56
+  },
+  "Q104280": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 9
+  },
+  "Q108158": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 20,
+   "msu-neuroscience": 26,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 5
+  },
+  "Q201363": {
+   "iowa-physiology-research": 10,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 15
+  },
+  "Q202517": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q204113": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 5
+  },
+  "Q3356933": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 6
+  },
+  "Q3830132": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q4115303": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4115976": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 0
+  },
+  "Q497385": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 3
+  },
+  "Q500339": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q501553": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 8
+  },
+  "Q1428231": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1500793": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q319317": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 5
+  },
+  "Q319577": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 3
+  },
+  "Q160695": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 65,
+   "msu-neuroscience": 4,
+   "rotel-anatomy-lab": 25,
+   "wistech-anatomy": 41
+  },
+  "Q164386": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 71,
+   "msu-neuroscience": 19,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 27
+  },
+  "Q552439": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q592726": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q215558": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 6,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 6
+  },
+  "Q223172": {
+   "iowa-physiology-research": 5,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q228027": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 6
+  },
+  "Q176503": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 29,
+   "wistech-anatomy": 29
+  },
+  "Q177105": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 13,
+   "msu-neuroscience": 4,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 13
+  },
+  "Q178366": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 18,
+   "wistech-anatomy": 27
+  },
+  "Q178492": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 6,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 17,
+   "wistech-anatomy": 13
+  },
+  "Q180569": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 9
+  },
+  "Q1517475": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1542748": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q1545154": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q502781": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 13
+  },
+  "Q505531": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 17,
+   "wistech-anatomy": 21
+  },
+  "Q178748": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 4
+  },
+  "Q179422": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 13,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 13,
+   "wistech-anatomy": 42
+  },
+  "Q180323": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 15
+  },
+  "Q180454": {
+   "iowa-physiology-research": 24,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 16,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 17
+  },
+  "Q712604": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 11,
+   "wistech-anatomy": 39
+  },
+  "Q713102": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 23,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 16,
+   "wistech-anatomy": 27
+  },
+  "Q125276": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q129757": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 16,
+   "wistech-anatomy": 40
+  },
+  "Q130983": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 33,
+   "msu-neuroscience": 12,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 10
+  },
+  "Q848340": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 7,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 4
+  },
+  "Q868506": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q174647": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q174778": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 34,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 22
+  },
+  "Q174857": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 3
+  },
+  "Q233345": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 16,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 10,
+   "wistech-anatomy": 10
+  },
+  "Q235378": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 10,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 5
+  },
+  "Q237229": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 9
+  },
+  "Q243999": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 1
+  },
+  "Q662857": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 4
+  },
+  "Q1094885": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 1
+  },
+  "Q1128309": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q1133903": {
+   "iowa-physiology-research": 17,
+   "lmu-human-physiology": 43,
+   "msu-neuroscience": 22,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 12
+  },
+  "Q842083": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 16
+  },
+  "Q842429": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q843533": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q844342": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q846928": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 3
+  },
+  "Q156104": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 10,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 16
+  },
+  "Q158716": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 17,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 20
+  },
+  "Q160108": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q673203": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q681698": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 23
+  },
+  "Q682466": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 9
+  },
+  "Q707135": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q707177": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q707277": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q707592": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q6149477": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q6549215": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7180883": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q7228291": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7234220": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7249448": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7631741": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q173710": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 43,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 16,
+   "wistech-anatomy": 25
+  },
+  "Q173801": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 7
+  },
+  "Q174471": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 12,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 9
+  },
+  "Q254580": {
+   "iowa-physiology-research": 7,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 1
+  },
+  "Q258328": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 17
+  },
+  "Q265868": {
+   "iowa-physiology-research": 8,
+   "lmu-human-physiology": 124,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 101,
+   "wistech-anatomy": 218
+  },
+  "Q268930": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 20,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 10,
+   "wistech-anatomy": 8
+  },
+  "Q1321480": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q1322802": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 0
+  },
+  "Q1365325": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 1
+  },
+  "Q1365684": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 4
+  },
+  "Q507027": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 23,
+   "msu-neuroscience": 4,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 1
+  },
+  "Q515848": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 3
+  },
+  "Q516546": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 1
+  },
+  "Q519368": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 6
+  },
+  "Q535352": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 8
+  },
+  "Q540092": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q542166": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 3
+  },
+  "Q168002": {
+   "iowa-physiology-research": 7,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 14
+  },
+  "Q168291": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 11
+  },
+  "Q184215": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 25,
+   "msu-neuroscience": 42,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 11
+  },
+  "Q184848": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 17,
+   "wistech-anatomy": 10
+  },
+  "Q185080": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 24,
+   "msu-neuroscience": 9,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 8
+  },
+  "Q1710207": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 3
+  },
+  "Q1772935": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q1954084": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q188641": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 14,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 7
+  },
+  "Q189033": {
+   "iowa-physiology-research": 5,
+   "lmu-human-physiology": 92,
+   "msu-neuroscience": 19,
+   "rotel-anatomy-lab": 23,
+   "wistech-anatomy": 31
+  },
+  "Q1558534": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1578686": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 4
+  },
+  "Q1640867": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1647118": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 3
+  },
+  "Q133105": {
+   "iowa-physiology-research": 10,
+   "lmu-human-physiology": 25,
+   "msu-neuroscience": 15,
+   "rotel-anatomy-lab": 34,
+   "wistech-anatomy": 83
+  },
+  "Q134938": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 13,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 10
+  },
+  "Q822050": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 24,
+   "msu-neuroscience": 11,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 12
+  },
+  "Q827681": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 1
+  },
+  "Q229081": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 13,
+   "wistech-anatomy": 10
+  },
+  "Q232358": {
+   "iowa-physiology-research": 13,
+   "lmu-human-physiology": 13,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 24,
+   "wistech-anatomy": 35
+  },
+  "Q232377": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 1
+  },
+  "Q185706": {
+   "iowa-physiology-research": 9,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 13,
+   "wistech-anatomy": 19
+  },
+  "Q185765": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 5
+  },
+  "Q186102": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 4
+  },
+  "Q7886": {
+   "iowa-physiology-research": 21,
+   "lmu-human-physiology": 152,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 15,
+   "wistech-anatomy": 83
+  },
+  "Q7891": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 55,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 14,
+   "wistech-anatomy": 61
+  },
+  "Q169953": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 26,
+   "msu-neuroscience": 8,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 13
+  },
+  "Q170758": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 11,
+   "wistech-anatomy": 14
+  },
+  "Q809756": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q134955": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 36,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 15,
+   "wistech-anatomy": 21
+  },
+  "Q143942": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q146701": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 19
+  },
+  "Q154425": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 13,
+   "wistech-anatomy": 26
+  },
+  "Q792567": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 34,
+   "msu-neuroscience": 17,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 13
+  },
+  "Q193176": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 11,
+   "wistech-anatomy": 10
+  },
+  "Q193472": {
+   "iowa-physiology-research": 5,
+   "lmu-human-physiology": 46,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 16,
+   "wistech-anatomy": 38
+  },
+  "Q193527": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 2
+  },
+  "Q193818": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 14,
+   "wistech-anatomy": 30
+  },
+  "Q5062148": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q5259911": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 0
+  },
+  "Q7873": {
+   "iowa-physiology-research": 43,
+   "lmu-human-physiology": 651,
+   "msu-neuroscience": 9,
+   "rotel-anatomy-lab": 75,
+   "wistech-anatomy": 508
+  },
+  "Q1219805": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 4
+  },
+  "Q1217111": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q599817": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q599966": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q271987": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 0
+  },
+  "Q2043581": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 2
+  },
+  "Q2192288": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 6
+  },
+  "Q2254233": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q620207": {
+   "iowa-physiology-research": 19,
+   "lmu-human-physiology": 27,
+   "msu-neuroscience": 7,
+   "rotel-anatomy-lab": 21,
+   "wistech-anatomy": 34
+  },
+  "Q631471": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q646150": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 22,
+   "msu-neuroscience": 6,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 10
+  },
+  "Q650401": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 21,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 12
+  },
+  "Q873072": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q897760": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q926250": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q273538": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 6,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 5
+  },
+  "Q273543": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 3
+  },
+  "Q275150": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 6
+  },
+  "Q278417": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 1
+  },
+  "Q279039": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7840143": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q11790686": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 3
+  },
+  "Q12764815": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q499": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 8
+  },
+  "Q497": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 35,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 21
+  },
+  "Q561": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q744385": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 12,
+   "msu-neuroscience": 17,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 9
+  },
+  "Q745438": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 18
+  },
+  "Q726543": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 1
+  },
+  "Q728889": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 5
+  },
+  "Q740541": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q9386": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 28,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 10,
+   "wistech-anatomy": 24
+  },
+  "Q9384": {
+   "iowa-physiology-research": 6,
+   "lmu-human-physiology": 75,
+   "msu-neuroscience": 8,
+   "rotel-anatomy-lab": 22,
+   "wistech-anatomy": 61
+  },
+  "Q320561": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 4
+  },
+  "Q326710": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q334143": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 3
+  },
+  "Q336484": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q337247": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 5
+  },
+  "Q338924": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 14,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q340695": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q426139": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 4
+  },
+  "Q429285": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 1
+  },
+  "Q430024": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 1
+  },
+  "Q464543": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 5
+  },
+  "Q33767": {
+   "iowa-physiology-research": 46,
+   "lmu-human-physiology": 41,
+   "msu-neuroscience": 12,
+   "rotel-anatomy-lab": 32,
+   "wistech-anatomy": 52
+  },
+  "Q37017": {
+   "iowa-physiology-research": 8,
+   "lmu-human-physiology": 25,
+   "msu-neuroscience": 20,
+   "rotel-anatomy-lab": 18,
+   "wistech-anatomy": 34
+  },
+  "Q19625": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 3
+  },
+  "Q23640": {
+   "iowa-physiology-research": 28,
+   "lmu-human-physiology": 113,
+   "msu-neuroscience": 14,
+   "rotel-anatomy-lab": 47,
+   "wistech-anatomy": 79
+  },
+  "Q7895": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 28,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 29,
+   "wistech-anatomy": 63
+  },
+  "Q8124": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q54196": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 31,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 12
+  },
+  "Q64386": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 25,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 11
+  },
+  "Q988343": {
+   "iowa-physiology-research": 6,
+   "lmu-human-physiology": 174,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 31,
+   "wistech-anatomy": 152
+  },
+  "Q9404": {
+   "iowa-physiology-research": 10,
+   "lmu-human-physiology": 167,
+   "msu-neuroscience": 46,
+   "rotel-anatomy-lab": 52,
+   "wistech-anatomy": 139
+  },
+  "Q9597": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 28,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 11,
+   "wistech-anatomy": 30
+  },
+  "Q9606": {
+   "iowa-physiology-research": 13,
+   "lmu-human-physiology": 74,
+   "msu-neuroscience": 56,
+   "rotel-anatomy-lab": 34,
+   "wistech-anatomy": 45
+  },
+  "Q15223957": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q16872983": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q24517852": {
+   "iowa-physiology-research": 31,
+   "lmu-human-physiology": 32,
+   "msu-neuroscience": 9,
+   "rotel-anatomy-lab": 25,
+   "wistech-anatomy": 57
+  },
+  "Q66540274": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q66540744": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q92202345": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q92202606": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q37425": {
+   "iowa-physiology-research": 9,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 21,
+   "wistech-anatomy": 38
+  },
+  "Q39888": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 12,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 23,
+   "wistech-anatomy": 40
+  },
+  "Q41055": {
+   "iowa-physiology-research": 6,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 3
+  },
+  "Q196672": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 31,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 18,
+   "wistech-anatomy": 23
+  },
+  "Q198654": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 12,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 4
+  },
+  "Q9609": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 105,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 33,
+   "wistech-anatomy": 93
+  },
+  "Q9612": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 93,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 33
+  },
+  "Q487595": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 2
+  },
+  "Q490172": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q492038": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 10,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 1
+  },
+  "Q1073": {
+   "iowa-physiology-research": 17,
+   "lmu-human-physiology": 205,
+   "msu-neuroscience": 93,
+   "rotel-anatomy-lab": 43,
+   "wistech-anatomy": 119
+  },
+  "Q23852": {
+   "iowa-physiology-research": 7,
+   "lmu-human-physiology": 64,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 98,
+   "wistech-anatomy": 66
+  },
+  "Q28472": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 37,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 16,
+   "wistech-anatomy": 53
+  },
+  "Q1048687": {
+   "iowa-physiology-research": 6,
+   "lmu-human-physiology": 134,
+   "msu-neuroscience": 4,
+   "rotel-anatomy-lab": 26,
+   "wistech-anatomy": 101
+  },
+  "Q1049279": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q1059724": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 6
+  },
+  "Q1064403": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 4
+  },
+  "Q8481": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 13,
+   "wistech-anatomy": 21
+  },
+  "Q9371": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 19,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 26
+  },
+  "Q9368": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 131,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 15,
+   "wistech-anatomy": 70
+  },
+  "Q9637": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 19,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 18
+  },
+  "Q9644": {
+   "iowa-physiology-research": 5,
+   "lmu-human-physiology": 24,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 53,
+   "wistech-anatomy": 107
+  },
+  "Q9645": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 12
+  },
+  "Q9614": {
+   "iowa-physiology-research": 14,
+   "lmu-human-physiology": 25,
+   "msu-neuroscience": 8,
+   "rotel-anatomy-lab": 13,
+   "wistech-anatomy": 26
+  },
+  "Q9618": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 67,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 19,
+   "wistech-anatomy": 27
+  },
+  "Q9620": {
+   "iowa-physiology-research": 49,
+   "lmu-human-physiology": 125,
+   "msu-neuroscience": 39,
+   "rotel-anatomy-lab": 75,
+   "wistech-anatomy": 97
+  },
+  "Q13100": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 1
+  },
+  "Q13143": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 1
+  },
+  "Q13141": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q15173": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 13,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 10
+  },
+  "Q15807": {
+   "iowa-physiology-research": 9,
+   "lmu-human-physiology": 17,
+   "msu-neuroscience": 7,
+   "rotel-anatomy-lab": 19,
+   "wistech-anatomy": 54
+  },
+  "Q16336": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 17,
+   "wistech-anatomy": 24
+  },
+  "Q16343": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 13,
+   "wistech-anatomy": 14
+  },
+  "Q16359": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 1
+  },
+  "Q16363": {
+   "iowa-physiology-research": 5,
+   "lmu-human-physiology": 12,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 22,
+   "wistech-anatomy": 31
+  },
+  "Q16399": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 51,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 13,
+   "wistech-anatomy": 25
+  },
+  "Q2341604": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q2417406": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q2465231": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 5
+  },
+  "Q2536335": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 1
+  },
+  "Q42165": {
+   "iowa-physiology-research": 10,
+   "lmu-human-physiology": 154,
+   "msu-neuroscience": 9,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 43
+  },
+  "Q9631": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 18,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 14
+  },
+  "Q994554": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 16,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 21
+  },
+  "Q1003805": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1029907": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 87,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 25,
+   "wistech-anatomy": 53
+  },
+  "Q2576226": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 10
+  },
+  "Q2724242": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 54,
+   "msu-neuroscience": 39,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 35
+  },
+  "Q2759368": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q2865993": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q3042992": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q3216080": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q3241072": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 2
+  },
+  "Q3241280": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7363": {
+   "iowa-physiology-research": 11,
+   "lmu-human-physiology": 13,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 18
+  },
+  "Q7364": {
+   "iowa-physiology-research": 33,
+   "lmu-human-physiology": 34,
+   "msu-neuroscience": 17,
+   "rotel-anatomy-lab": 25,
+   "wistech-anatomy": 78
+  },
+  "Q9654": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 24,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 11,
+   "wistech-anatomy": 29
+  },
+  "Q9655": {
+   "iowa-physiology-research": 18,
+   "lmu-human-physiology": 134,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 30,
+   "wistech-anatomy": 97
+  },
+  "Q9656": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 3
+  },
+  "Q9377": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 166,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 26,
+   "wistech-anatomy": 74
+  },
+  "Q9382": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 34,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 19,
+   "wistech-anatomy": 27
+  },
+  "Q9635": {
+   "iowa-physiology-research": 11,
+   "lmu-human-physiology": 60,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 17,
+   "wistech-anatomy": 46
+  },
+  "Q9633": {
+   "iowa-physiology-research": 5,
+   "lmu-human-physiology": 29,
+   "msu-neuroscience": 8,
+   "rotel-anatomy-lab": 37,
+   "wistech-anatomy": 54
+  },
+  "Q5880": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 23,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 19
+  },
+  "Q7362": {
+   "iowa-physiology-research": 12,
+   "lmu-human-physiology": 25,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 66
+  },
+  "Q42804": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q43054": {
+   "iowa-physiology-research": 27,
+   "lmu-human-physiology": 182,
+   "msu-neuroscience": 173,
+   "rotel-anatomy-lab": 23,
+   "wistech-anatomy": 55
+  },
+  "Q11083": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 41,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 10,
+   "wistech-anatomy": 18
+  },
+  "Q11090": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 85,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 26,
+   "wistech-anatomy": 36
+  },
+  "Q13075": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 3
+  },
+  "Q352045": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q379858": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 8
+  },
+  "Q383249": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q494603": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 13,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 10
+  },
+  "Q497220": {
+   "iowa-physiology-research": 5,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 8
+  },
+  "Q43801": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q47273": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 68,
+   "msu-neuroscience": 28,
+   "rotel-anatomy-lab": 24,
+   "wistech-anatomy": 35
+  },
+  "Q48286": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 4
+  },
+  "Q74959": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 3
+  },
+  "Q83360": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 16
+  },
+  "Q101004": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 57,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 16,
+   "wistech-anatomy": 43
+  },
+  "Q105499": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 3
+  },
+  "Q119744": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q120463": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 6,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 5
+  },
+  "Q130243": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 5
+  },
+  "Q133279": {
+   "iowa-physiology-research": 26,
+   "lmu-human-physiology": 133,
+   "msu-neuroscience": 23,
+   "rotel-anatomy-lab": 30,
+   "wistech-anatomy": 112
+  },
+  "Q143634": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q143652": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q152092": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q156075": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 12
+  },
+  "Q156871": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 50,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 16
+  },
+  "Q162595": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 22,
+   "wistech-anatomy": 25
+  },
+  "Q163987": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 10,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 9
+  },
+  "Q167131": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q169342": {
+   "iowa-physiology-research": 7,
+   "lmu-human-physiology": 10,
+   "msu-neuroscience": 34,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 19
+  },
+  "Q171064": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 68,
+   "msu-neuroscience": 5,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 36
+  },
+  "Q172605": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 13
+  },
+  "Q173318": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 8
+  },
+  "Q175449": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 33,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 16
+  },
+  "Q176007": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q177744": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q181100": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 22,
+   "wistech-anatomy": 57
+  },
+  "Q181602": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 20,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 7
+  },
+  "Q182228": {
+   "iowa-physiology-research": 5,
+   "lmu-human-physiology": 56,
+   "msu-neuroscience": 37,
+   "rotel-anatomy-lab": 13,
+   "wistech-anatomy": 12
+  },
+  "Q182895": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 5
+  },
+  "Q185317": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 4
+  },
+  "Q185438": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q185589": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 4
+  },
+  "Q186029": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 9,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 6
+  },
+  "Q187181": {
+   "iowa-physiology-research": 15,
+   "lmu-human-physiology": 51,
+   "msu-neuroscience": 97,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 9
+  },
+  "Q187215": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 9
+  },
+  "Q189218": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q189637": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q189763": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 4,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 4
+  },
+  "Q189961": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 13,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 4
+  },
+  "Q190140": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 5
+  },
+  "Q192298": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q192398": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 7
+  },
+  "Q192419": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 27,
+   "msu-neuroscience": 4,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 6
+  },
+  "Q192570": {
+   "iowa-physiology-research": 5,
+   "lmu-human-physiology": 25,
+   "msu-neuroscience": 10,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 9
+  },
+  "Q193302": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 13,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 14
+  },
+  "Q199507": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 15,
+   "wistech-anatomy": 13
+  },
+  "Q206280": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 21,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 6
+  },
+  "Q209704": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 1
+  },
+  "Q211159": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 7
+  },
+  "Q212328": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 10,
+   "wistech-anatomy": 5
+  },
+  "Q212743": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 14,
+   "wistech-anatomy": 26
+  },
+  "Q214275": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 5
+  },
+  "Q217259": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 6
+  },
+  "Q223851": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 4,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 3
+  },
+  "Q223903": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 3
+  },
+  "Q228537": {
+   "iowa-physiology-research": 14,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 15,
+   "wistech-anatomy": 31
+  },
+  "Q233316": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 15,
+   "wistech-anatomy": 11
+  },
+  "Q237632": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 14
+  },
+  "Q242160": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 4
+  },
+  "Q243784": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 10
+  },
+  "Q247359": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 0
+  },
+  "Q405478": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 7
+  },
+  "Q445203": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q464210": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 26,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q469660": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 7
+  },
+  "Q483213": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 28,
+   "wistech-anatomy": 28
+  },
+  "Q487082": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q488727": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q489722": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q489947": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q490059": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 6
+  },
+  "Q491726": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q492482": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q493430": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 10
+  },
+  "Q494694": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q496246": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q498171": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q498179": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q498935": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q499316": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q499802": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q499897": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 3
+  },
+  "Q500634": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q501908": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 50,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 17
+  },
+  "Q502164": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 4
+  },
+  "Q502730": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 20,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 26,
+   "wistech-anatomy": 40
+  },
+  "Q503427": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q504536": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 5
+  },
+  "Q515917": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q518616": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q537123": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q540598": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 6
+  },
+  "Q545171": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q546523": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 35,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 33
+  },
+  "Q550934": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 5,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q551808": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 5,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 2
+  },
+  "Q552082": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 8
+  },
+  "Q552087": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 3
+  },
+  "Q254855": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q261411": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q265617": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 3
+  },
+  "Q271762": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 5
+  },
+  "Q281473": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 5
+  },
+  "Q281524": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q282371": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q283673": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q284600": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 1
+  },
+  "Q286020": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 26,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 7
+  },
+  "Q286978": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q302896": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 13,
+   "wistech-anatomy": 17
+  },
+  "Q307869": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 3
+  },
+  "Q317857": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 5
+  },
+  "Q318773": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 2
+  },
+  "Q319584": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 2
+  },
+  "Q319636": {
+   "iowa-physiology-research": 8,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 3
+  },
+  "Q320524": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 5
+  },
+  "Q324663": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 19,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 11
+  },
+  "Q356002": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 39,
+   "msu-neuroscience": 9,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 10
+  },
+  "Q367423": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 14
+  },
+  "Q382417": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q388209": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 22,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 13
+  },
+  "Q402431": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q573181": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q575064": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 3
+  },
+  "Q578786": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 9
+  },
+  "Q580326": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 0
+  },
+  "Q585980": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q588981": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q596803": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q597179": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q598769": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q599406": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 3
+  },
+  "Q604046": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q609753": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 1
+  },
+  "Q611127": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 2
+  },
+  "Q612258": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q613885": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q615837": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q619632": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 9
+  },
+  "Q637545": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q641973": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 21,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 17
+  },
+  "Q644945": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q645694": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q650891": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 5
+  },
+  "Q655357": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 3
+  },
+  "Q656328": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q658424": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q664439": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q666412": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 22,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 8
+  },
+  "Q668063": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 1
+  },
+  "Q677253": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 5
+  },
+  "Q682122": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 7
+  },
+  "Q691653": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 2
+  },
+  "Q691942": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 3
+  },
+  "Q707174": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 7
+  },
+  "Q707326": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 3
+  },
+  "Q707616": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 3
+  },
+  "Q707674": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q712294": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 41,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 11,
+   "wistech-anatomy": 16
+  },
+  "Q719219": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q725408": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 1
+  },
+  "Q726562": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q728309": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 5
+  },
+  "Q732362": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q735505": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 5
+  },
+  "Q736995": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 11
+  },
+  "Q737313": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 3
+  },
+  "Q746416": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 43,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 10,
+   "wistech-anatomy": 19
+  },
+  "Q747023": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 5
+  },
+  "Q749520": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 10,
+   "msu-neuroscience": 13,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 7
+  },
+  "Q749637": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 15,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 5
+  },
+  "Q750588": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q752369": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q752693": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 4
+  },
+  "Q753278": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 15,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q755141": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q763062": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q767116": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 18,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 6
+  },
+  "Q776672": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 3
+  },
+  "Q780355": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q815334": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 6,
+   "msu-neuroscience": 16,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q816052": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 3
+  },
+  "Q828232": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q833434": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q836581": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q839483": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q839508": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 25,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 6
+  },
+  "Q840572": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q841423": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 20
+  },
+  "Q846961": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 1
+  },
+  "Q847084": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q848382": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 2
+  },
+  "Q848390": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q849277": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q851111": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 4
+  },
+  "Q857940": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q862867": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 5
+  },
+  "Q866324": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 46,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 20,
+   "wistech-anatomy": 29
+  },
+  "Q869202": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q899783": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q900457": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 11,
+   "wistech-anatomy": 6
+  },
+  "Q912422": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q919109": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q925888": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q927901": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q931381": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q936531": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 8
+  },
+  "Q937076": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 16,
+   "rotel-anatomy-lab": 16,
+   "wistech-anatomy": 12
+  },
+  "Q940147": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 1
+  },
+  "Q942068": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 3
+  },
+  "Q953556": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 5
+  },
+  "Q956224": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 6,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q958194": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q968731": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q975054": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q1003175": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1030169": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 12,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 4
+  },
+  "Q1038781": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1046513": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 51
+  },
+  "Q1048080": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 4
+  },
+  "Q1056395": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 6,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 6
+  },
+  "Q1068553": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 5
+  },
+  "Q1072007": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1072039": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q1074839": {
+   "iowa-physiology-research": 5,
+   "lmu-human-physiology": 94,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 44
+  },
+  "Q1081574": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 3
+  },
+  "Q1092311": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1109417": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 3
+  },
+  "Q1131385": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 5
+  },
+  "Q1135825": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1137072": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 12,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 1
+  },
+  "Q1148039": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q1163923": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 14,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 5
+  },
+  "Q1166866": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1172095": {
+   "iowa-physiology-research": 7,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 1
+  },
+  "Q1174313": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1211892": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 3
+  },
+  "Q1233836": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 22,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 16
+  },
+  "Q1256980": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 6,
+   "msu-neuroscience": 7,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 4
+  },
+  "Q1263617": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 4
+  },
+  "Q1263629": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 2
+  },
+  "Q1293405": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 14,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 23,
+   "wistech-anatomy": 23
+  },
+  "Q1319792": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 17,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1340833": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 8
+  },
+  "Q1364876": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 1
+  },
+  "Q1377526": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 32
+  },
+  "Q1394389": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 3
+  },
+  "Q1420571": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1422654": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q1428669": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q1431311": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 3
+  },
+  "Q1455226": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q1457751": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q1476178": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 5,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1493503": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1501128": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 1
+  },
+  "Q1535320": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q1540378": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1543208": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 3
+  },
+  "Q1547173": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q1558507": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1568153": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 6
+  },
+  "Q1568920": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1570272": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 6
+  },
+  "Q1623349": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1631914": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1637759": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1640627": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q1640882": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q1684243": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1751717": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1758383": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 17,
+   "msu-neuroscience": 20,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 7
+  },
+  "Q1758798": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 7
+  },
+  "Q1772886": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 3
+  },
+  "Q1817033": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1823851": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1884889": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1892702": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1897537": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q1973610": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 14,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 6
+  },
+  "Q2002035": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q2070480": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q2072063": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 3
+  },
+  "Q2080394": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q2264329": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 12
+  },
+  "Q2298243": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q2307492": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 4
+  },
+  "Q2333240": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q2341350": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 5
+  },
+  "Q2361541": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 10,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 3
+  },
+  "Q2379958": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q2393792": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q2409399": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q2511666": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q2512768": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 4
+  },
+  "Q2562472": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q2601133": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q2624131": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q2635510": {
+   "iowa-physiology-research": 4,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 3
+  },
+  "Q2658295": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 4
+  },
+  "Q2713567": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 10,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q2760639": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q2849638": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q3091615": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q3239259": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q3268027": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q3269830": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q3270899": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q3278179": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q3312266": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 6
+  },
+  "Q3319085": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q3322746": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q3409626": {
+   "iowa-physiology-research": 28,
+   "lmu-human-physiology": 105,
+   "msu-neuroscience": 14,
+   "rotel-anatomy-lab": 44,
+   "wistech-anatomy": 76
+  },
+  "Q3493614": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q3555260": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q3885823": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4115298": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4117816": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4175787": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4180183": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4423908": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4428834": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4465020": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4672542": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4705111": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4771356": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q4771394": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4800963": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4809336": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q4845565": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q4866185": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5038337": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5064080": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5064104": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5104519": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5122306": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5306004": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q5367024": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5404139": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5447591": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5454211": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q5505915": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5509192": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5600832": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5797584": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5860395": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q5934112": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5947899": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5971384": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q5982337": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 19,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 18,
+   "wistech-anatomy": 15
+  },
+  "Q6013765": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q6029274": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q6029380": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q6029401": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q6031439": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q6031465": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q6047801": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q6125961": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 1
+  },
+  "Q6133133": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 1
+  },
+  "Q6321987": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 11
+  },
+  "Q6553990": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q6581923": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 3
+  },
+  "Q11722446": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 3
+  },
+  "Q12636757": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q12738044": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q13168533": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 50,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 36,
+   "wistech-anatomy": 24
+  },
+  "Q14123862": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 9,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 5
+  },
+  "Q14942903": {
+   "iowa-physiology-research": 3,
+   "lmu-human-physiology": 8,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 15,
+   "wistech-anatomy": 28
+  },
+  "Q66568750": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q66590373": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7365": {
+   "iowa-physiology-research": 75,
+   "lmu-human-physiology": 436,
+   "msu-neuroscience": 30,
+   "rotel-anatomy-lab": 148,
+   "wistech-anatomy": 306
+  },
+  "Q9385": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 17,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 11,
+   "wistech-anatomy": 10
+  },
+  "Q9604": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 19,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 31,
+   "wistech-anatomy": 46
+  },
+  "Q9621": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 0
+  },
+  "Q9625": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 14,
+   "msu-neuroscience": 2,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 19
+  },
+  "Q9629": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 29,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 13
+  },
+  "Q9649": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 44,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 39,
+   "wistech-anatomy": 49
+  },
+  "Q11101": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q16295": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 7
+  },
+  "Q16298": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 11
+  },
+  "Q16313": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 12,
+   "wistech-anatomy": 16
+  },
+  "Q16317": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 14,
+   "wistech-anatomy": 11
+  },
+  "Q16321": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 6,
+   "wistech-anatomy": 6
+  },
+  "Q16331": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 5
+  },
+  "Q16332": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 8,
+   "wistech-anatomy": 7
+  },
+  "Q19065": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 22,
+   "msu-neuroscience": 3,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 9
+  },
+  "Q25581": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 5
+  },
+  "Q36864": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 6,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 9,
+   "wistech-anatomy": 13
+  },
+  "Q6967224": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q6996829": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q7060553": {
+   "iowa-physiology-research": 43,
+   "lmu-human-physiology": 156,
+   "msu-neuroscience": 20,
+   "rotel-anatomy-lab": 109,
+   "wistech-anatomy": 158
+  },
+  "Q7075707": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7135649": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7234198": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 11,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q7234205": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  },
+  "Q7234239": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7576658": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7621088": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q7643635": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7643664": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7643678": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7644733": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7644751": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7911911": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7920280": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7920337": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q7941948": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q8265768": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 1,
+   "rotel-anatomy-lab": 5,
+   "wistech-anatomy": 22
+  },
+  "Q9292294": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 0
+  },
+  "Q10369487": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 0
+  },
+  "Q11238641": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 11,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 18
+  },
+  "Q11345481": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 4,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q11392181": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 1,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 0
+  },
+  "Q38155": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 3,
+   "wistech-anatomy": 2
+  },
+  "Q41500": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 19,
+   "msu-neuroscience": 14,
+   "rotel-anatomy-lab": 18,
+   "wistech-anatomy": 31
+  },
+  "Q42586": {
+   "iowa-physiology-research": 11,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 11,
+   "wistech-anatomy": 24
+  },
+  "Q43748": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 2,
+   "wistech-anatomy": 5
+  },
+  "Q47038": {
+   "iowa-physiology-research": 1,
+   "lmu-human-physiology": 5,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 7,
+   "wistech-anatomy": 9
+  },
+  "Q48228": {
+   "iowa-physiology-research": 2,
+   "lmu-human-physiology": 2,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 4,
+   "wistech-anatomy": 7
+  },
+  "Q48360": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 7,
+   "msu-neuroscience": 14,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q54393": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 0,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 1,
+   "wistech-anatomy": 2
+  },
+  "Q54795": {
+   "iowa-physiology-research": 0,
+   "lmu-human-physiology": 3,
+   "msu-neuroscience": 0,
+   "rotel-anatomy-lab": 0,
+   "wistech-anatomy": 2
+  }
+ }
+}

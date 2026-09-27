@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v52</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v66</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -140,7 +140,7 @@
   </form>
 </dialog>
 <dialog id="notebookDialog" aria-labelledby="notebookTitle"><div class="tools-heading"><h2 id="notebookTitle">Yeni defter</h2><button class="btn" id="notebookClose" aria-label="Defter işlemlerini kapat">× Kapat</button></div><div class="tools-content"><form id="notebookForm"><label for="notebookName">Defter / ders adı</label><input id="notebookName" type="text" maxlength="80" required autocomplete="off" placeholder="Örn. Anatomi"><button class="btn primary" type="submit">Defteri kaydet</button></form><button class="btn danger" id="deleteNotebook" hidden>Boş defteri sil</button><p class="recovery-note">Genel defteri kalıcıdır. Diğer defterler yalnız boşken silinebilir; sayfalar otomatik silinmez.</p></div></dialog>
-<dialog id="eraserDialog" aria-labelledby="eraserTitle"><div class="tools-heading"><h2 id="eraserTitle">Silgi boyutu</h2><button class="btn" id="eraserClose" aria-label="Silgi boyutunu kapat">× Kapat</button></div><div class="tools-content"><div class="eraser-presets" role="group" aria-label="Hızlı silgi boyutları"><button class="btn" data-eraser-size="8">8</button><button class="btn" data-eraser-size="16">16</button><button class="btn" data-eraser-size="32">32</button><button class="btn" data-eraser-size="64">64</button></div><label for="eraserSize">Silme çapı · <output id="eraserSizeValue" for="eraserSize">12 px</output></label><input id="eraserSize" type="range" min="1" max="64" value="12"><div class="eraser-sample" role="img" aria-label="Silgi çapı önizlemesi"><div id="eraserCircle"></div></div><p class="recovery-note">Yalnız silgi boyutu değişir. Kalem kalınlığı korunur. Bu ayar açık oturumda hatırlanır.</p><button class="btn primary" id="eraserDone">Silmeye dön</button></div></dialog>
+<dialog id="eraserDialog" aria-labelledby="eraserTitle"><div class="tools-heading"><h2 id="eraserTitle">Silgi boyutu</h2><button class="btn" id="eraserClose" aria-label="Silgi boyutunu kapat">× Kapat</button></div><div class="tools-content"><div class="eraser-presets" role="group" aria-label="Hızlı silgi boyutları"><button class="btn" data-eraser-size="8">8</button><button class="btn" data-eraser-size="16">16</button><button class="btn" data-eraser-size="32">32</button><button class="btn" data-eraser-size="64">64</button></div><label for="eraserSize">Silme çapı · <output id="eraserSizeValue" for="eraserSize">12 px</output></label><input id="eraserSize" type="range" min="1" max="64" value="12"><div class="eraser-sample" role="img" aria-label="Silgi çapı önizlemesi"><div id="eraserCircle"></div></div><p class="recovery-note">Yalnız silgi boyutu değişir. Kalem kalınlığı korunur. Bu ayar bu cihazda ve hesapta hatırlanır; tarayıcı depolaması kapalıysa kalıcı olmayabilir.</p><button class="btn primary" id="eraserDone">Silmeye dön</button></div></dialog>
 <dialog id="trashDialog" aria-labelledby="trashTitle"><div class="tools-heading"><h2 id="trashTitle">Çöp Kutusu</h2><button class="btn" id="trashClose" aria-label="Çöp Kutusunu kapat">× Kapat</button></div><div class="tools-content"><p class="recovery-note">Silinen sayfalar burada kalır; otomatik temizlenmez. JSON yedeğine dahildir. Tarayıcı verileri silinirse bu kopyalar da kaybolur; bağımsız yedek alın.</p><div id="trashList"></div></div></dialog>
 <dialog id="backupDialog" aria-labelledby="backupTitle" aria-describedby="backupWarning">
   <div class="tools-heading"><h2 id="backupTitle">Yedeği kontrol edin</h2><button class="btn" id="backupClose" aria-label="Yedek önizlemesini kapat">× Kapat</button></div>
@@ -160,13 +160,20 @@
 <script src="planner-workspace.js"></script>
 <script>
 let DB='bilge-defter-test-v1'; const STORE='state'; let db,state,activeId,tool='pen',drawing=false,current=null,saveTimer,inkSaveTimer,activePointer=null,ready=false;
-let storedJSON=null,editRevision=0,savedRevision=0,savePromise=null,saveFailed=false,saveConflict=false,importing=false,allowLeave=false,failureMessage='';
+let storedJSON=null,editRevision=0,savedRevision=0,savePromise=null,saveFailed=false,saveConflict=false,importing=false,allowLeave=false,failureMessage='',failureCode='';
 function canEdit(){return ready&&!window.BilgeAccount?.locked&&!saveConflict&&!importing&&!backupDialog.open&&!pdfBusy&&!pdfDialog.open&&!pdfExportDialog.open&&!mediaBusy&&!mediaPlacement&&!mediaSelecting&&!plannerDialog.open}
 // Immediate undo is session-only; an independent pre-clear copy also persists in Trash.
 const clearedPages=new Map();
 // Each tool retains its own width during this open session.
 const toolWidths={pen:4,marker:4,eraser:12};
+// Pen and highlighter keep their own colours; the colour input always shows the current tool's.
+const toolColors={pen:'#173b36',marker:'#f5c400'};
+let preferencesReady=false;
+function penColor(){return tool==='pen'?document.querySelector('#color').value:toolColors.pen}
 const touchPoints=new Map(),strokeBounds=new WeakMap();let pan=null,suppressTouch=false,activeInputType=null,pinchT=null,pinchDirty=false;
+let viewportFrame=null;
+function queueViewportRender(){if(viewportFrame!==null)return;viewportFrame=requestAnimationFrame(()=>{viewportFrame=null;drawAll({viewportOnly:true})})}
+function finishViewportRender(){if(viewportFrame!==null)drawAll({viewportOnly:true})}
 const canvas=document.querySelector('#canvas'),ctx=canvas.getContext('2d'),saveEl=document.querySelector('#saveState');
 const backupDialog=document.querySelector('#backupDialog');let pendingBackup=null,backupRead=0;
 const eraserDialog=document.querySelector('#eraserDialog');
@@ -212,7 +219,7 @@ for(const type of ['touchstart','touchmove','gesturestart','gesturechange'])writ
 // Pinch zoom on PDF pages: touch events carry every active finger at once,
 // so the gesture distance is measured consistently (pointer events arrive
 // one finger at a time and would confuse a two-finger pan with a pinch).
-writingSurface.addEventListener('touchstart',e=>{if(!canEdit()||!page()?.pdf||e.touches.length!==2){return}const [a,b]=e.touches;pinchT={startDist:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),startZoom:pdfZoom(),startMidX:(a.clientX+b.clientX)/2,startMidY:(a.clientY+b.clientY)/2};pinchDirty=false},{passive:true});
+writingSurface.addEventListener('touchstart',e=>{if(!canEdit()||!page()?.pdf||e.touches.length!==2||(drawing&&activeInputType!=='touch')){return}const [a,b]=e.touches;pinchT={startDist:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),startZoom:pdfZoom(),startMidX:(a.clientX+b.clientX)/2,startMidY:(a.clientY+b.clientY)/2};pinchDirty=false},{passive:true});
 writingSurface.addEventListener('touchmove',e=>{
   if(!pinchT||!page()?.pdf||e.touches.length!==2)return;
   const [a,b]=e.touches,dist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
@@ -224,30 +231,70 @@ writingSurface.addEventListener('touchmove',e=>{
   page().viewX=Math.max(0,Math.min(maxViewX(),cx-mx/scale));page().viewY=Math.max(0,cy-my/scale);
   updatePdfZoom();drawAll();pinchDirty=true;
 },{passive:true});
-for(const type of ['touchend','touchcancel'])writingSurface.addEventListener(type,e=>{if(pinchT&&e.touches.length<2){pinchT=null;if(pinchDirty){pinchDirty=false;checkpointDrawing();void flushSave()}}},{passive:true});
-function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>{db=r.result;ok()};r.onerror=()=>no(r.error)})}
-function dbGet(key='app'){return new Promise((ok,no)=>{const r=db.transaction(STORE).objectStore(STORE).get(key);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
-function dbPut(snapshot,{preservePrevious=false}={}){
-  if(!validState(snapshot))return Promise.reject(new Error('Geçersiz kayıt engellendi. Son sağlam kayıt korundu.'));
-  const nextJSON=JSON.stringify(snapshot),payload=JSON.parse(nextJSON),expected=storedJSON;
+for(const type of ['touchend','touchcancel'])writingSurface.addEventListener(type,e=>{if(pinchT&&e.touches.length<2){pinchT=null;if(pinchDirty){pinchDirty=false;markViewChanged();scheduleViewSave()}}},{passive:true});
+function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>{const c=r.result;c.onclose=()=>{if(db===c)db=null};c.onversionchange=()=>{c.close();if(db===c)db=null};db=c;ok()};r.onerror=()=>no(r.error)})}
+// WebKit can drop an IndexedDB connection (app in the background, storage process evicted under
+// memory pressure). A lost connection is reopened and the step retried once.
+async function withDB(run){for(let attempt=0;;attempt++){if(!db)await openDB();try{return await run(db)}catch(e){if(attempt||e?.name==='NotebookConflict')throw e;try{db?.close()}catch{}db=null}}}
+function dbGet(key='app'){return withDB(d=>new Promise((ok,no)=>{const r=d.transaction(STORE).objectStore(STORE).get(key);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))}
+// The pen thread validates and serializes the snapshot once; save-worker.js parses,
+// reads back, compares and writes the notebook. No worker: the original path below.
+// Each worker save also stores a small marker (this page's writer id, save number, text length).
+// If the worker stops or stalls, a new worker continues only when the stored marker is the last
+// one this page wrote or was writing; anything else is a real conflict, never overwritten.
+let saveWorker=null,saveSeq=0,saveMarker=null,pendingMarker=null,workerLost=false;const saveWaiters=new Map(),saveWriter=newPageId();
+function workerReply({data}){const waiter=saveWaiters.get(data.id);if(!waiter)return;saveWaiters.delete(data.id);if(data.ok)waiter.ok();else waiter.no(Object.assign(new Error(data.message),{name:data.name}))}
+function saveWorkerFailed(w){
+  if(saveWorker!==w)return;saveWorker=null;workerLost=true;try{w.terminate()}catch{}
+  for(const waiter of saveWaiters.values())waiter.no(Object.assign(new Error('Kayıt işlemcisi yanıt vermedi'),{name:'SaveWorkerLost'}));saveWaiters.clear();
+}
+function startSaveWorker(message,timeout){
   return new Promise((ok,no)=>{
-    let conflict;const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE),read=store.get('app');
+    const lost=()=>Object.assign(new Error('Kayıt işlemcisi başlamadı'),{name:'SaveWorkerLost'});
+    let w;try{w=new Worker('save-worker.js')}catch{no(lost());return}
+    const id=++saveSeq,timer=setTimeout(()=>{if(saveWaiters.delete(id)){w.terminate();no(lost())}},timeout);
+    w.onmessage=workerReply;
+    w.onerror=w.onmessageerror=e=>{e?.preventDefault?.();if(saveWorker===w)saveWorkerFailed(w);else if(saveWaiters.delete(id)){clearTimeout(timer);w.terminate();no(lost())}};
+    saveWaiters.set(id,{ok:()=>{clearTimeout(timer);saveWorker=w;workerLost=false;ok(true)},no:e=>{clearTimeout(timer);w.terminate();no(e)}});
+    try{w.postMessage({...message,id,db:DB,store:STORE})}catch{saveWaiters.delete(id);clearTimeout(timer);w.terminate();no(lost())}
+  });
+}
+function workerPut(w,json,preservePrevious){return new Promise((ok,no)=>{
+  const id=++saveSeq,marker={writer:saveWriter,seq:id,length:json.length};pendingMarker=marker;
+  // A worker that never answers must not leave the save pending forever.
+  const timer=setTimeout(()=>{if(saveWaiters.has(id))saveWorkerFailed(w)},60000);
+  saveWaiters.set(id,{ok:()=>{clearTimeout(timer);saveMarker=marker;ok()},no:e=>{clearTimeout(timer);no(e)}});
+  try{w.postMessage({type:'put',id,db:DB,store:STORE,json,preservePrevious,marker})}catch(e){saveWaiters.delete(id);clearTimeout(timer);no(e)}
+})}
+async function dbPutWorker(json,preservePrevious){
+  for(let attempt=0;;attempt++){
+    if(!saveWorker)await startSaveWorker({type:'adopt',accept:[saveMarker,pendingMarker].filter(Boolean)},15000);
+    try{return await workerPut(saveWorker,json,preservePrevious)}catch(e){if(e?.name!=='SaveWorkerLost'||attempt)throw e}
+  }
+}
+function dbPut(snapshot,{preservePrevious=false,json,cached=false}={}){
+  if(!(cached?validStateCached(snapshot):validState(snapshot)))return Promise.reject(new Error('Geçersiz kayıt engellendi. Son sağlam kayıt korundu.'));
+  if(saveWorker||workerLost)return dbPutWorker(json??JSON.stringify(snapshot),preservePrevious);
+  const nextJSON=json??JSON.stringify(snapshot),payload=JSON.parse(nextJSON),expected=storedJSON;
+  return withDB(d=>new Promise((ok,no)=>{
+    let conflict;const tx=d.transaction(STORE,'readwrite'),store=tx.objectStore(STORE),read=store.get('app');
     tx.oncomplete=()=>{storedJSON=nextJSON;ok()};tx.onabort=()=>no(conflict||tx.error||new Error('Kayıt işlemi iptal edildi'));tx.onerror=()=>{};
     read.onsuccess=()=>{
       const actual=read.result===undefined?null:JSON.stringify(read.result);
+      if(actual===nextJSON)return;
       if(actual!==expected){conflict=new Error('Başka bir sekme kayıtlı defteri değiştirdi');conflict.name='NotebookConflict';tx.abort();return}
       const meta=store.get('sync-state-v2');
       meta.onsuccess=()=>{try{if(preservePrevious&&read.result!==undefined)store.put(read.result,'before-import');store.put(payload,'app');store.put({...meta.result,dirty:true},'sync-state-v2')}catch(e){conflict=e;try{tx.abort()}catch{}}};
     };
-  });
+  }));
 }
 // The receipt and dirty flag are committed atomically with a comparison against
 // the exact notebook that was sent. A late upload must not acknowledge later edits.
-function dbAcknowledgeSync(expected,receipt){return new Promise((ok,no)=>{
-  const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE),read=store.get('app');let dirty=true;
+function dbAcknowledgeSync(expected,receipt){return withDB(d=>new Promise((ok,no)=>{
+  const tx=d.transaction(STORE,'readwrite'),store=tx.objectStore(STORE),read=store.get('app');let dirty=true;
   read.onsuccess=()=>{dirty=JSON.stringify(read.result)!==expected;store.put({...receipt,dirty},'sync-state-v2')};
   tx.oncomplete=()=>ok(dirty);tx.onabort=()=>no(tx.error||new Error('Eşitleme kaydı tamamlanamadı'));tx.onerror=()=>{};
-})}
+}))}
 function newPageId(){
   if(typeof globalThis.crypto?.randomUUID==='function')return globalThis.crypto.randomUUID();
   // Page identifiers are local data keys, not credentials. getRandomValues also works on HTTP.
@@ -271,6 +318,13 @@ function applyPaperColor(){
     else if(pattern==='dotted'){paper.style.backgroundImage=`radial-gradient(${lc} 1.5px, transparent 1.5px)`;paper.style.backgroundSize='32px 32px'}
     else{paper.style.backgroundImage=`linear-gradient(${lc} 1px, transparent 1px)`;paper.style.backgroundSize='100% 32px'}
   }
+  paperGrid();
+}
+// Lines sit 32 page units apart, so they follow the ink through fit and zoom.
+function paperGrid(scale=paperScale(),offset=viewY()){
+  const paper=canvas.parentElement,pattern=paperPattern(),step=32*scale,size=pattern==='grid'||pattern==='dotted'?`${step}px ${step}px`:`100% ${step}px`;
+  if(paper.style.backgroundSize!==size)paper.style.backgroundSize=size;
+  paper.style.backgroundPosition=pattern==='grid'||pattern==='dotted'?`${-(viewX()*scale%step)}px ${-(offset*scale%step)}px`:`0 ${-(offset*scale%step)}px`;
 }
 function updatePaperControls(){
   const color=paperColor(),pattern=paperPattern();document.querySelector('#paperColor').value=color;document.querySelector('#paperColor').disabled=!page();
@@ -300,16 +354,23 @@ function validState(x){
 }
 function isDirty(){return editRevision!==savedRevision}
 function renderSaveStatus(){
-  saveEl.textContent=saveConflict?'Başka sekmede değişiklik var — yedek alın':saveFailed?'Kaydedilemedi — yedek alın':importing?'Yedek kaydediliyor…':drawing||isDirty()?'Kaydediliyor…':'Bu cihazda kaydedildi';
+  const nextSaveText=saveConflict?'Başka sekmede değişiklik var — yedek alın':saveFailed?'Kaydedilemedi — yedek alın':importing?'Yedek kaydediliyor…':drawing||isDirty()?'Kaydediliyor…':'Bu cihazda kaydedildi';
+  if(saveEl.textContent!==nextSaveText)saveEl.textContent=nextSaveText;
   document.querySelector('#saveRecovery').hidden=!saveFailed&&!saveConflict;
-  document.querySelector('#saveRecoveryMessage').textContent=saveConflict?'Başka bir sekme defteri değiştirdi. Üzerine yazmamak için bu sekmede düzenleme durduruldu. Önce bu sekmenin yedeğini alın, sonra kayıtlı defteri yeniden açın.':failureMessage||'Son değişiklikler henüz kaydedilemedi. Ekrandaki notlar korunuyor; yeniden deneyin veya bu sekmenin yedeğini alın. Kaydetmeden kapatmayın.';
+  document.querySelector('#saveRecoveryMessage').textContent=(saveConflict?'Başka bir sekme defteri değiştirdi. Üzerine yazmamak için bu sekmede düzenleme durduruldu. Önce bu sekmenin yedeğini alın, sonra kayıtlı defteri yeniden açın.':failureMessage||'Son değişiklikler henüz kaydedilemedi. Ekrandaki notlar korunuyor; yeniden deneyin veya bu sekmenin yedeğini alın. Kaydetmeden kapatmayın.')+(failureCode?` Ayrıntı: ${failureCode}.`:'');
   document.querySelector('#retrySave').hidden=saveConflict;document.querySelector('#retrySave').disabled=!!savePromise||importing;
   document.querySelector('#reloadSaved').hidden=!saveConflict;
   if(plannerDialog.open)renderPlannerStatus();
 }
-function saveError(e,message=''){saveFailed=true;failureMessage=message;if(e?.name==='NotebookConflict')saveConflict=true;renderSaveStatus();console.error(e)}
-function markChanged(refresh=true){if(!ready)return;if(page())page().updated=new Date().toISOString();state.active=activeId;editRevision++;if(typeof window.markSyncDirty==='function')window.markSyncDirty();if(refresh)renderSaveStatus()}
+function saveError(e,message=''){saveFailed=true;failureMessage=message;failureCode=(e?.name==='NotebookConflict'?(e.message==='Başka bir sekme kayıtlı defteri değiştirdi'?'':e.message||''):e?.name&&e.name!=='Error'?e.name:'').replace(/\.$/,'');if(e?.name==='NotebookConflict')saveConflict=true;renderSaveStatus();console.error(e)}
+function markChanged(refresh=true){if(!ready)return;if(page()){page().updated=new Date().toISOString();touchPage(page())}state.active=activeId;editRevision++;if(typeof window.markSyncDirty==='function')window.markSyncDirty();if(refresh)renderSaveStatus()}
 function scheduleSave(){if(!ready||saveConflict)return;markChanged();void flushSave()}
+// Scrolling and pinch zoom change only where the page is shown. They are not edits (no updated
+// stamp, no page revision) and are saved once the view has settled, not after every swipe: a
+// save rebuilds the notebook text on this thread and was the stutter between swipes.
+let viewSaveTimer=null;
+function markViewChanged(){if(!ready)return;const clean=!isDirty();state.active=activeId;editRevision++;if(typeof window.markSyncDirty==='function')window.markSyncDirty();if(clean)renderSaveStatus()}
+function scheduleViewSave(){if(!ready||saveConflict)return;clearTimeout(viewSaveTimer);viewSaveTimer=setTimeout(()=>{viewSaveTimer=null;if(pan||drawing||pinchT){scheduleViewSave();return}void flushSave()},1500)}
 function scheduleInkSave(){
   if(!ready||saveConflict)return;
   markChanged();clearTimeout(inkSaveTimer);
@@ -323,32 +384,85 @@ function checkpointDrawing(){
   // updates the DOM. Repainting the toolbar per sample stalls tablet ink.
   markChanged(!isDirty());if(!saveTimer&&!saveConflict)saveTimer=setTimeout(()=>{saveTimer=null;void flushSave()},5000);
 }
+// Saves stringify only pages that changed; unchanged pages reuse their JSON. The record
+// is byte-identical to JSON.stringify of the notebook. A missed change is caught by the
+// full serialization used when leaving and by the idle comparison below.
+let saveFullNext=false,pageVerifyTimer=null,lastPageVerify=-Infinity,pageCacheMisses=0,objectSeq=0,cachedSaves=0;
+const pageJsonCache=new WeakMap(),pageRevs=new WeakMap(),objectIds=new WeakMap();
+function touchPage(p){if(p&&typeof p==='object')pageRevs.set(p,(pageRevs.get(p)||0)+1)}
+function objectId(o){let id=objectIds.get(o);if(!id){id=++objectSeq;objectIds.set(o,id)}return id}
+function pageSignature(p){
+  const last=p.strokes.length?p.strokes[p.strokes.length-1]:null;
+  let sig=(pageRevs.get(p)||0)+'|'+p.strokes.length+'|'+(Array.isArray(last?.points)?last.points.length:-1);
+  for(const k of Object.keys(p)){if(k==='strokes')continue;const v=p[k];sig+='|'+k+'='+(v!==null&&typeof v==='object'?'#'+objectId(v)+(typeof v.image==='string'?':'+v.image.length:''):typeof v+':'+String(v))}
+  return sig;
+}
+function cachedPageJSON(p,full){
+  if(p===null||typeof p!=='object'||!Array.isArray(p.strokes))return JSON.stringify(p)??'null';
+  const sig=pageSignature(p),hit=pageJsonCache.get(p);
+  if(!full&&hit&&hit.sig===sig)return hit.json;
+  const json=JSON.stringify(p);if(hit&&hit.sig===sig&&hit.json!==json)pageCacheMisses++;
+  pageJsonCache.set(p,{sig,json});return json;
+}
+function stringifyObject(o,part){let body='';for(const k of Object.keys(o)){const v=part(k,o[k]);if(v===undefined)continue;body+=(body?',':'')+JSON.stringify(k)+':'+v}return '{'+body+'}'}
+function serializeNotebook(snapshot,full=false){
+  return stringifyObject(snapshot,(k,v)=>{
+    if(k==='pages'&&Array.isArray(v))return '['+Array.from(v,p=>cachedPageJSON(p,full)).join(',')+']';
+    if(k==='trash'&&Array.isArray(v))return '['+Array.from(v,t=>t!==null&&typeof t==='object'&&!Array.isArray(t)?stringifyObject(t,(tk,tv)=>tk==='page'&&tv!==undefined?cachedPageJSON(tv,full):JSON.stringify(tv)):JSON.stringify(t)??'null').join(',')+']';
+    return JSON.stringify(v);
+  });
+}
+// Cached saves only write page JSON produced together with these verdicts; full saves
+// (leaving, idle repair) always run the complete validation.
+const pageValidity=new WeakMap(),pdfValidity=new WeakMap();
+function validStateCached(x){
+  const page=validPage,pdf=typeof validPdfBackground==='function'?validPdfBackground:null;
+  validPage=p=>{if(p===null||typeof p!=='object'||!Array.isArray(p.strokes))return page(p);const sig=pageSignature(p),hit=pageValidity.get(p);if(hit&&hit.sig===sig)return hit.ok;const ok=page(p);pageValidity.set(p,{sig,ok});return ok};
+  if(pdf)validPdfBackground=b=>{if(b===null||typeof b!=='object')return pdf(b);const key=[b.width,b.height,b.name,b.number,b.total].join('|'),hit=pdfValidity.get(b);if(hit&&hit.key===key&&hit.image===b.image)return hit.ok;const ok=pdf(b);pdfValidity.set(b,{key,image:b.image,ok});return ok};
+  try{return validState(x)}finally{validPage=page;if(pdf)validPdfBackground=pdf}
+}
+function schedulePageVerify(){clearTimeout(pageVerifyTimer);pageVerifyTimer=setTimeout(verifyPageCache,4000)}
+// True when saves since the last check wrote something other than the real notebook.
+function pageCacheStale(){
+  if(!cachedSaves)return false;cachedSaves=0;lastPageVerify=performance.now();
+  const snapshot={...state,active:activeId};if(serializeNotebook(snapshot,false)===JSON.stringify(snapshot))return false;
+  pageCacheMisses++;console.warn('Sayfa önbelleği bir değişikliği kaçırdı; tam kayıt yapılıyor.');
+  serializeNotebook(snapshot,true);return true;
+}
+function verifyPageCache(){
+  pageVerifyTimer=null;if(!ready||saveConflict)return;
+  if(drawing||pan||isDirty()||savePromise||performance.now()-lastPageVerify<30000){schedulePageVerify();return}
+  if(pageCacheStale()){markChanged();saveFullNext=true;void flushSave()}
+}
 function flushSave(){
-  clearTimeout(saveTimer);saveTimer=null;clearTimeout(inkSaveTimer);inkSaveTimer=null;
+  clearTimeout(saveTimer);saveTimer=null;clearTimeout(inkSaveTimer);inkSaveTimer=null;clearTimeout(viewSaveTimer);viewSaveTimer=null;
   if(savePromise)return savePromise;
   if(!ready||saveConflict)return Promise.resolve(false);
-  if(!isDirty()){saveFailed=false;failureMessage='';renderSaveStatus();return Promise.resolve(true)}
+  if(!isDirty()){saveFailed=false;failureMessage='';failureCode='';renderSaveStatus();return Promise.resolve(true)}
   saveFailed=false;renderSaveStatus();
   savePromise=(async()=>{
     while(isDirty()&&!saveConflict){
       const revision=editRevision;
-      try{await dbPut({...state,active:activeId});savedRevision=revision}catch(e){saveError(e);return false}
+      const snapshot={...state,active:activeId},full=saveFullNext;saveFullNext=false;
+      try{await dbPut(snapshot,{json:serializeNotebook(snapshot,full),cached:!full});savedRevision=revision;if(!full)cachedSaves++}catch(e){if(full)saveFullNext=true;saveError(e);return false}
       // Long strokes checkpoint at a bounded cadence, not one whole-notebook write per move.
       if(drawing&&isDirty()){if(!saveTimer)saveTimer=setTimeout(()=>{saveTimer=null;void flushSave()},5000);break}
     }
+    if(!isDirty()&&!saveConflict)schedulePageVerify();
     return !isDirty()&&!saveConflict;
   })().finally(()=>{savePromise=null;renderSaveStatus()});
   return savePromise;
 }
 document.querySelector('#retrySave').onclick=()=>{if(!importing)void flushSave()};
 document.querySelector('#reloadSaved').onclick=()=>{if(confirm('Bu sekmedeki kaydedilmemiş değişiklikler kapanacak. Yedeğinizi aldıysanız kayıtlı defter yeniden açılsın mı?')){allowLeave=true;location.reload()}};
-function flushOnLeave(){if(!ready)return;if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear();void flushSave()}
+function flushOnLeave(){if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear();if(!isDirty()&&!saveConflict&&pageCacheStale())markChanged();saveFullNext=true;void flushSave()}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushOnLeave()});
 window.addEventListener('pagehide',flushOnLeave);
+window.addEventListener('blur',flushOnLeave);
 window.addEventListener('beforeunload',e=>{if(!allowLeave&&(isDirty()||drawing||importing||pdfBusy||mediaPending||plannerDirty)){e.preventDefault();e.returnValue=''}});
 function pageContentWidth(p){let max=0;for(const s of p?.strokes||[]){if(isMedia(s)){max=Math.max(max,mediaBounds(s).right)}else{let m=0;for(const pt of s.points)m=Math.max(m,pt.x);max=Math.max(max,m+(s.width||2)/2)}}return max}
 function fitPageToWidth(){const p=page();if(!p||p.pdf)return false;const w=canvas.getBoundingClientRect().width;if(!Number.isFinite(w)||w<60)return false;const content=pageContentWidth(p),target=Math.max(1,w-16);const next=content>target?Math.max(0.2,Math.min(1,target/content)):1;if(Math.abs((p.fitScale||1)-next)<1e-4)return false;p.fitScale=next;drawAll();return true}
-function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(r.width*d));canvas.height=Math.max(1,Math.round(r.height*d));ctx.setTransform(d,0,0,d,0,0);if(!fitPageToWidth())drawAll()}
+function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(r.width*d)),h=Math.max(1,Math.round(r.height*d));if(canvas.width===w&&canvas.height===h&&ctx.getTransform().a===d)return;canvas.width=w;canvas.height=h;ctx.setTransform(d,0,0,d,0,0);if(!fitPageToWidth())drawAll()}
 function drawStroke(s,target=ctx,images=mediaImages){
   if(isMedia(s)){drawMediaStroke(s,target,images);return}
   if(!s.points.length)return;
@@ -363,6 +477,9 @@ function drawStroke(s,target=ctx,images=mediaImages){
     const p0=s.points[0],w=s.tool==='pen'?Math.max(0.5,s.width*(0.4+1.2*(p0.p??0.5))):s.width;
     target.beginPath();target.arc(p0.x,p0.y,w/2,0,Math.PI*2);target.fill();
   }else if(s.tool==='pen'){
+    // Keep the pressure-sensitive initial contact identical to incremental ink.
+    const first=s.points[0],w=Math.max(0.5,s.width*(0.4+1.2*(first.p??0.5)));
+    target.beginPath();target.arc(first.x,first.y,w/2,0,Math.PI*2);target.fill();
     for(let i=1;i<s.points.length;i++){
       const p0=s.points[i-1],p1=s.points[i],avgP=((p0.p??0.5)+(p1.p??0.5))/2;
       target.lineWidth=Math.max(0.5,s.width*(0.4+1.2*avgP));
@@ -402,27 +519,30 @@ function visibleStroke(s,top,bottom){
   let bounds=strokeBounds.get(s);if(!bounds||bounds.count!==s.points.length){let min=Infinity,max=-Infinity;for(const p of s.points){min=Math.min(min,p.y);max=Math.max(max,p.y)}bounds={count:s.points.length,min,max};strokeBounds.set(s,bounds)}
   return bounds.max+s.width/2>=top&&bounds.min-s.width/2<=bottom;
 }
-function drawAll(){
-  if(typeof refreshChrome==='function')refreshChrome();
-  applyPaperColor();drawPdfBackground();pruneMediaImages();
+function drawAll(options){
+  // An explicit redraw supersedes any queued viewport work (page switch, pen,
+  // resize, media load). Never repaint a stale frame over newly started ink.
+  if(viewportFrame!==null){cancelAnimationFrame(viewportFrame);viewportFrame=null}
+  if(!options?.viewportOnly){if(typeof refreshChrome==='function')refreshChrome();applyPaperColor();pruneMediaImages()}
+  drawPdfBackground();
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.restore();
   const scale=paperScale(),offset=viewY(),bottom=offset+canvas.getBoundingClientRect().height/scale;
   ctx.save();ctx.scale(scale,scale);ctx.translate(-viewX(),-offset);page()?.strokes.forEach(original=>{const s=mediaVisualStroke(original);if(visibleStroke(s,offset,bottom))drawStroke(s)});drawPendingMedia();ctx.restore();
-  canvas.parentElement.style.backgroundPosition=(paperPattern()==='grid'||paperPattern()==='dotted')?`${-(viewX()%32)}px ${-(offset%32)}px`:`0 ${-(offset%32)}px`;
+  paperGrid(scale,offset);
   refreshMediaSelection();
 }
 function point(e){const r=canvas.getBoundingClientRect(),scale=paperScale();return{x:(e.clientX-r.left)/scale+viewX(),y:(e.clientY-r.top)/scale+viewY(),p:e.pressure||.5}}
 function scrollPaper(next,nextX=viewX()){
   if(!canEdit()||!page()||!Number.isFinite(next)||!Number.isFinite(nextX))return;next=Math.max(0,next);nextX=Math.max(0,Math.min(maxViewX(),nextX));if(next===viewY()&&nextX===viewX())return;
-  page().viewY=next;if(page().pdf)page().viewX=nextX;checkpointDrawing();drawAll();document.querySelector('#inputState').textContent=page().pdf?'PDF · iki parmakla her yöne kaydırılıyor':`Satır ${Math.floor(next/32)+1} · iki parmakla kaydırılıyor`;
+  page().viewY=next;setViewX(nextX);markViewChanged();scheduleViewSave();queueViewportRender();const status=page().pdf?'PDF · iki parmakla her yöne kaydırılıyor':`Satır ${Math.floor(next/32)+1} · iki parmakla kaydırılıyor`;const inputState=document.querySelector('#inputState');if(inputState.textContent!==status)inputState.textContent=status;
 }
 document.querySelector('#scrollToTop').onclick=()=>{if(!drawing&&!pan){scrollPaper(0,0);void flushSave()}};
-canvas.addEventListener('wheel',e=>{if(e.ctrlKey||drawing||pan||!canEdit())return;e.preventDefault();const unit=e.deltaMode===1?32:e.deltaMode===2?canvas.getBoundingClientRect().height:1,horizontal=!!page()?.pdf&&e.shiftKey;scrollPaper(viewY()+(horizontal?0:e.deltaY)*unit/paperScale(),viewX()+(horizontal?e.deltaY:e.deltaX)*unit/paperScale())},{passive:false});
+canvas.addEventListener('wheel',e=>{if(e.ctrlKey||drawing||pan||!canEdit())return;e.preventDefault();const unit=e.deltaMode===1?32:e.deltaMode===2?canvas.getBoundingClientRect().height:1,horizontal=(!!page()?.pdf||maxViewX()>0)&&e.shiftKey;scrollPaper(viewY()+(horizontal?0:e.deltaY)*unit/paperScale(),viewX()+(horizontal?e.deltaY:e.deltaX)*unit/paperScale())},{passive:false});
 function allowed(e){return !document.querySelector('#penOnly').checked||e.pointerType==='pen'||e.pointerType==='mouse'}
 function selectedWidth(base=+document.querySelector('#width').value){return base*(tool==='marker'?2.5:1)}
 function updateWidthPreview(){
   const base=+document.querySelector('#width').value,color=tool==='eraser'?'#657973':document.querySelector('#color').value;
-  toolWidths[tool]=base;updateEraserControls();
+  toolWidths[tool]=base;if(tool!=='eraser')toolColors[tool]=document.querySelector('#color').value;updateEraserControls();persistToolPreferences();
   const name={pen:'Kalem',marker:'Fosforlu',eraser:'Silgi'}[tool],label=width=>`${width.toLocaleString('tr-TR')} px`;
   const paint=(line,width)=>{line.setAttribute('stroke-width',width);line.setAttribute('stroke',color);line.setAttribute('opacity',tool==='marker'?.25:1)};
   document.querySelectorAll('[data-width]').forEach(b=>{const width=selectedWidth(+b.dataset.width);paint(b.querySelector('line'),width);b.querySelector('span').textContent=label(width);b.setAttribute('aria-label',`${name} ${label(width)}`);b.setAttribute('aria-pressed',String(+b.dataset.width===base))});
@@ -462,11 +582,16 @@ canvas.addEventListener('pointerdown',e=>{
     }
     if(suppressTouch)return;
   }else{
-    if(pan||suppressTouch)return;
-    if(e.pointerType==='pen'&&activePointer===null)touchPoints.clear();
+    if(e.pointerType==='pen'){
+      // A fresh pen contact supersedes a palm/pan gesture, including a missing
+      // touchend. A new down also recovers a pen whose end event was lost.
+      if(drawing)finishStroke();
+      pan=null;pinchT=null;pinchDirty=false;suppressTouch=false;touchPoints.clear();
+    }else if(pan||suppressTouch)return;
   }
   if(!allowed(e)){document.querySelector('#inputState').textContent='Dokunma engellendi; kaleminiz yazmıyorsa avuç içi korumasını kapatın';return}
   if(activePointer!==null||(e.pointerType==='mouse'&&e.button!==0))return;
+  finishViewportRender();
   e.preventDefault();try{canvas.setPointerCapture(e.pointerId)}catch{}
   activePointer=e.pointerId;activeInputType=e.pointerType;drawing=true;current={tool,color:document.querySelector('#color').value,width:selectedWidth()/paperScale(),points:[point(e)]};page().strokes.push(current);
   checkpointDrawing();
@@ -488,11 +613,11 @@ canvas.addEventListener('pointermove',e=>{
     drawStrokeSegment(current,i-1,i);
   }
 });
-function finishStroke(){if(!drawing)return;const id=activePointer;drawing=false;activePointer=null;activeInputType=null;current=null;try{if(canvas.hasPointerCapture(id))canvas.releasePointerCapture(id)}catch{}scheduleInkSave();drawAll()}
+function finishStroke(){if(!drawing)return;const id=activePointer,finishedTool=current?.tool;drawing=false;activePointer=null;activeInputType=null;current=null;try{if(canvas.hasPointerCapture(id))canvas.releasePointerCapture(id)}catch{}scheduleInkSave();if(finishedTool!=='pen')drawAll()}
 function end(e){
-  if(touchPoints.has(e.pointerId)){if(pan&&pan.ids.includes(e.pointerId)){pan=null;void flushSave()}touchPoints.delete(e.pointerId);if(!touchPoints.size)suppressTouch=false}
-  if(!drawing||e.pointerId!==activePointer)return;if(e.type==='pointerup'&&canEdit())current.points.push(point(e));finishStroke();
-}canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);canvas.addEventListener('lostpointercapture',end);
+  if(touchPoints.has(e.pointerId)){if(pan&&pan.ids.includes(e.pointerId)){finishViewportRender();pan=null;if(typeof refreshChrome==='function')refreshChrome();scheduleViewSave()}touchPoints.delete(e.pointerId);if(!touchPoints.size)suppressTouch=false}
+  if(!drawing||e.pointerId!==activePointer)return;if(e.type==='pointerup'&&canEdit()){current.points.push(point(e));drawStrokeSegment(current,current.points.length-2,current.points.length-1)}finishStroke();
+}window.addEventListener('pointerup',end,true);window.addEventListener('pointercancel',end,true);canvas.addEventListener('lostpointercapture',end);
 document.querySelector('#penOnly').addEventListener('change',e=>{document.querySelector('#inputState').textContent=e.target.checked?'Avuç içi koruması açık: yalnız pen/mouse kabul edilir':'Uyumluluk modu açık: kalem touch görünse de yazabilir'});
 function renderPages(){
   if(typeof refreshChrome==='function')refreshChrome();
@@ -612,7 +737,7 @@ document.querySelector('#openTrash').onclick=()=>{if(!canEdit()||drawing||pan)re
 document.querySelector('#trashClose').onclick=()=>trashDialog.close();trashDialog.addEventListener('close',()=>sidebarToggle.focus({preventScroll:true}));
 function selectTool(next){
   if(drawing||pan||!['pen','marker','eraser'].includes(next))return;
-  toolWidths[tool]=+document.querySelector('#width').value;tool=next;document.querySelector('#width').max=tool==='eraser'?64:24;document.querySelector('#width').value=toolWidths[tool];
+  toolWidths[tool]=+document.querySelector('#width').value;tool=next;document.querySelector('#width').max=tool==='eraser'?64:24;document.querySelector('#width').value=toolWidths[tool];if(tool!=='eraser')document.querySelector('#color').value=toolColors[tool];
   document.querySelector('#eraserSizeToggle').hidden=tool!=='eraser';if(tool!=='eraser'&&eraserDialog.open)eraserDialog.close();
   document.querySelectorAll('[data-tool]').forEach(x=>{const selected=x.dataset.tool===tool;x.classList.toggle('active',selected);x.setAttribute('aria-pressed',String(selected))});
   const quick=document.querySelector('#quickTool'),eraser=tool==='eraser',label=eraser?'Kaleme geç':'Silgiye geç';quick.dataset.current=tool;quick.setAttribute('aria-label',label);quick.title=label;document.querySelector('#quickToolLabel').textContent=label;
@@ -642,7 +767,7 @@ document.querySelector('#emptyNewPage').onclick=()=>document.querySelector('#new
 function notebookSnapshot(){
   const exportedAt=new Date().toISOString();
   // Format 3 keeps older importers from discarding archived pages.
-  return {version:state.version,pages:state.pages,active:activeId,...notebookFields(state),backupFormat:'bilge-defter',backupVersion:state.version===6?8:state.version===5?7:state.version===4?6:state.version===3?5:state.version===2?4:state.trash?.length?3:state.notebooks?.length?2:1,appVersion:'v52',exportedAt};
+  return {version:state.version,pages:state.pages,active:activeId,...notebookFields(state),backupFormat:'bilge-defter',backupVersion:state.version===6?8:state.version===5?7:state.version===4?6:state.version===3?5:state.version===2?4:state.trash?.length?3:state.notebooks?.length?2:1,appVersion:'v66',exportedAt};
 }
 function exportNotebook(){
   if(!state||!validState(state))return;
@@ -710,19 +835,68 @@ document.querySelector('#importFile').onchange=async e=>{
   if(drawing)finishStroke();pan=null;suppressTouch=false;touchPoints.clear();
   previewBackup(info,file.name);
 };
+// Device/account-scoped preferences, never part of notebook or cloud backup.
+function persistToolPreferences(){
+  if(!preferencesReady||window.BilgeAccount?.locked)return;
+  try{localStorage.setItem('bilge-tools-v1:'+DB,JSON.stringify({widths:toolWidths,colors:toolColors,penOnly:document.querySelector('#penOnly').checked}))}catch{}
+}
+function restoreToolPreferences(){
+  try{const p=JSON.parse(localStorage.getItem('bilge-tools-v1:'+DB)||'null');
+    if(p){for(const key of ['pen','marker','eraser'])if(Number.isFinite(p.widths?.[key])&&p.widths[key]>=1&&p.widths[key]<=(key==='eraser'?64:24))toolWidths[key]=p.widths[key];
+      for(const key of ['pen','marker'])if(/^#[0-9a-f]{6}$/i.test(p.colors?.[key]||''))toolColors[key]=p.colors[key];
+      if(typeof p.penOnly==='boolean')document.querySelector('#penOnly').checked=p.penOnly}
+  }catch{}
+  document.querySelector('#width').value=toolWidths.pen;document.querySelector('#color').value=toolColors.pen;
+  preferencesReady=true;updateWidthPreview();
+}
+document.querySelector('#penOnly').addEventListener('change',persistToolPreferences);
+function downloadLocalJson(data,name){const url=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function showStartupRecovery(){
+  ready=false;saveEl.textContent='Kayıt açılamadı; mevcut veri korunuyor';
+  const dialog=document.createElement('dialog');dialog.className='tools-dialog';dialog.id='startupRecovery';dialog.setAttribute('aria-labelledby','startupRecoveryTitle');
+  dialog.innerHTML='<div class="tools-heading"><h2 id="startupRecoveryTitle">Notları silmeden kurtarma</h2></div><div class="tools-content"><p>Kayıt açılamadı. Tarayıcı verilerini silmeyin ve uygulamayı kaldırmayın. Önce mevcut kaydın kurtarma kopyasını indirmeyi deneyin. Bu dosya not içeriği içerebilir; yalnız güvendiğiniz kişiyle paylaşın.</p><div class="recovery-actions"><button class="btn primary" id="rawRecoveryExport">Kurtarma kopyasını indir</button><button class="btn" id="startupRetry">Yeniden dene</button></div><p id="startupRecoveryStatus" role="status"></p></div>';
+  document.body.append(dialog);dialog.addEventListener('cancel',e=>e.preventDefault());dialog.showModal();
+  document.querySelector('#startupRetry').onclick=()=>location.reload();
+  document.querySelector('#rawRecoveryExport').onclick=async()=>{const status=document.querySelector('#startupRecoveryStatus');try{
+    if(window.BilgeAccount?.locked||!db)throw Error('Depolama şu anda okunamıyor. Bağlantıyı ve hesap girişini kontrol edip yeniden deneyin.');
+    const data=await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readonly'),store=tx.objectStore(STORE),rows={};for(const key of ['app','before-import']){const r=store.get(key);r.onsuccess=()=>{if(r.result!==undefined)rows[key]=r.result}}tx.oncomplete=()=>resolve(rows);tx.onabort=()=>reject(tx.error);tx.onerror=()=>{}});
+    if(!Object.keys(data).length)throw Error('Okunabilen kayıt bulunamadı; hiçbir şey silinmedi.');
+    downloadLocalJson({format:'bilge-defter-recovery-v1',records:data},'bilge-defter-kurtarma.json');status.textContent='İndirme başlatıldı. Dosyanın indirilenler klasöründe olduğunu kontrol edin. Bu bir kurtarma dosyasıdır; normal yedek yüklemeye doğrudan uygun olmayabilir.';
+  }catch(e){status.textContent=e.message||'Kopya alınamadı. Mevcut kayıt silinmedi.'}};
+}
+// Opt-in, bounded in-memory timing only. No ink, text, account, URLs or network export.
+const localDiagnostics={enabled:false,drawMs:[],saveMs:[],penStarts:0,penCancels:0};
+function recordTiming(key,start){if(!localDiagnostics.enabled)return;const samples=localDiagnostics[key];samples.push(Math.round((performance.now()-start)*10)/10);if(samples.length>200)samples.shift()}
+const measuredDraw=drawAll;drawAll=function(...args){if(!localDiagnostics.enabled)return measuredDraw.apply(this,args);const start=performance.now();try{return measuredDraw.apply(this,args)}finally{recordTiming('drawMs',start)}};
+const measuredPut=dbPut;dbPut=function(...args){if(!localDiagnostics.enabled)return measuredPut.apply(this,args);const start=performance.now();return measuredPut.apply(this,args).finally(()=>recordTiming('saveMs',start))};
+for(const [event,key] of [['pointerdown','penStarts'],['pointercancel','penCancels']])canvas.addEventListener(event,e=>{if(localDiagnostics.enabled&&e.pointerType==='pen')localDiagnostics[key]++},{passive:true});
+const diagnosticsArea=document.createElement('section');diagnosticsArea.innerHTML='<label class="palm-control"><input type="checkbox" id="diagnosticsEnabled"> Bu oturumda performansı ölç</label><p class="recovery-note">Son 200 çizim/kayıt süresi ve kalem olay sayısı tutulur. Notlar, hesap bilgileri ve kalem konumları dahil edilmez; sunucuya gönderilmez. Gerçek kalem gecikmesi ölçümü değildir.</p><button class="btn" id="diagnosticsExport" disabled>Ölçüm raporunu indir</button>';
+const reliabilityDialog=document.createElement('dialog');reliabilityDialog.id='reliabilityDialog';reliabilityDialog.className='tools-dialog';reliabilityDialog.setAttribute('aria-labelledby','reliabilityTitle');
+reliabilityDialog.innerHTML='<div class="tools-heading"><h2 id="reliabilityTitle">Kayıt ve eşitleme</h2><button class="btn" id="reliabilityClose">× Kapat</button></div><div class="tools-content" id="reliabilityContent"><p>Yerel kayıt bu tarayıcıdadır. Şifreli sunucu kopyası ayrı çalışır. Bağımsız yedek için dosyayı indirip güvenli bir yerde saklayın.</p><button class="btn" id="reliabilityBackup">JSON yedeği indir</button></div>';
+document.body.append(reliabilityDialog);document.querySelector('#reliabilityContent').append(diagnosticsArea);
+document.querySelector('#reliabilityClose').onclick=()=>reliabilityDialog.close();document.querySelector('#reliabilityBackup').onclick=()=>document.querySelector('#exportBtn').click();
+window.openReliability=()=>{if(!ready||drawing||pan||window.BilgeAccount?.locked)return;window.renderSyncActions?.();reliabilityDialog.showModal()};
+document.querySelector('#diagnosticsEnabled').onchange=e=>{localDiagnostics.enabled=e.target.checked;localDiagnostics.drawMs=[];localDiagnostics.saveMs=[];localDiagnostics.penStarts=0;localDiagnostics.penCancels=0;document.querySelector('#diagnosticsExport').disabled=!e.target.checked};
+document.querySelector('#diagnosticsExport').onclick=()=>{if(localDiagnostics.enabled)downloadLocalJson({format:'bilge-performance-v1',drawMs:localDiagnostics.drawMs,saveMs:localDiagnostics.saveMs,penStarts:localDiagnostics.penStarts,penCancels:localDiagnostics.penCancels},'bilge-performans.json')};
+addEventListener('bilge-account-locked',()=>{document.querySelector('#diagnosticsEnabled').checked=false;document.querySelector('#diagnosticsEnabled').onchange({target:{checked:false}})});
 async function init(){
   DB=await window.BilgeAccount.ready;
+  restoreToolPreferences();
   await openDB();const saved=await dbGet();if(saved!==undefined&&!validState(saved))throw new Error('Kayıt yapısı okunamadı; mevcut veri korundu');
   storedJSON=saved===undefined?null:JSON.stringify(saved);
+  const writer=await dbGet('app-writer');saveMarker={writer:writer?.writer??null,seq:writer?.seq??null,length:storedJSON===null?0:storedJSON.length};
+  await startSaveWorker({type:'baseline',json:storedJSON},5000).catch(()=>false);
   state=saved||blank();const selection=selectionFor(state);activeId=selection.active;activeNotebook=selection.notebook;state.active=activeId;
-  renderPages();resize();if(JSON.stringify(state)!==storedJSON)await dbPut(state);ready=true;await refreshRecovery();saveEl.textContent='Bu cihazda kaydedildi';if(typeof plannerStartReminders==='function')plannerStartReminders();
+  renderPages();resize();if(JSON.stringify(state)!==storedJSON)await dbPut(state);if(saveWorker)storedJSON=null;await refreshRecovery();ready=true;renderSaveStatus();if(typeof plannerStartReminders==='function')plannerStartReminders();
   document.querySelector('#storageState').textContent='Tarayıcı depolaması kullanılıyor';
   if(navigator.storage?.persist)navigator.storage.persist().then(yes=>{if(yes)document.querySelector('#storageState').textContent='Kalıcı depolama izni var'}).catch(()=>{});
 }
-new ResizeObserver(resize).observe(canvas.parentElement);init().catch(e=>{ready=false;saveEl.textContent='Kayıt açılamadı. ';const recoverBtn=document.createElement('button');recoverBtn.className='btn';recoverBtn.textContent='Yeni defter başlat';recoverBtn.style.cssText='margin-left:8px;font-size:12px';recoverBtn.onclick=()=>{if(!confirm('Kayıtlı defter silinecek ve yeni boş defter açılacak. Önce JSON yedeği aldıysanız devam edin.'))return;const r=indexedDB.open(DB,1);r.onsuccess=ev=>{try{ev.target.result.transaction(STORE,'readwrite').objectStore(STORE).delete('app').onsuccess=()=>location.reload()}catch{location.reload()}};r.onerror=()=>location.reload()};saveEl.after(recoverBtn);console.error(e)});
+new ResizeObserver(resize).observe(canvas.parentElement);init().catch(()=>showStartupRecovery());
 </script>
 <script src="pwa.js"></script>
 <script src="dictionary-data.js"></script>
+<script src="terminology-data.js"></script>
+<script src="terminology.js"></script>
 <script src="dictionary-workspace.js"></script>
 <script src="sync-workspace.js"></script>
 <script src="ocr-workspace.js"></script>

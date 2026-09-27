@@ -1,6 +1,15 @@
 // Each release is installed completely before it can replace the previous one.
-const VERSION='v52',PREFIX='bilge-defter-test-',CACHE=PREFIX+VERSION;
+const VERSION='v66',PREFIX='bilge-defter-test-',CACHE=PREFIX+VERSION;
 const root=new URL('./',self.location.href);
+const isLibrary=url=>{const relative=url.pathname.slice(root.pathname.length);return relative==='library'||relative.startsWith('library/')};
+// Library pages are an online service in the same origin: they use no notebook cache
+// and hold no notebook edits, so a library window never holds a notebook update.
+const notebookWindow=client=>{const url=new URL(client.url);return url.origin===root.origin&&url.pathname.startsWith(root.pathname)&&!isLibrary(url)};
+const libraryUnavailable=status=>{
+  const auth=status===401||status===403;
+  const reason=auth?'Kütüphane için oturum doğrulanamadı. Deftere dönüp yeniden giriş yaptıktan sonra tekrar deneyin.':'İnternet bağlantısını kontrol edip biraz sonra tekrar deneyin.';
+  return new Response(`<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kütüphane açılamadı</title></head><body style="margin:0;padding:24px;font:16px/1.5 system-ui,sans-serif;color:#17312d;background:#fffef9"><main style="max-width:560px;margin:auto"><h1 style="font-size:22px">Kütüphane şu an açılamadı</h1><p>${reason}</p><p>Defterinizdeki notlar bu cihazda duruyor.</p><p><a class="notebook-return" href="${root.href}" style="display:inline-block;min-height:48px;line-height:48px;padding:0 20px;border-radius:8px;background:#20574b;color:#fff;text-decoration:none">← Deftere dön</a></p></main></body></html>`,{status:auth?status:503,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});
+};
 self.addEventListener('install',event=>event.waitUntil((async()=>{
   try{
     const response=await fetch(new URL('offline-assets.json',root),{cache:'no-store'});
@@ -34,8 +43,7 @@ self.addEventListener('message',event=>{
   if(event.data!=='SKIP_WAITING')return;
   event.waitUntil((async()=>{
     const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-    const scoped=windows.filter(client=>{const url=new URL(client.url);return url.origin===root.origin&&url.pathname.startsWith(root.pathname)});
-    if(scoped.length>1){event.source?.postMessage({type:'UPDATE_DEFERRED',reason:'other-windows'});return}
+    if(windows.filter(notebookWindow).length>1){event.source?.postMessage({type:'UPDATE_DEFERRED',reason:'other-windows'});return}
     await self.skipWaiting();
   })());
 });
@@ -57,6 +65,11 @@ self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET'||url.origin!==root.origin)return;
   const relative=url.pathname.slice(root.pathname.length);
   if(['release.json','auth-continue.html','auth-continue.js'].includes(relative)||url.pathname.startsWith('/cdn-cgi/')||relative.startsWith('api/')){event.respondWith(fetch(event.request,{cache:'no-store'}));return}
+  if(event.request.mode==='navigate'&&isLibrary(url)){
+    // The library opens in the notebook's own window, so a failed page must still lead back.
+    event.respondWith(fetch(event.request).then(response=>response.status>=500||response.status===401||response.status===403?libraryUnavailable(response.status):response,()=>libraryUnavailable(503)));
+    return;
+  }
   event.respondWith((async()=>{
     const cache=await caches.open(CACHE);
     if(event.request.mode==='navigate'&&(url.pathname===root.pathname||url.pathname===root.pathname+'index.html')){

@@ -10,7 +10,7 @@ Durum: fiziksel cihaz/sınıf kabulü NOT TESTED. Otomasyon sonuçları bunun ye
 | A4 | Not yaz, interneti kes, uygulamayı açık tut, yeniden bağlan | Yerel kayıt korunur; eski sunucu kopyası sessizce ezmez |
 | A5 | Askıya al ve tekrar etkinleştir | API ve uygulama yetkisi doğru; yerel kopyaların uzaktan silinmediği açık |
 | A6 | iPad/Safari, Android kalem, Windows kurulu PWA | Boş/dolu sayfa, avuç, yön değişimi, PDF ve 40 dakika ders testi |
-| A7 | v51 -> v52 gerçek kurulu uygulama güncellemesi | Kaydedilmiş notlar ve hesap seçimi korunur |
+| A7 | Kullanıcının mevcut kurulu sürümünden yayınlanacak adaya güncelleme | Her iki sürüm kaydedilir; notlar, hesap seçimi ve araç tercihleri korunur |
 | A8 | Ayrı yedek oluştur, izole hedefe geri aç | İçerik/bütünlük doğrulanır; canlı DB üzerine yazılmaz |
 | A9 | Küçük pilot sonra kademeli sınıf | Önce 2 yönetici + 3-5 öğrenci; kritik hata yoksa 48+2 |
 | A10 | Ücretsiz kota ve sunucu kapasitesi | Sınıfa eklemeden önce gerçek kuruluş kotası yeniden okunur; ücretli plan açılmaz |
@@ -24,3 +24,14 @@ gibi işlemler yalnız bu amaçla seçilen hesaplarda yapılır.
 PDF ağırlıklı 5 MB sunucu yedeği kotası, token yenileme planı, destek/geri dönüş
 sorumlusu. Şifreli eşitleme bağımsız yedek değildir. İndirilmiş çevrimdışı
 kopya uzaktan geri alınamaz. Yeni ücret veya geniş erişim için ayrı karar gerekir.
+
+## 27 Eylül güvenilirlik paketi için ek kapılar
+
+- R1: Aynı defterle önce/sonra 40 dakika iPad testi; boş, yoğun, PDF, avuç ve iki parmak geçişleri. Kalemin kesilmesi ve kaydırma atlaması ayrı gözlem.
+- R2: Bozuk kayıt/erişilemeyen depolama: silme olmadan uyarı ve mümkünse kurtarma dosyası. Kurtarma dosyası özel not içerebilir; performans raporu içermez.
+- R3: 5 MiB sınırı altı/üstü şifreli yedek, Türkçe UTF-8 dahil. Yerel kayıt ve bağımsız JSON yedek etkilenmez; fazla boyutta tekrar gönderim fırtınası oluşmaz.
+- R4: Değişmeyen defterde 304 ve boş HTTP gövdesi; değişen defterde 200, eski CAS etiketinde 412. Başka hesap hiçbir koşulda 304 ile bile varlık bilgisi alamaz.
+- R5: Tercihler yalnız aynı cihaz/tarayıcı hesabında; yeni hesap varsayılan araçlarla başlar. Depolama kapalıysa uygulama açılabilir, tercih kalıcılığı vaat edilmez.
+- R6: İsteğe bağlı süre raporu en fazla 200 örnek/ölçüm; kalem koordinatı, metin, e-posta, parola, token yok. Otomatik gönderim yok. Süre raporu fiziksel kalem gecikmesi değildir.
+
+İlk uygulama ve test kanıtı: `docs/RELIABILITY_PACKAGE_1.md`. Araştırma: `docs/UX_PERFORMANCE_RESEARCH_2026-09-27.md`.

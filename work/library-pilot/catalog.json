@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "checked_on": "2026-09-25",
+  "scope": "Noncommercial local educational pilot. Original PDFs, no translation or clinical advice. Third-party exceptions remain applicable. No blanket commercial clearance.",
+  "sources": [
+    {
+      "id": "lmu-human-physiology",
+      "title": "Human Physiology",
+      "authors": "Leslie Bach; Nour Al-muhtasib; Leslie King; Nicole Thometz",
+      "publisher": "Loyola Marymount University",
+      "year": "2026",
+      "url": "https://lmu.pressbooks.pub/humanphysiology/",
+      "download": "https://lmu.pressbooks.pub/humanphysiology/open/download?type=pdf",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "license_evidence": "Publisher book metadata and Creative Commons License chapter; except where otherwise noted.",
+      "provenance": "OpenStax and Oregon State adaptations; shared ancestry is not independent corroboration.",
+      "tags": "fizyoloji homeostaz kalp dolaşım solunum böbrek",
+      "max_bytes": 205000000
+    },
+    {
+      "id": "msu-neuroscience",
+      "title": "Foundations of Neuroscience — Open Edition",
+      "authors": "Casey Henley",
+      "publisher": "Michigan State University",
+      "year": "2021",
+      "url": "https://openbooks.lib.msu.edu/neuroscience/",
+      "download": "https://openbooks.lib.msu.edu/neuroscience/open/download?type=pdf",
+      "license": "CC BY-NC-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "license_evidence": "Publisher book metadata, copyright 2021 Casey Henley; except where otherwise noted.",
+      "provenance": "Undergraduate neuroscience introduction; not a comprehensive clinical neurology reference.",
+      "tags": "sinir nöron beyin duyu sinirbilim",
+      "max_bytes": 45000000
+    },
+    {
+      "id": "rotel-anatomy-lab",
+      "title": "Human Anatomy and Physiology Laboratory Manual: Understanding How Structure Determines Function",
+      "authors": "Maria C. Carles",
+      "publisher": "ROTEL / Northern Essex Community College",
+      "year": "2024",
+      "url": "https://rotel.pressbooks.pub/anatomyphysiology/",
+      "download": "https://rotel.pressbooks.pub/anatomyphysiology/open/download?type=pdf",
+      "license": "CC BY-NC-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "license_evidence": "Publisher metadata, copyright 2024 Maria C. Carles; except where otherwise noted.",
+      "provenance": "Laboratory reference. Activities require instructor supervision; individual figure credits remain in the PDF.",
+      "tags": "anatomi doku kemik kas organ histoloji",
+      "max_bytes": 60000000
+    },
+    {
+      "id": "iowa-physiology-research",
+      "title": "A Mixed Course-Based Research Approach to Human Physiology",
+      "authors": "Karri Haen Whitmer",
+      "publisher": "Iowa State University Digital Press",
+      "year": "2021",
+      "url": "https://iastate.pressbooks.pub/curehumanphysiology/",
+      "download": "https://iastate.pressbooks.pub/curehumanphysiology/open/download?type=pdf",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "license_evidence": "Publisher metadata and suggested attribution; except where otherwise noted. DOI 10.31274/isudp.2021.67.",
+      "provenance": "Research/laboratory supplement, not a general anatomy textbook. Human-subject experiments are outside this pilot.",
+      "tags": "fizyoloji araştırma yöntem deney solunum dolaşım",
+      "max_bytes": 40000000
+    },
+    {
+      "id": "wistech-anatomy",
+      "title": "General Anatomy & Physiology",
+      "authors": "WisTech Open (full contributor credits retained in the original PDF)",
+      "publisher": "WisTech Open / Wisconsin Technical College System",
+      "year": "2026",
+      "url": "https://wtcs.pressbooks.pub/anatphys/",
+      "download": "https://wtcs.pressbooks.pub/anatphys/open/download?type=pdf",
+      "license": "CC BY-NC-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "license_evidence": "Publisher book metadata, copyright 2026 WisTech Open; except where otherwise noted.",
+      "provenance": "Community/technical college text. Reused figures and source attributions remain in the original; not counted as independent evidence for shared material.",
+      "tags": "anatomi fizyoloji hücre kemik kas dolaşım solunum",
+      "max_bytes": 130000000
+    }
+  ],
+  "excluded": [
+    {"title": "Oregon State Anatomy & Physiology 2e", "reason": "Publisher metadata says BY-SA but adaptation/image notice also says BY-NC-SA; mixed notices require further review. Not downloaded."},
+    {"title": "CUNY preparatory textbook 2nd edition", "reason": "License found, but official PDF endpoint returned 403. No bypass or third-party mirror used."},
+    {"title": "JCCC BIOL 225 laboratory manual", "reason": "License found, but official PDF endpoint returned 403. Not downloaded."}
+  ]
+}

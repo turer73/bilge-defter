@@ -1,0 +1,35 @@
+name: Reliability candidate
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: reliability-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  synthetic-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - run: python -m pip install -r server-candidate/v49/requirements.txt pytest
+      - run: npm run test:reliability
+      - run: python -m pytest server-candidate/v49/tests -q
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synthetic-reliability-evidence
+          path: outputs/reliability-1/
+          retention-days: 7
+# No secrets, live accounts, deployment, self-hosted runner or paid API.
+# This supplements (does not replace) the historical release/device test matrix.

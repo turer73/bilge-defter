@@ -42,6 +42,10 @@
       new MutationObserver(() => publish()).observe(saveTarget, { childList: true, characterData: true, subtree: true });
     }
 
+    // The panel names lined paper 'ruled' (also its preview style); the engine stores 'lined'.
+    const uiPattern = pattern => pattern === 'lined' ? 'ruled' : pattern;
+    const enginePattern = pattern => pattern === 'ruled' ? 'lined' : pattern;
+
     function getState() {
       const p = typeof page === 'function' ? page() : null;
       const nbList = typeof notebooks === 'function' ? notebooks() : [{ id: 'general', title: 'Genel' }];
@@ -89,12 +93,12 @@
         },
         paper: {
           color: typeof paperColor === 'function' ? paperColor() : '#fffdf8',
-          pattern: typeof paperPattern === 'function' ? paperPattern() : 'lined'
+          pattern: uiPattern(typeof paperPattern === 'function' ? paperPattern() : 'lined')
         },
         canUndo: !!(p && (p.strokes?.length || clearedPages.has(p.id) || mediaUndo.get(p.id)?.length)),
         canRedo: false,
         clearIsUndoable: true,
-        zoom: (p && p.pdfZoom) || 1,
+        zoom: typeof viewZoom === 'function' ? viewZoom() : 1,
         input: {
           fingerDraw: !document.querySelector('#penOnly')?.checked,
           lockTouch: false,
@@ -112,7 +116,7 @@
           detail: (typeof failureMessage !== 'undefined' && failureMessage) || ''
         },
         storageLabel: document.querySelector('#storageState')?.textContent || 'Bu cihazda kaydedildi',
-        disabledCommands: p?.pdf ? {} : {'view.zoom': 'Yakınlaştırma PDF sayfalarında kullanılabilir.'}
+        disabledCommands: {}
       };
     }
 
@@ -148,7 +152,7 @@
           setPaperColor(payload.color);
         }
         if (payload.pattern && typeof setPaperPattern === 'function') {
-          setPaperPattern(payload.pattern);
+          setPaperPattern(enginePattern(payload.pattern));
         }
         publish();
       },
@@ -184,6 +188,7 @@
       'study.planner': () => {
         document.querySelector('#plannerOpen')?.click();
       },
+      'study.library': () => window.openBilgeLibrary(),
       'study.dictionary': () => {
         document.querySelector('#dictOpen')?.click();
       },
@@ -256,6 +261,7 @@
       'trash.open': () => {
         document.querySelector('#openTrash')?.click();
       },
+      'backup.status': () => window.openReliability?.(),
       'backup.export': () => {
         document.querySelector('#exportBtn')?.click();
       },
@@ -294,12 +300,12 @@
       },
       'view.zoom': ({ mode }) => {
         const p = typeof page === 'function' ? page() : null;
-        if (!p || !p.pdf) return;
-        let z = p.pdfZoom || 1;
+        if (!p) return;
+        let z = viewZoom();
         if (mode === 'in') z = Math.min(3, z + 0.25);
         else if (mode === 'out') z = Math.max(1, z - 0.25);
         else if (mode === 'fit') z = 1;
-        setPdfZoom(z);
+        setViewZoom(z);
         publish();
       }
     };
@@ -344,8 +350,14 @@
     const savedChrome=outerChrome.map(node=>({node,style:node.getAttribute('style'),hidden:node.hidden,inert:node.inert,aria:node.getAttribute('aria-hidden')}));
     for(const {node} of savedChrome){node.style.setProperty('display','none','important');node.hidden=true;node.inert=true;node.setAttribute('aria-hidden','true')}
     const destroy=result.destroy;
-    let layoutObserver=null;
-    result.destroy=()=>{document.removeEventListener('close',returnDialogFocus,true);layoutObserver?.disconnect();destroy();for(const s of savedChrome){if(s.style===null)s.node.removeAttribute('style');else s.node.setAttribute('style',s.style);s.node.hidden=s.hidden;s.node.inert=s.inert;if(s.aria===null)s.node.removeAttribute('aria-hidden');else s.node.setAttribute('aria-hidden',s.aria)}window.__v2UI=null;window.__v2Bridge=null;resize()};
+    let layoutObserver=null,focusObserver=null;
+    // Focus view: the writing surface fills the whole editor area. The shell's focus-mode class
+    // lives in shadow DOM, so it is mirrored on <html> for the page stylesheet; the canvas
+    // follows through its ResizeObserver.
+    const focusStyle=document.createElement('style');
+    focusStyle.textContent='html.bd-focus bilge-defter-ui .workspace .paper-wrap{padding:0!important}html.bd-focus bilge-defter-ui .workspace .paper{max-width:none!important;margin:0!important;border-width:0!important;border-radius:0!important;box-shadow:none!important}';
+    document.head.append(focusStyle);
+    result.destroy=()=>{document.removeEventListener('close',returnDialogFocus,true);layoutObserver?.disconnect();focusObserver?.disconnect();focusStyle.remove();document.documentElement.classList.remove('bd-focus');destroy();for(const s of savedChrome){if(s.style===null)s.node.removeAttribute('style');else s.node.setAttribute('style',s.style);s.node.hidden=s.hidden;s.node.inert=s.inert;if(s.aria===null)s.node.removeAttribute('aria-hidden');else s.node.setAttribute('aria-hidden',s.aria)}window.__v2UI=null;window.__v2Bridge=null;resize()};
 
     // Native engine dialogs formerly returned focus to now-hidden old tools.
     // Retain the visible V2 trigger instead, after the engine's close handler.
@@ -364,6 +376,13 @@
       layoutObserver = new MutationObserver(syncLayoutActive);
       layoutObserver.observe(appRoot, { attributes: true, attributeFilter: ['class'] });
       syncLayoutActive();
+      const shell = result.ui.shadowRoot.querySelector('.shell');
+      if (shell) {
+        const syncFocus = () => document.documentElement.classList.toggle('bd-focus', shell.classList.contains('focus-mode'));
+        focusObserver = new MutationObserver(syncFocus);
+        focusObserver.observe(shell, { attributes: true, attributeFilter: ['class'] });
+        syncFocus();
+      }
     }
 
     bridge.publish();
