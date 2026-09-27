@@ -99,4 +99,42 @@ geri dönüşü bu yüzden artık konteynerin varlığına güvenmiyor:
 
 ## Yayın
 
-(kullanıcı onayı bekleniyor)
+Kullanıcı onayıyla ("test bitince canlıya al") 27 Eylül 2026'da canlıya alındı. Künye:
+
+| Alan | Değer |
+|---|---|
+| Kaynak commit | `d05c8636ca090690c480d78c394c7b49cc4dc2a9` |
+| Paket `SHA256SUMS` | `fe5f5948…` |
+| Payload | `ad9f5e4a…`, 246 dosya |
+| nginx yapılandırması | `3f3ef2ae…`, v65 ile aynı |
+
+**Yayın betiğinin kontrolleri:**
+
+- **`stage`:** v66 ön izlemesi 127.0.0.1:18800'de doğrulandı: 238 HTTP hash, 235 çevrim dışı
+  dosya, 14 yetkisiz istek reddi, 6 korumalı yol kapalı.
+- **`rehearse`:** v65 web konteyneri kayıtlı yapılandırmadan 127.0.0.1:18806'da yeniden kuruldu.
+  v65 doğrulayıcısından geçti (238 / 235 / 14 / 6), sonra silindi.
+- **`activate`:** Canlıda aynı dört kontrol geçti. Kütüphane sağlıklı; hesap servisi (v65) ve
+  diğer servisler değişmedi.
+
+**Bağımsız kontroller:**
+
+- `current`, `/opt/bilge-defter-classroom-v66/ui`'yi gösteriyor ve `release.json` v66.
+- Canlıdaki `save-worker.js`, `index.html`, `sw.js`, `release.json` baytları Git'teki `d05c863`
+  ile aynı.
+- v65 web konteyneri `-rollback-v66` adıyla durdurulmuş halde bekliyor. Hesap konteyneri aynı
+  kimlikte çalışıyor.
+- İnternetten oturumsuz istek 302 ile Access girişine gidiyor.
+
+**Henüz yapılmadı:**
+
+- Fiziksel iPad ve gerçek hesap kabulü.
+- GitHub'a push ve `master` birleştirmesi. v65'te eklenen Actions iş akışı nedeniyle önce kota
+  kontrolü gerekiyor.
+
+**Geri dönüş (yalnız v66 etkin sürümken).** Durmuş v65 konteyneri silinmişse geri dönüş onu
+kayıtlı yapılandırmadan yeniden kurar:
+
+```sh
+sudo python3 -B /opt/bilge-defter-classroom-v66/deploy-v66.py rollback
+```
