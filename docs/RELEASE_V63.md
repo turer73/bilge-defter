@@ -80,8 +80,17 @@ Kütüphane, hesap servisi, veritabanları, kayıt biçimi, nginx izin listesi v
 
 ## Yayın
 
-Henüz yapılmadı. Sıra: `build-release-v63.py` → klipper'da `deploy-v63.py prepare`, `stage`,
-kullanıcı onayı, `activate`.
+Kullanıcı onayıyla ("test bitince canlıya al") 27 Eylül 2026'da canlıya alındı (kaynak `9023acd`,
+paket `SHA256SUMS` d592864d…, payload 616cb0ea…, nginx 3f3ef2ae… v62 ile aynı).
+
+- Önceki, yayınlanmamış v63 önizlemesi (`4d1ea48`) silinmedi: konteyner
+  `-preview-v63-unreleased-4d1ea48` adıyla durduruldu, dizini
+  `/opt/bilge-defter-classroom-v63-unreleased-4d1ea48` altına taşındı.
+- `stage` ve `activate`: 238 HTTP hash, 235 çevrim dışı dosya, 14 yetkisiz istek reddi, 6 özel
+  yol kapalı; kütüphane `v58/library` kodunda ve sağlıklı; hesaplar ve diğer servisler değişmedi.
+- Bağımsız kontrol: canlı `release.json` = v63; `index.html`, `ui-v2-bridge.js`,
+  `media-workspace.js`, `ocr-workspace.js`, `sw.js` baytları Git'teki `9023acd` ile aynı; `verify`
+  yeniden geçti; v62 web konteyneri `-rollback-v63` adıyla durdurulmuş saklanıyor.
 
 Geri dönüş (yalnız v63 etkin sürümken):
 
