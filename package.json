@@ -15,7 +15,8 @@
     "test:terminology": "node work/verify-v63.cjs verify-terminology.cjs",
     "test:dictionary": "node work/verify-v63.cjs verify-v62-dictionary.cjs",
     "test:paper": "node work/verify-v63.cjs verify-v63-paper.cjs",
-    "test:ink-colors": "node work/verify-v63.cjs verify-v63-ink.cjs"
+    "test:ink-colors": "node work/verify-v63.cjs verify-v63-ink.cjs",
+    "test:scroll-save": "node work/verify-v63.cjs verify-v63-scroll.cjs"
   },
   "devDependencies": { "playwright": "1.62.1" },
   "engines": { "node": ">=22" }

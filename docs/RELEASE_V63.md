@@ -1,8 +1,24 @@
-# v63 — çizgili kâğıt seçimi, tam yüzey odak görünümü, ayrı kalem ve vurgulayıcı renkleri
+# v63 — çizgili kâğıt seçimi, tam yüzey odak görünümü, ayrı kalem ve vurgulayıcı renkleri, takılmasız iki parmak kaydırma
 
-Kullanıcı 27 Eylül 2026'da v62 canlıya alındıktan sonra üç şey bildirdi: çizgili kâğıt
+Kullanıcı 27 Eylül 2026'da v62 canlıya alındıktan sonra dört şey bildirdi: çizgili kâğıt
 seçilemiyor ve çizgiler kayıyordu; odak modunda yazı alanı sayfayı kaplamalı; vurgulayıcı ve
-kalem renkleri ayrı seçilmeli.
+kalem renkleri ayrı seçilmeli; iki parmak kaydırmada hâlâ hafif takılma var. İlk hazırlanan v63
+(`4d1ea48`, paket cf2496dc) önizlemeye alındı ama kaydırma bildirimi üzerine yayınlanmadı; bu
+sürüm onun yerine geçer.
+
+## İki parmak kaydırmada takılma
+
+Ölçüm (36 MB defter, 1200 çizgili etkin sayfa, 12 s art arda kaydırma): her kaydırmanın sonunda
+kayıt çalışıyordu (Chromium 18, WebKit 10 kez); her kayıt ana iş parçacığında ~20 ms defter metni
+kuruyordu ve en kötü kareler tam bu anlara denk geliyordu (WebKit 76–97 ms, Chromium 33–50 ms).
+Çizim kareleri 2 ms altındaydı, yani takılmanın kaynağı çizim değil kayıttı. Kaydırma ayrıca
+sayfanın "son düzenleme" zamanını değiştiriyor ve sayfanın kayıt önbelleğini geçersiz kılıyordu.
+
+Artık kaydırma ve PDF sıkıştırma yakınlaştırması bir düzenleme sayılmaz: "son düzenleme" değişmez;
+görünüm hareket durduktan 1,5 s sonra bir kez kaydedilir, parmak/kalem sürdükçe ertelenir.
+Sayfadan çıkışta kayıt eskisi gibi hemen yapılır; kalemle yazılan çizgi kaydırma sürse de
+kaydedilir. Sonuç: 12 s kaydırmada kayıt 0; Chromium en kötü kare 50 → 16,8 ms, WebKit 97 → 55 ms
+(başsız WebKit bu makinede boşta da ~30 kare/sn, medyan 34 ms).
 
 ## Çizgili kâğıt seçilemiyordu
 
@@ -53,10 +69,13 @@ Kütüphane, hesap servisi, veritabanları, kayıt biçimi, nginx izin listesi v
   doğru yere düşüyor; odaktan çıkınca çerçeve dönüyor ve geniş yazı sığdırılıyor.
 - `verify-v63-ink.cjs`, Chromium ve WebKit, **8 kontrol**: renklerin ayrılığı, çizgilerin kendi
   aracının rengini tutması, silgiden geçiş, vurgulayıcı seçiliyken metnin kalem rengi.
-- Negatif kontrol: iki test canlıdaki v62 paketinde davranış noktasında başarısız (çizgili seçili
-  değil; vurgulayıcı kalemin rengini gösteriyor).
-- `npm test`: 18 suite geçti (182 s); v51, v52, v56–v62 temel paketleri Git'ten sabit hash'lerle yeniden
-  üretildi (v62 = canlıdaki 3592843a). Paket `SHA256SUMS` cf2496dc….
+- `verify-v63-scroll.cjs`, Chromium ve WebKit, **6 kontrol**: 6 s kaydırmada kayıt yok; görünüm
+  durunca tam bir kez kaydediliyor ve sayfa "düzenlendi" damgası almıyor; kaydırmadan hemen önce
+  yazılan çizgi kaydırma sürerken kaydediliyor.
+- Negatif kontrol: üç test canlıdaki v62 paketinde davranış noktasında başarısız (çizgili seçili
+  değil; vurgulayıcı kalemin rengini gösteriyor; kaydırma sırasında 7 kayıt).
+- `npm test`: 19 suite geçti (267 s); v51, v52, v56–v62 temel paketleri Git'ten sabit hash'lerle yeniden
+  üretildi (v62 = canlıdaki 3592843a). Paket `SHA256SUMS` d592864d….
 - Fiziksel iPad ve gerçek hesap testi yapılmadı.
 
 ## Yayın

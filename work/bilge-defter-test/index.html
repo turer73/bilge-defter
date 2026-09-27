@@ -230,7 +230,7 @@ writingSurface.addEventListener('touchmove',e=>{
   page().viewX=Math.max(0,Math.min(maxViewX(),cx-mx/scale));page().viewY=Math.max(0,cy-my/scale);
   updatePdfZoom();drawAll();pinchDirty=true;
 },{passive:true});
-for(const type of ['touchend','touchcancel'])writingSurface.addEventListener(type,e=>{if(pinchT&&e.touches.length<2){pinchT=null;if(pinchDirty){pinchDirty=false;checkpointDrawing();void flushSave()}}},{passive:true});
+for(const type of ['touchend','touchcancel'])writingSurface.addEventListener(type,e=>{if(pinchT&&e.touches.length<2){pinchT=null;if(pinchDirty){pinchDirty=false;markViewChanged();scheduleViewSave()}}},{passive:true});
 function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>{db=r.result;ok()};r.onerror=()=>no(r.error)})}
 function dbGet(key='app'){return new Promise((ok,no)=>{const r=db.transaction(STORE).objectStore(STORE).get(key);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
 // The pen thread validates and serializes the snapshot once; save-worker.js parses,
@@ -343,6 +343,12 @@ function renderSaveStatus(){
 function saveError(e,message=''){saveFailed=true;failureMessage=message;if(e?.name==='NotebookConflict')saveConflict=true;renderSaveStatus();console.error(e)}
 function markChanged(refresh=true){if(!ready)return;if(page()){page().updated=new Date().toISOString();touchPage(page())}state.active=activeId;editRevision++;if(typeof window.markSyncDirty==='function')window.markSyncDirty();if(refresh)renderSaveStatus()}
 function scheduleSave(){if(!ready||saveConflict)return;markChanged();void flushSave()}
+// Scrolling and pinch zoom change only where the page is shown. They are not edits (no updated
+// stamp, no page revision) and are saved once the view has settled, not after every swipe: a
+// save rebuilds the notebook text on this thread and was the stutter between swipes.
+let viewSaveTimer=null;
+function markViewChanged(){if(!ready)return;const clean=!isDirty();state.active=activeId;editRevision++;if(typeof window.markSyncDirty==='function')window.markSyncDirty();if(clean)renderSaveStatus()}
+function scheduleViewSave(){if(!ready||saveConflict)return;clearTimeout(viewSaveTimer);viewSaveTimer=setTimeout(()=>{viewSaveTimer=null;if(pan||drawing||pinchT){scheduleViewSave();return}void flushSave()},1500)}
 function scheduleInkSave(){
   if(!ready||saveConflict)return;
   markChanged();clearTimeout(inkSaveTimer);
@@ -407,7 +413,7 @@ function verifyPageCache(){
   if(pageCacheStale()){markChanged();saveFullNext=true;void flushSave()}
 }
 function flushSave(){
-  clearTimeout(saveTimer);saveTimer=null;clearTimeout(inkSaveTimer);inkSaveTimer=null;
+  clearTimeout(saveTimer);saveTimer=null;clearTimeout(inkSaveTimer);inkSaveTimer=null;clearTimeout(viewSaveTimer);viewSaveTimer=null;
   if(savePromise)return savePromise;
   if(!ready||saveConflict)return Promise.resolve(false);
   if(!isDirty()){saveFailed=false;failureMessage='';renderSaveStatus();return Promise.resolve(true)}
@@ -506,7 +512,7 @@ function drawAll(options){
 function point(e){const r=canvas.getBoundingClientRect(),scale=paperScale();return{x:(e.clientX-r.left)/scale+viewX(),y:(e.clientY-r.top)/scale+viewY(),p:e.pressure||.5}}
 function scrollPaper(next,nextX=viewX()){
   if(!canEdit()||!page()||!Number.isFinite(next)||!Number.isFinite(nextX))return;next=Math.max(0,next);nextX=Math.max(0,Math.min(maxViewX(),nextX));if(next===viewY()&&nextX===viewX())return;
-  page().viewY=next;setViewX(nextX);checkpointDrawing();queueViewportRender();const status=page().pdf?'PDF · iki parmakla her yöne kaydırılıyor':`Satır ${Math.floor(next/32)+1} · iki parmakla kaydırılıyor`;const inputState=document.querySelector('#inputState');if(inputState.textContent!==status)inputState.textContent=status;
+  page().viewY=next;setViewX(nextX);markViewChanged();scheduleViewSave();queueViewportRender();const status=page().pdf?'PDF · iki parmakla her yöne kaydırılıyor':`Satır ${Math.floor(next/32)+1} · iki parmakla kaydırılıyor`;const inputState=document.querySelector('#inputState');if(inputState.textContent!==status)inputState.textContent=status;
 }
 document.querySelector('#scrollToTop').onclick=()=>{if(!drawing&&!pan){scrollPaper(0,0);void flushSave()}};
 canvas.addEventListener('wheel',e=>{if(e.ctrlKey||drawing||pan||!canEdit())return;e.preventDefault();const unit=e.deltaMode===1?32:e.deltaMode===2?canvas.getBoundingClientRect().height:1,horizontal=(!!page()?.pdf||maxViewX()>0)&&e.shiftKey;scrollPaper(viewY()+(horizontal?0:e.deltaY)*unit/paperScale(),viewX()+(horizontal?e.deltaY:e.deltaX)*unit/paperScale())},{passive:false});
@@ -587,7 +593,7 @@ canvas.addEventListener('pointermove',e=>{
 });
 function finishStroke(){if(!drawing)return;const id=activePointer,finishedTool=current?.tool;drawing=false;activePointer=null;activeInputType=null;current=null;try{if(canvas.hasPointerCapture(id))canvas.releasePointerCapture(id)}catch{}scheduleInkSave();if(finishedTool!=='pen')drawAll()}
 function end(e){
-  if(touchPoints.has(e.pointerId)){if(pan&&pan.ids.includes(e.pointerId)){finishViewportRender();pan=null;if(typeof refreshChrome==='function')refreshChrome();void flushSave()}touchPoints.delete(e.pointerId);if(!touchPoints.size)suppressTouch=false}
+  if(touchPoints.has(e.pointerId)){if(pan&&pan.ids.includes(e.pointerId)){finishViewportRender();pan=null;if(typeof refreshChrome==='function')refreshChrome();scheduleViewSave()}touchPoints.delete(e.pointerId);if(!touchPoints.size)suppressTouch=false}
   if(!drawing||e.pointerId!==activePointer)return;if(e.type==='pointerup'&&canEdit()){current.points.push(point(e));drawStrokeSegment(current,current.points.length-2,current.points.length-1)}finishStroke();
 }window.addEventListener('pointerup',end,true);window.addEventListener('pointercancel',end,true);canvas.addEventListener('lostpointercapture',end);
 document.querySelector('#penOnly').addEventListener('change',e=>{document.querySelector('#inputState').textContent=e.target.checked?'Avuç içi koruması açık: yalnız pen/mouse kabul edilir':'Uyumluluk modu açık: kalem touch görünse de yazabilir'});

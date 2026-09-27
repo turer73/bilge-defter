@@ -17,7 +17,7 @@ spec.loader.exec_module(b)
 b.ROOT = Path('/opt/bilge-defter-classroom-v63')
 b.PRIOR = Path('/opt/bilge-defter-classroom-v62')
 b.NAMES = [b.WEB]
-b.HASH = 'cf2496dca39375637959f5d2ebf62e7d71b87abb97384226b74b91989f55adb0'
+b.HASH = 'd592864d4367ae8647a2ee6fc7f6fea7f04ed14ce56be37674cdca564cd602e6'
 b.OLDHASH = '3592843ad931fae4eef005a37fe8424fb989c72143419d90b88f3fa4a93471f4'
 OLDCONF = '3f3ef2ae4982758cfaafa659835aec6e03bd2e2edeceddb81378ecabaad389cf'
 b.CONFHASH = OLDCONF

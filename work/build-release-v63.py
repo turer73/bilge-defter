@@ -7,7 +7,7 @@ import tarfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-HASH = 'cf2496dca39375637959f5d2ebf62e7d71b87abb97384226b74b91989f55adb0'
+HASH = 'd592864d4367ae8647a2ee6fc7f6fea7f04ed14ce56be37674cdca564cd602e6'
 CONFHASH = '3f3ef2ae4982758cfaafa659835aec6e03bd2e2edeceddb81378ecabaad389cf'
 SCRIPTS = ['deploy-v57.py', 'deploy-v63.py', 'verify-publication-v57.py', 'verify-publication-v63.py']
 OUT = ROOT/'outputs/v63-release'
