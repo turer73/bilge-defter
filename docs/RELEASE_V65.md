@@ -1,6 +1,32 @@
 # v65 — güvenilir kayıt ve daha hafif eşitleme
 
-27 Eylül 2026. Kullanıcı yayına izin verdi. **Bu kaynak commit'inde yayın hazırlık aşamasındadır; canlı sonuç ayrıca eklenecek.**
+27 Eylül 2026. **v65 web ve hesap servisi yayında.** Yayın kaynak commit'i
+`70775341c0a39f458326d8b48b03d6b6d98e8316`; mevcut yayının bu son kayıt commit'inden
+farklı olması beklenir. GitHub push/master birleştirmesi yapılmadı.
+
+## Canlı kanıt
+
+- `/opt/bilge-defter-invited/current` → `/opt/bilge-defter-classroom-v65/ui`.
+- Web ve API sürümü v65. Yayın sonrası bağımsız HTTP doğrulaması: **238/238 dosya**,
+  **235 çevrim dışı dosya**, **14 yetkisiz erişim reddi**, **6 korumalı yol reddi**.
+- Paket manifest hash'i: `59fcbef4e3ef6594880192d483d545fabd1f2077484179178c3d3ce335fd3bfd`.
+- Payload SHA-256: `746bbe0782d73aac9a1891c1b0c363a86b410b7acd7ca1ad7a7b7c1d72974c92`.
+- Yerel 19 regresyon paketi + 26 güvenilirlik kontrolü, 78 API testi geçti.
+  Linux imajında ek gerçek sözlük testiyle **79 test** geçti.
+- Ayrı nginx preview'unda imzalı yapay hesapla gerçek 200/304, ETag, CAS,
+  hesap ayrımı, 401/409 ve 146.532 maddelik sözlükte `kalp` araması geçti.
+- Üretim API'sindeki **12 kaynak dosyası** paketle aynı. Yapay kimlik/test
+  başlatıcısı üretim imajında yok. DB şeması önceki yedekle aynı.
+- Web/API dışındaki konteyner kimlikleri, durum/başlangıç zamanları ve ortak
+  Linux-AI servis PID değeri değişmedi. API veri/sır mount'ları ve ortamı aynı.
+- İnternetten oturumsuz istek **302** ile giriş kapısına yönleniyor; erişim açılmadı.
+- Eski web ve hesap konteynerleri doğrulanmış kimlikleriyle durmuş olarak korunuyor.
+  Gerçek trafikle geri dönüş tatbikatı yapılmadı.
+- Hesap yedeği bağımsız, erişimi kısıtlı yerel `outputs/v65-private-backup/`
+  klasöründe yeniden açılıp tam içerikle karşılaştırıldı; satır çıktısı verilmedi.
+  Yedek hash'i `f7b7b43b78acf265f256b77b489dc4f4602e84d59866989a1eb4d29068bde13f`.
+- Sunucu kanıtları: `stage-proof.json`, `live-proof.json`, `api-tests.txt`,
+  `source-receipt.json`. Özel yedek ve yapılandırma kayıtları `private/` altında.
 
 ## Kapsam
 

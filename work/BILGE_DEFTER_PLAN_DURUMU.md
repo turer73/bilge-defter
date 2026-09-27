@@ -3,10 +3,10 @@
 ## Güncel öncelik — 27 Eylül 2026, güvenilir kullanım
 
 - Kullanıcı kararı: yeni özellik yerine güvenilirlik ve kullanım iyileştirmesi.
-- Son denetlenen canlı sürüm v64; çalışma tabanı `e07d52b`, `repair/v57-stability`. Canlı durum tarihlidir; sonraki yayında tekrar kontrol edilir. Eski özel adres kapalı.
+- Son denetlenen canlı web/hesap sürümü **v65**, kaynak `7077534`, `repair/v57-stability`. Kanıt `docs/RELEASE_V65.md`. Canlı durum tarihlidir; sonraki yayında tekrar kontrol edilir. Eski özel adres kapalı.
 - Araştırma ve rakip/GitHub kaynakları: `docs/UX_PERFORMANCE_RESEARCH_2026-09-27.md`.
 - İlk paket: koşullu eşitleme, boyut sınırı mesajı, silmeden kurtarma, kalıcı araç tercihleri, yerel isteğe bağlı süre ölçümü ve CI tanımı. Durum/test kapsamı: `docs/RELIABILITY_PACKAGE_1.md`.
-- Bu çalışma canlı yayın, GitHub push veya merge içermez. Yerel paket hâlâ v64 geliştirme tabanındadır; **mevcut v64 üzerine aynı sürümle yayınlanamaz**. Yeni sürüm ve paket kanıtı yayın öncesi hazırlanmalı.
+- Kullanıcının ayrı yayın onayıyla v65 yeni klasörde yayımlandı; v64 ve önceki hesap konteyneri geri alma için korundu. Bağımsız hesap yedeği doğrulandı. GitHub push/master merge yapılmadı; Actions çalıştırılmadı.
 - Fiziksel iPad, gerçek sınıf ve OCR kalite kabulü açık. Sayfa/blob depolama göçü, yeni AI, yeni kaynak ve native uygulama bu kapsamda yok.
 
 ## Tarihsel durum — 24 Eylül 2026, v52 teslimi
