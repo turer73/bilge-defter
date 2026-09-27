@@ -37,7 +37,16 @@ Pakette kullanıcıya açılan diğer dış bağlantılar (Wikidata, Google aram
 
 ## Yayın
 
-Henüz yapılmadı. Geri dönüş (yalnız v64 etkin sürümken):
+Kullanıcı onayıyla ("test geçince canlıya al") 27 Eylül 2026'da canlıya alındı (kaynak `61b0eee`,
+paket `SHA256SUMS` 7db781b5…, payload 36eed6d4…, nginx 3f3ef2ae… v63 ile aynı).
+
+- `stage` ve `activate`: 238 HTTP hash, 235 çevrim dışı dosya, 14 yetkisiz istek reddi, 6 özel
+  yol kapalı; kütüphane sağlıklı; hesaplar ve diğer servisler değişmedi.
+- Bağımsız kontrol: canlı `release.json` = v64; `terminology-data.js`, `sw.js`, `index.html`
+  baytları Git'teki `61b0eee` ile aynı; canlı veride `fipat.library.dal.ca` geçmiyor; yeni
+  bağlantı `200 application/pdf`; v63 web konteyneri `-rollback-v64` adıyla durdurulmuş.
+
+Geri dönüş (yalnız v64 etkin sürümken):
 
 ```sh
 sudo python3 /opt/bilge-defter-classroom-v64/deploy-v64.py rollback
