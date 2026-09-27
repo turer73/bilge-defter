@@ -63,8 +63,14 @@ değişmez. `work/terminology/**` Git'te `-text`: hash'li girdiler satır sonu d
 
 ## Yayın
 
-Henüz yapılmadı. Sıra: `build-release-v62.py` → klipper'da `deploy-v62.py prepare`, `stage`
-(yalnız `127.0.0.1:18800`), kullanıcı onayı, `activate`.
+Kullanıcı onayıyla 27 Eylül 2026'da canlıya alındı (kaynak `5240bf0`, paket `SHA256SUMS`
+3592843a…, payload 0e9bac7c…, nginx 3f3ef2ae… v61 ile aynı).
+
+- `stage` ve `activate`: 238 HTTP hash, 235 çevrim dışı dosya, 14 yetkisiz istek reddi, 6 özel
+  yol kapalı; kütüphane `v58/library` kodunda ve sağlıklı; hesaplar ve diğer servisler değişmedi.
+- Bağımsız kontrol: canlı `release.json` = v62; `terminology-data.js`, `terminology.js`,
+  `dictionary-workspace.js`, `sw.js`, `index.html` baytları Git'teki `5240bf0` ile aynı; `verify`
+  yeniden geçti; `-preview-v62` kapalı, v61 web konteyneri `-rollback-v62` adıyla durdurulmuş.
 
 Geri dönüş (yalnız v62 etkin sürümken):
 

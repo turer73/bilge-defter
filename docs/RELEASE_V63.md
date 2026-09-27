@@ -1,0 +1,71 @@
+# v63 — çizgili kâğıt seçimi, tam yüzey odak görünümü, ayrı kalem ve vurgulayıcı renkleri
+
+Kullanıcı 27 Eylül 2026'da v62 canlıya alındıktan sonra üç şey bildirdi: çizgili kâğıt
+seçilemiyor ve çizgiler kayıyordu; odak modunda yazı alanı sayfayı kaplamalı; vurgulayıcı ve
+kalem renkleri ayrı seçilmeli.
+
+## Çizgili kâğıt seçilemiyordu
+
+Yeni arayüzün kâğıt paneli çizgili deseni `ruled` adıyla gönderiyor, defter motoru ise yalnız
+`lined` kabul ediyordu. "Çizgili"ye dokunmak sessizce reddediliyor, kareli/noktalı/çizgisizden
+çizgiliye dönülemiyor ve çizgili düğmesi hiç seçili görünmüyordu (panel açılınca hiçbir desen
+seçili değildi). Köprü (`ui-v2-bridge.js`) artık iki adı birbirine çeviriyor; kayıt biçimi
+değişmedi (motor yine `lined` saklar).
+
+## "Çizgiler kayıyordu"
+
+Kullanıcı bunu "çizgiler yazıyla hizasız kayıyor" olarak netleştirdi. Ölçüm: v60'ta başka bir
+ekranda yazılıp dar ekranda genişliğe sığdırılan sayfalarda yazı küçülüyor ama çizgiler 32 piksel
+sabit kalıyordu; 10 satırda 210–256 piksel açılıyor, kaydırınca çizgiler yazının altından
+kayıyordu. v61'de çizgiler yazıyla birlikte ölçeklendiği için canlıdaki v62'de fark her durumda
+0 (kaydırma, sığdırılmış sayfa, %200). Kod değişikliği gerekmedi; eksik olan bu hizayı koruyan
+testti, v63'te eklendi.
+
+## Odak görünümü yazı alanının tamamını kaplıyor
+
+Odak modunda kâğıt 840 piksel en fazla genişlikte, 20/24 piksel iç boşluklu, çerçeveli ve
+yuvarlak köşeli kalıyordu (1180 piksellik ekranda 840 piksel). Odak sınıfı arayüzün gölge
+DOM'unda olduğu için köprü onu `<html class="bd-focus">` olarak yansıtıyor; bu sınıfla kâğıt
+dolgusuz, çerçevesiz ve sınırsız genişlikte: 1180×820 ekranda 1180×648, iPad dikeyde 820×1010,
+yani editör alanının tamamı. Araç çubuğu, odaktan çıkış ve yakınlaştırma çubuğu yerinde kalır.
+Kanvas `ResizeObserver` ile yeniden ölçülür.
+
+Bilinen sonuç: odakta normal genişliği aşan yere yazılan not, odaktan çıkınca sayfa genişliğine
+sığdırılır (küçük görünür); tekrar odağa girince tam boyutuna döner. Veri değişmez.
+
+## Kalem ve vurgulayıcı renkleri ayrı
+
+Önceden iki araç tek renk kutusunu paylaşıyordu; vurgulayıcı kalemin rengini yarı saydam
+kullanıyordu. Artık her araç kendi rengini tutar (kalem #173b36, vurgulayıcı varsayılan sarı
+#f5c400); araç değişince renk kutusu o aracın rengini gösterir, silgiden geçmek iki rengi de
+korur. Metin kutusu ve el yazısı tanıma ile eklenen metin, vurgulayıcı seçiliyken bile kalem
+rengini kullanır. Renkler, kalınlıklar gibi oturum boyunca tutulur.
+
+Kütüphane, hesap servisi, veritabanları, kayıt biçimi, nginx izin listesi ve dosya sayısı
+(238/235) değişmez.
+
+## Yerel doğrulama
+
+- `verify-v63-paper.cjs`, Chromium ve WebKit, 390 ve 1180 px, **24 kontrol**: çizgili varsayılan
+  seçili görünüyor; kareliden çizgiliye dönülüyor ve `lined` saklanıyor; motor adları köprüden
+  hâlâ çalışıyor; yeniden yüklemede kalıyor; çizgiler kaydırmada, sığdırılmış sayfada ve %200'de
+  sayfa satırlarının tam üstünde; odak görünümü editör alanını kaplıyor ve kalem uç kenarda
+  doğru yere düşüyor; odaktan çıkınca çerçeve dönüyor ve geniş yazı sığdırılıyor.
+- `verify-v63-ink.cjs`, Chromium ve WebKit, **8 kontrol**: renklerin ayrılığı, çizgilerin kendi
+  aracının rengini tutması, silgiden geçiş, vurgulayıcı seçiliyken metnin kalem rengi.
+- Negatif kontrol: iki test canlıdaki v62 paketinde davranış noktasında başarısız (çizgili seçili
+  değil; vurgulayıcı kalemin rengini gösteriyor).
+- `npm test`: 18 suite geçti (182 s); v51, v52, v56–v62 temel paketleri Git'ten sabit hash'lerle yeniden
+  üretildi (v62 = canlıdaki 3592843a). Paket `SHA256SUMS` cf2496dc….
+- Fiziksel iPad ve gerçek hesap testi yapılmadı.
+
+## Yayın
+
+Henüz yapılmadı. Sıra: `build-release-v63.py` → klipper'da `deploy-v63.py prepare`, `stage`,
+kullanıcı onayı, `activate`.
+
+Geri dönüş (yalnız v63 etkin sürümken):
+
+```sh
+sudo python3 /opt/bilge-defter-classroom-v63/deploy-v63.py rollback
+```

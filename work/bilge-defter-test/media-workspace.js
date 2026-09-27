@@ -185,7 +185,7 @@ function showMedia(){
 }
 function beginMedia(draft,target=null){mediaDraft=structuredClone(draft);mediaTarget=target;mediaPage=activeId;showMedia()}
 function defaultMediaPoint(){return {x:viewX()+24/paperScale(),y:viewY()+48/paperScale()}}
-document.querySelector('#textAdd').onclick=()=>{if(!mediaAvailable())return;beginPendingMedia({tool:'text',text:'',fontSize:24,color:document.querySelector('#color').value,width:Math.max(80,Math.min(440,(canvas.getBoundingClientRect().width-60)/paperScale())),points:[defaultMediaPoint()]})};
+document.querySelector('#textAdd').onclick=()=>{if(!mediaAvailable())return;beginPendingMedia({tool:'text',text:'',fontSize:24,color:penColor(),width:Math.max(80,Math.min(440,(canvas.getBoundingClientRect().width-60)/paperScale())),points:[defaultMediaPoint()]})};
 document.querySelector('#imageAdd').onclick=()=>{if(mediaAvailable())mediaFile.click()};
 document.querySelector('#mediaClose').onclick=()=>mediaDialog.close();
 mediaDialog.addEventListener('close',()=>{if(!mediaPlacement&&!mediaDialog.open){mediaDraft=null;mediaTarget=null;document.querySelector('#mediaPreview').removeAttribute('src')}});

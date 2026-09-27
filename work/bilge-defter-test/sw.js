@@ -1,5 +1,5 @@
 // Each release is installed completely before it can replace the previous one.
-const VERSION='v62',PREFIX='bilge-defter-test-',CACHE=PREFIX+VERSION;
+const VERSION='v63',PREFIX='bilge-defter-test-',CACHE=PREFIX+VERSION;
 const root=new URL('./',self.location.href);
 const isLibrary=url=>{const relative=url.pathname.slice(root.pathname.length);return relative==='library'||relative.startsWith('library/')};
 // Library pages are an online service in the same origin: they use no notebook cache
