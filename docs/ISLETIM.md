@@ -29,11 +29,12 @@ görüldü).
 /opt/bilge-defter-monitor/bilge-defter-health.sh
 ```
 
-15 kontrol; son satır `OUTCOME: pass` olmalı. Ne ölçtüğü: [IZLEME](IZLEME.md). Betiğin 5
-dakikada bir cron'dan koşması ve düşüşün `notify-cron` üzerinden Telegram'a gelmesi klipper'dan
-görev paketi BILGE-20260928-01 ile istendi; **28 Eylül 15:00 itibarıyla henüz kurulmadı**
-(`cron_outcomes`'ta yalnız elle koşunun tek satırı var). Kurulunca tabloda 5 dakikada bir
-`bilge-defter-health | pass` satırı görünür. Kuma yalnız gösterge, uyarı vermez.
+15 kontrol; son satır `OUTCOME: pass` olmalı. Ne ölçtüğü: [IZLEME](IZLEME.md). Aynı betik
+28 Eylül 18:40'tan beri klipperos'un crontab'ından 5 dakikada bir koşuyor (linux-ai-server
+commit `7920372`, görev paketi BILGE-20260928-01, not #101596); `cron_outcomes` tablosunda
+`bilge-defter-health | pass` satırları birikir. Düşüş `notify-cron` ile Telegram'a gider (18:38'de
+kasıtlı bir başarısızlıkla doğrulandı). Devops ajanı dört bilge-defter konteynerini de izliyor;
+kip `notify`, otomatik yeniden başlatma yok. Kuma yalnız gösterge, uyarı vermez.
 
 ## 3. Bir şey çalışmıyorsa
 
