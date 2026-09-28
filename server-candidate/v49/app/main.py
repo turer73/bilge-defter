@@ -18,4 +18,4 @@ async def private_responses(request, call_next):
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "bilge-defter-accounts", "version": "v65", "account_protocol": "approval-v1"}
+    return {"status": "ok", "service": "bilge-defter-accounts", "version": "v68", "account_protocol": "approval-v1"}
