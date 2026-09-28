@@ -18,7 +18,7 @@ belgelerde; bu sayfa "nereye bakayım, ne yapayım" için.
 
 Canlı sürüm bağı: `readlink -f /opt/bilge-defter-invited/current`. Sürüm dizinleri
 `/opt/bilge-defter-classroom-vNN`; şu an v49 (veri), v57 (sözlük), v58 (kütüphane), v64–v66
-(geri dönüş zinciri), v63 (dosyalar duruyor, otomatik geri dönüş yolu yok), v67 (canlı). Başka
+v67 (geri dönüş zinciri), v63 (dosyalar duruyor, otomatik geri dönüş yolu yok), v68 (canlı). Başka
 dizin yok; klipper 28 Eylül'de referanssız 13 dizini arşivleyip sildi
 (`/backups/archive/bilge-defter-unref-20260928.tar.gz`, 110 MB; not #101593, arşiv 28 Eylül'de
 görüldü).
@@ -64,9 +64,9 @@ Günlükler: `docker logs --since 1h <konteyner>`; nginx erişim günlüğü web
    (korunan çalışma zamanı farkı); fark ölçülür, yalnız `main_pid` yenilenir
    ([RELEASE_V67](RELEASE_V67.md)). Klipper artık restart öncesi not atıyor.
 
-Şablon: web için `deploy-v67.py`; web + hesap servisi için `deploy-v65.py`. Üç betiğin
-`rollback`'i de canlı sürümü ön kontrol etmiyor ([GERI_DONUS](GERI_DONUS.md), "Bilinen kusur");
-sonraki araçlar bunu almalı. Sonraki yayın (v68) adayları: sunucuda önceki şifreli kopyayı
+Şablon: web + hesap servisi için `deploy-v68.py` (sağlık kontrolü, `rollback` ön kontrolü,
+silinmiş konteyneri kayıttan kurma, hesap servisi provası, imaj içi bayt karşılaştırması). v65–v67
+betiklerinin `rollback`'i canlı sürümü ön kontrol etmiyor ([GERI_DONUS](GERI_DONUS.md)). Sonraki yayın (v68) adayları: sunucuda önceki şifreli kopyayı
 saklama, web ve hesap konteynerine Docker sağlık kontrolü, hesap servisi için yeniden kurma
 yeteneği ve prova.
 
