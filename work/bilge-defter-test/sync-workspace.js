@@ -80,10 +80,16 @@
           }
         }
       if(!await flushSave())throw Error('Önce yerel kaydı tamamlayın.');
-      const snapshot=notebookSnapshot();
+      const expected=notebookJSON(state),revision=editRevision,snapshot=notebookSnapshot();
       const payload=await encryptPayload(pass,JSON.stringify(snapshot));
-      await postRemote(remote,{...payload,updated_at:snapshot.exportedAt,device_id:deviceId()});
-      setSyncStatus(`Sunucuda şifreli yedek var · ${new Date(snapshot.exportedAt).toLocaleString('tr-TR')}. Yalnız en son kopya saklanır.`);
+      const tag=await postRemote(remote,{...payload,updated_at:snapshot.exportedAt,device_id:deviceId()});
+      // The server copy is now under this passphrase; automatic sync must use the same one or every
+      // later check would fail to open the copy we just wrote (the student confirmed a change above
+      // when an older copy did not open with it). Record the copy, or the next idle check would see
+      // an unknown server tag and raise a conflict against our own upload.
+      const switched=syncEnabled&&pass!==syncPass;if(switched)syncPass=pass;
+      let recorded=true;try{await acknowledge(expected,revision,tag,snapshot.exportedAt)}catch(error){recorded=false;console.error(error)}
+      setSyncStatus(`Sunucuda şifreli yedek var · ${new Date(snapshot.exportedAt).toLocaleString('tr-TR')}. Yalnız en son kopya saklanır.${switched?' Otomatik eşitleme de artık bu parolayı kullanıyor.':''}${recorded?'':' Eşitleme kaydı güncellenemedi; bir sonraki denetimde çakışma uyarısı görülebilir.'}`);
     }catch(error){setSyncStatus(error.message==='cancelled'?'':`Yedek alınamadı. ${error.message} Notlar değişmedi.`)}
   };
   document.querySelector('#syncDownload').onclick=async()=>{
@@ -113,6 +119,17 @@
     if(!localDirty){const revision=editRevision,book=state;if(!hashMemo||hashMemo.revision!==revision||hashMemo.book!==book)hashMemo={revision,book,hash:await hashText(notebookJSON(book))};localDirty=receipt.ackHash!==hashMemo.hash||editRevision!==revision}
     lastSyncAt=receipt?.lastSyncAt||null;
   }
+  const when=t=>{const d=new Date(t||'');return Number.isNaN(d.getTime())?'tarih yok':d.toLocaleString('tr-TR')};
+  // A notebook nobody has written in on this device (one empty page, no notebooks, trash or
+  // planner) that was never acknowledged by a sync: the server copy is applied instead of asking
+  // the student to choose, because "send local" would replace the only server copy with an
+  // empty notebook. Every save writes a receipt row with dirty:true, so "never synced" means no
+  // tag and no acknowledged hash, not the absence of the row.
+  function pristineLocal(){
+    const book=state;if(receipt?.tag||receipt?.ackHash||!book||!Array.isArray(book.pages)||book.pages.length!==1)return false;
+    const only=book.pages[0];
+    return Array.isArray(only?.strokes)&&only.strokes.length===0&&only.pdf===undefined&&!(book.notebooks?.length)&&!(book.trash?.length)&&book.planner===undefined;
+  }
   async function acknowledge(expected,revision,tag,at){
     const next={ackHash:await hashText(expected),tag,lastSyncAt:at};
     const dirty=await dbAcknowledgeSync(expected,next);
@@ -129,7 +146,7 @@
   if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{if(event.data&&event.data.type==='SYNC_PULL')void syncTick()});
   window.markSyncDirty=()=>{nextPollAt=Math.min(nextPollAt,Date.now()+5000);if(localDirty)return;localDirty=true;renderSyncUi()};
   const conflictBanner=document.createElement('div');conflictBanner.id='syncConflictBanner';conflictBanner.hidden=true;conflictBanner.setAttribute('role','alert');
-  conflictBanner.innerHTML='<strong>Eşitleme çakışması</strong><p>Bu cihazda kaydedilmemiş değişiklikler var ve sunucuda da daha yeni bir kopya duruyor. Hangisini kullanacağınızı seçin; diğer kopyanın üzerine yazılır.</p><div class="recovery-actions"><button class="btn primary" id="syncConflictServer">Sunucudakini yükle</button><button class="btn" id="syncConflictLocal">Yereldekini gönder</button><button class="btn" id="syncConflictHold">Şimdilik bırak</button></div>';
+  conflictBanner.innerHTML='<strong>Eşitleme çakışması</strong><p>Bu cihazda eşitlenmemiş değişiklikler var ve sunucuda da farklı bir kopya duruyor. Hangisini kullanacağınızı seçin; diğer kopyanın üzerine yazılır.</p><p id="syncConflictDetail"></p><div class="recovery-actions"><button class="btn primary" id="syncConflictServer">Sunucudakini yükle</button><button class="btn" id="syncConflictLocal">Yereldekini gönder</button><button class="btn" id="syncConflictHold">Şimdilik bırak</button></div>';
   document.body.append(conflictBanner);
   const syncStyle=document.createElement('style');syncStyle.textContent='#syncConflictBanner{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:45;width:min(560px,calc(100% - 24px));padding:14px;border:1px solid #d69974;border-radius:12px;background:#fff5df;box-shadow:0 8px 32px #173b3640;color:#502e18}#syncConflictBanner[hidden]{display:none}#syncConflictBanner p{margin:0 0 10px;font-size:13px;line-height:1.4}';document.head.append(syncStyle);
   const syncArea=document.createElement('div');syncArea.className='tool-actions';
@@ -149,6 +166,7 @@
       const remote=await readRemote();requireCas(remote);
       if(remote.data)try{await decryptPayload(remote.data,pass)}catch{document.querySelector('#syncAutoStatus').textContent='Parola yanlış; sunucudaki yedek bu parolayla açılamıyor.';return}
       await refreshReceipt();syncPass=pass;syncEnabled=true;renderSyncUi();
+      if(remote.data&&pristineLocal()){nextPollAt=0;document.querySelector('#syncAutoStatus').textContent=`Sunucudaki yedek (${when(remote.data.updated_at)}) bu cihaza açılacak; bu pencereyi kapatın.`}
       void retirePush();
     }catch(error){document.querySelector('#syncAutoStatus').textContent=`Eşitleme açılamadı. ${error.message}`}
   };
@@ -161,14 +179,16 @@
     const tag=await postRemote(remote,{...payload,updated_at:snapshot.exportedAt,device_id:deviceId()});
     await acknowledge(expected,revision,tag,snapshot.exportedAt);
   }
-  async function syncApply(remote){
+  // fresh: a never-written device taking the server copy; the empty notebook it replaces is not
+  // worth a before-import copy, and restoring it would only invite pushing an empty notebook.
+  async function syncApply(remote,fresh=false){
     if(!editorIdle())return;
     const revision=editRevision,data=remote.data;
     const text=await decryptPayload(data,syncPass);
     const info=parseBackup(JSON.parse(text));
     await validatePdfImages(info.book);await validateMediaImages(info.book);
     if(!editorIdle()||editRevision!==revision){showConflict(remote);return}
-    const ok=await replaceNotebook(info.book,'Sunucudan eşitlendi');
+    const ok=await replaceNotebook(info.book,'Sunucudan eşitlendi',{preservePrevious:!fresh});
     if(ok)await acknowledge(JSON.stringify({...info.book,active:selectionFor(info.book).active}),revision+1,remote.tag,data.updated_at);
   }
   let pollDelay=5000,nextPollAt=0,oversizeRevision=null;
@@ -182,7 +202,7 @@
       const remote=await readRemote(true);requireCas(remote);await refreshReceipt();
       if(!editorIdle())return;
       const changed=!!remote.data&&remote.tag!==receipt?.tag;
-      if(changed){if(localDirty){showConflict(remote);return}await syncApply(remote);pollDelay=5000;deferPoll();return}
+      if(changed){const fresh=localDirty&&pristineLocal();if(localDirty&&!fresh){showConflict(remote);return}await syncApply(remote,fresh);pollDelay=5000;deferPoll();return}
       if(localDirty){await syncPush(remote);pollDelay=5000}
       renderSyncUi();
       deferPoll();
@@ -190,8 +210,10 @@
   }
   function showConflict(data){
     if(conflictBanner.dataset.open==='1')return;conflictPayload=data;conflictBanner.hidden=false;conflictBanner.dataset.open='1';
+    const localAt=(state?.pages||[]).reduce((m,p)=>typeof p.updated==='string'&&p.updated>m?p.updated:m,'');
+    document.querySelector('#syncConflictDetail').textContent=`Sunucudaki kopya: ${when(data.data?.updated_at)} · Bu cihazdaki son değişiklik: ${localAt?when(localAt):'bilinmiyor'}.`;
     document.querySelector('#syncConflictServer').onclick=()=>exclusive(async()=>{if(!editorIdle())return;conflictBanner.hidden=true;conflictBanner.dataset.open='';try{await syncApply(conflictPayload)}catch(error){document.querySelector('#syncAutoStatus').textContent=`Çakışma çözülemedi. ${error.message}`}});
-    document.querySelector('#syncConflictLocal').onclick=()=>exclusive(async()=>{if(!editorIdle())return;conflictBanner.hidden=true;conflictBanner.dataset.open='';try{await syncPush(conflictPayload)}catch(error){document.querySelector('#syncAutoStatus').textContent=`Yerel gönderilemedi. ${error.message}`}});
+    document.querySelector('#syncConflictLocal').onclick=()=>exclusive(async()=>{if(!editorIdle())return;if(!confirm(`Sunucudaki kopya (${when(conflictPayload?.data?.updated_at)}) bu cihazdaki defterle değiştirilecek ve geri alınamaz. Devam edilsin mi?`))return;conflictBanner.hidden=true;conflictBanner.dataset.open='';try{await syncPush(conflictPayload)}catch(error){document.querySelector('#syncAutoStatus').textContent=`Yerel gönderilemedi. ${error.message}`}});
     document.querySelector('#syncConflictHold').onclick=()=>{conflictBanner.hidden=true;conflictBanner.dataset.open='';conflictHold=Date.now()+30*60*1000;renderSyncUi()};
   }
   window.renderSyncActions=()=>{renderSyncActions();renderSyncUi()};
