@@ -2,7 +2,10 @@ $ErrorActionPreference='Stop'
 $s=Get-Content -Raw "$PSScriptRoot/invited-resources.json" | ConvertFrom-Json
 $baseline=Get-Content -Raw "$PSScriptRoot/invited-baseline.json" | ConvertFrom-Json
 $base="https://api.cloudflare.com/client/v4/accounts/$($s.account)"
-$headers=@{Authorization=('Bearer '+[IO.File]::ReadAllText('C:\Users\sevdi\Desktop\cloude (2).txt').Trim())}
+# Cloudflare account token: only from the environment, never from a file path in this repository.
+$cfToken=$env:CLOUDFLARE_API_TOKEN
+if([string]::IsNullOrWhiteSpace($cfToken)){throw 'CLOUDFLARE_API_TOKEN ortam degiskeni bos. Anahtari User ortam degiskeni olarak tanimlayin; dosyada tutmayin.'}
+$headers=@{Authorization=('Bearer '+$cfToken.Trim())}
 function Api($method,$url,$body=$null){
  $p=@{Method=$method;Uri=$url;Headers=$headers;TimeoutSec=30}
  if($null -ne $body){$p.ContentType='application/json';$p.Body=ConvertTo-Json $body -Depth 20 -Compress}
