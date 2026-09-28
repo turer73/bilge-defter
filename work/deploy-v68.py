@@ -222,14 +222,25 @@ def stage():
     old(); package(); unchanged()
     for tag, expected in BASES.items():
         need(json.loads(b.run('docker', 'image', 'inspect', tag))[0]['Id'] == expected, 'Dependency base drift')
+    # Payload files are extracted with mtime 0. BuildKit transfers the build context incrementally
+    # by size and mtime, so a same-size edit (v65 -> v68 in main.py) was taken from an earlier
+    # context and the image carried old code. Fresh mtimes, no cache, and a byte check below.
+    for path in (ROOT / 'api').rglob('*'):
+        os.utime(path, None)
     for target in ['production', 'verify']:
         with (ROOT / ('build-' + target + '.log')).open('x') as output:
-            result = subprocess.run(['docker', 'build', '--pull=false', '--network=none', '--target', target,
+            result = subprocess.run(['docker', 'build', '--pull=false', '--no-cache', '--network=none', '--target', target,
                 '-t', 'bilge-defter-accounts:v68-' + target, str(ROOT / 'api')], stdout=output, stderr=subprocess.STDOUT, timeout=300)
         need(result.returncode == 0, 'Image build failed; see bounded build log')
     images = {key: json.loads(b.run('docker', 'image', 'inspect', 'bilge-defter-accounts:v68-' + target))[0]['Id']
               for key, target in [('accounts', 'production'), ('verify', 'verify')]}
     (ROOT / 'images.json').write_text(json.dumps(images))
+    # Every application file inside both images must equal the payload byte for byte.
+    expected = {str(p.relative_to(ROOT / 'api')): b.sha(p) for p in (ROOT / 'api' / 'app').rglob('*.py')}
+    for key in ('accounts', 'verify'):
+        inside = json.loads(b.run('docker', 'run', '--rm', '--network=none', '--entrypoint', 'python', images[key], '-c',
+            "import hashlib,json,pathlib;print(json.dumps({str(p.relative_to('/srv')):hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('/srv/app').rglob('*.py')}))"))
+        need(inside == expected, 'Built image differs from the payload: ' + key)
     dictionary = next(m['Source'] for m in b.load(b.API + '.json')['Mounts'] if m['Destination'] == '/dictionaries')
     output = b.run('docker', 'run', '--rm', '--network=none', '--read-only', '--tmpfs', '/tmp:rw,size=128m,mode=1777',
         '--memory', '768m', '--cpus', '1.5', '--pids-limit', '100', '--cap-drop', 'ALL',
