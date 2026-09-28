@@ -92,4 +92,40 @@ test boşlukları için paket 12'den 18 kontrole çıkarıldı.
 
 ## Yayın
 
-(kullanıcı onayı bekleniyor)
+Kullanıcı onayıyla ("Evet, canlıya al") 28 Eylül 2026 sabahı canlıya alındı. Künye:
+
+| Alan | Değer |
+|---|---|
+| Kaynak commit | `4953adba538e131527bd9fa0e124397ea23fdc6e` |
+| Paket `SHA256SUMS` | `bdc4b8eb…` |
+| Payload | `9a940160…`, 246 dosya |
+| nginx yapılandırması | `3f3ef2ae…`, v66 ile aynı |
+
+**Yayın betiğinin kontrolleri:** `stage` (127.0.0.1:18800) ve `activate` (canlı) aynı dört
+kontrolü geçti: 238 HTTP hash, 235 çevrim dışı dosya, 14 yetkisiz istek reddi, 6 korumalı yol
+kapalı. `rehearse`: v66 web konteyneri kayıtlı yapılandırmadan 18806'da yeniden kuruldu, v66
+doğrulayıcısından geçti, silindi. Kütüphane sağlıklı; hesap servisi (v65) aynı kimlikte.
+
+**Yayın kapısı bir kez durdu.** İlk `activate`, korunan çalışma zamanı anlık görüntüsünde fark
+görüp hiçbir şeye dokunmadan çıktı ("Unrelated runtime changed"). Fark ölçüldü: 35 konteynerin
+hepsi aynıydı; yalnız linux-ai-server'ın ana işlem numarası değişmişti (klipper oturumu
+09:43:54'te servisi başka bir iş için yeniden başlatmıştı, `sudo systemctl restart`
+günlükte). Web yayınıyla ilgisi olmadığı için `private/protected.json` yalnız `main_pid`
+alanında güncellendi (eski dosya `protected.json.before-pid-refresh` olarak duruyor) ve
+`activate` yeniden koşuldu. Ders: hazırlıkla kesim arasında başka oturumlar servis yeniden
+başlatırsa kapı durur; kapıyı geçmeden önce fark her seferinde ölçülmeli.
+
+**Bağımsız kontroller:** `current` → `/opt/bilge-defter-classroom-v67/ui`; `release.json`
+v67; canlıdaki `sync-workspace.js`, `index.html`, `sw.js`, `release.json`, `save-worker.js`
+baytları Git'teki `4953adb` ile aynı; v66 web konteyneri `-rollback-v67` adıyla durdurulmuş;
+internetten oturumsuz istek 302 ile Access girişine gidiyor.
+
+**Henüz yapılmadı:** fiziksel iPad ve gerçek hesapla kabul; GitHub'a push ve `master`
+birleştirmesi (ayrı istek); sunucuda önceki kopyayı saklama (v68, hesap API yayını).
+
+Geri dönüş (yalnız v67 etkin sürümken; durmuş v66 konteyneri silinmiş olsa bile onu kayıtlı
+yapılandırmadan yeniden kurar):
+
+```sh
+sudo python3 -B /opt/bilge-defter-classroom-v67/deploy-v67.py rollback
+```
