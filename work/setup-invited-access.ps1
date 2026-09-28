@@ -1,7 +1,10 @@
 $ErrorActionPreference='Stop'
 $account='943daf7a8f4acddbe3ae39583596707d'
 $base="https://api.cloudflare.com/client/v4/accounts/$account"
-$headers=@{Authorization=('Bearer '+[IO.File]::ReadAllText('C:\Users\sevdi\Desktop\cloude (2).txt').Trim())}
+# Cloudflare account token: only from the environment, never from a file path in this repository.
+$cfToken=$env:CLOUDFLARE_API_TOKEN
+if([string]::IsNullOrWhiteSpace($cfToken)){throw 'CLOUDFLARE_API_TOKEN ortam degiskeni bos. Anahtari User ortam degiskeni olarak tanimlayin; dosyada tutmayin.'}
+$headers=@{Authorization=('Bearer '+$cfToken.Trim())}
 function Api($method,$url,$body=$null) {
   $params=@{Method=$method;Uri=$url;Headers=$headers;TimeoutSec=30}
   if($null -ne $body){$params.ContentType='application/json';$params.Body=ConvertTo-Json $body -Depth 20 -Compress}

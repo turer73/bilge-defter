@@ -1,5 +1,11 @@
 # v64 geri alma hazırlığı — 27 Eylül 2026
 
+> **Geçersiz (28 Eylül 2026).** Bu belgedeki `/opt/bilge-defter-v64-recovery-20260927/…`
+> komutları artık çalışmaz: dizin 28 Eylül'de sunucu temizliğinde kaldırıldı ve yeniden kurulan
+> konteyner kayıtlı kimlikle eşleşmiyor. Güncel zincir: [GERI_DONUS](GERI_DONUS.md). Aşağısı
+> tarihsel kayıttır. Silinme nedeni sonradan bulundu: 27 Eylül 13:55 `docker system prune -f`
+> (disc#1905, [RELEASE_V66](RELEASE_V66.md)).
+
 ## Durum
 
 Canlı sürüm **v64** olarak kaldı. Hesap servisi, kütüphane, kullanıcı verileri,

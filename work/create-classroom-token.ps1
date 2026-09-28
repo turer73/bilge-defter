@@ -3,7 +3,10 @@ $ErrorActionPreference='Stop'
 $account='943daf7a8f4acddbe3ae39583596707d'
 $base="https://api.cloudflare.com/client/v4/accounts/$account"
 $name='bilge-defter-classroom-v49'
-$headers=@{Authorization=('Bearer '+[IO.File]::ReadAllText('C:\Users\sevdi\Desktop\cloude (2).txt').Trim())}
+# Cloudflare account token: only from the environment, never from a file path in this repository.
+$cfToken=$env:CLOUDFLARE_API_TOKEN
+if([string]::IsNullOrWhiteSpace($cfToken)){throw 'CLOUDFLARE_API_TOKEN ortam degiskeni bos. Anahtari User ortam degiskeni olarak tanimlayin; dosyada tutmayin.'}
+$headers=@{Authorization=('Bearer '+$cfToken.Trim())}
 function Api($method,$route,$body=$null){
   $options=@{Method=$method;Uri="$base/$route";Headers=$headers;TimeoutSec=25}
   if($null -ne $body){$options.ContentType='application/json';$options.Body=$body|ConvertTo-Json -Depth 12 -Compress}
@@ -27,7 +30,9 @@ $body=@{name=$name;expires_on=$expires;policies=@(@{effect='allow';resources=@{"
 $created=Api POST 'tokens' $body
 if(!$created.value){throw 'Token was created but no value returned. Inspect Cloudflare before retry.'}
 # Secret travels only on encrypted SSH standard input; not command line, repo or logs.
-$created.value | ssh -i C:/Users/sevdi/.ssh/klipperos_key -o BatchMode=yes $remote 'sudo -n sh -c "umask 077; set -C; cat > /opt/bilge-defter-classroom-v49/secrets/cloudflare-token" && sudo -n chown +10001:+10001 /opt/bilge-defter-classroom-v49/secrets/cloudflare-token'
+# The remote command uses single quotes inside a PowerShell double-quoted string: Windows PowerShell 5.1
+# hands embedded double quotes to native commands unescaped, which would split the sh -c body.
+$created.value | ssh -i C:/Users/sevdi/.ssh/klipperos_key -o BatchMode=yes $remote "sudo -n sh -c 'umask 077; set -C; cat > /opt/bilge-defter-classroom-v49/secrets/cloudflare-token' && sudo -n chown +10001:+10001 /opt/bilge-defter-classroom-v49/secrets/cloudflare-token"
 if($LASTEXITCODE -ne 0){throw "Token created but server storage failed. Token ID $($created.id); inspect/revoke before retry."}
 @{created=$true;id=$created.id;name=$name;expires_on=$expires;permissions=$chosen.name;secret_printed=$false}|ConvertTo-Json
 $created=$null

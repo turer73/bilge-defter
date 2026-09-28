@@ -1,6 +1,9 @@
 $ErrorActionPreference='Stop'
 $s=Get-Content -Raw "$PSScriptRoot/invited-resources.json" | ConvertFrom-Json
-$h=@{Authorization=('Bearer '+[IO.File]::ReadAllText('C:\Users\sevdi\Desktop\cloude (2).txt').Trim())}
+# Cloudflare account token: only from the environment, never from a file path in this repository.
+$cfToken=$env:CLOUDFLARE_API_TOKEN
+if([string]::IsNullOrWhiteSpace($cfToken)){throw 'CLOUDFLARE_API_TOKEN ortam degiskeni bos. Anahtari User ortam degiskeni olarak tanimlayin; dosyada tutmayin.'}
+$h=@{Authorization=('Bearer '+$cfToken.Trim())}
 $zone="https://api.cloudflare.com/client/v4/zones/$($s.zone)"
 function Api($method,$url,$body=$null){$p=@{Method=$method;Uri=$url;Headers=$h;TimeoutSec=30};if($null -ne $body){$p.ContentType='application/json';$p.Body=ConvertTo-Json $body -Depth 20 -Compress};try{$r=Invoke-RestMethod @p}catch{throw "Cloudflare $method failed; HTTP $([int]$_.Exception.Response.StatusCode)"};if(!$r.success){throw 'Cloudflare operation failed'};return $r.result}
 $before=Api GET "$zone/rulesets/phases/http_request_cache_settings/entrypoint"
