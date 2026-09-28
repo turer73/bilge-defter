@@ -75,6 +75,46 @@ yeniden başlatma yok. `/health` v65'i, veritabanı `quick_check` ok ve üye say
 - **Negatif kontrol:** `verify-v68-previous.cjs` v67'ye karşı ilk iddiada kalıyor (düğme yok).
 - Fiziksel iPad ve gerçek hesap testi yapılmadı.
 
+## Hazırlıkta yakalanan hata: imaja eski kod girdi
+
+İlk `stage`, önizleme hesap servisinin `/health` sürümü `v65` döndüğü için durdu. Paketteki
+`main.py` v68 idi; imajın içindeki v65'ti. Neden: yayın paketi dosyaları mtime 0 ile çıkarıyor,
+`main.py`'nin iki hâli aynı boyutta ("v65"→"v68") ve BuildKit yerel bağlamı boyut+zamanla artımlı
+aktardığı için dosyayı değişmemiş saydı. Canlıya hiçbir şey geçmedi; yarım hazırlık (önizleme
+konteyneri ve `/opt/bilge-defter-classroom-v68`) silindi. `deploy-v68.py stage` artık yapımdan
+önce bağlam dosyalarının zamanını tazeliyor, `--no-cache` ile yapıyor ve yapımdan sonra **her iki
+imajın içindeki her `/srv/app` dosyasını paketle bayt bayt karşılaştırıyor**; uymazsa durur
+(commit `d29af55`).
+
 ## Yayın
 
-(kullanıcı onayı bekleniyor)
+Kullanıcı onayıyla ("Evet, canlıya al") 28 Eylül 2026 akşamı canlıya alındı. Kaynak
+`d29af55329dbd1152e0419ab3ad813e36c79c692`, payload `158dbb43…`, nginx `3f3ef2ae…` (değişmedi).
+
+- **prepare:** hesap veritabanının tutarlı kopyası `f7b7b43b…` (v65 hazırlığındakiyle aynı bayt;
+  veritabanına 23 Eylül'den beri yazılmamış). Kopya bu bilgisayara alındı
+  (`outputs/v68-private-backup`, yalnız kullanıcıya açık ACL): hash aynı, `integrity_check` ok,
+  tablo satırları canlıyla birebir; `offhost-backups.json` buna göre yazıldı.
+- **stage:** imaj içi dosyalar paketle aynı; 83 API testi; gerçek nginx üzerinden proxy testi
+  (koşullu okuma, önceki kopya, hesap ayrımı, 146.532 sözlük maddesi); önizleme web
+  238/235/14/6; iki konteynerin Docker sağlık kontrolü `healthy`.
+- **rehearse:** v67 web (18806) ve v65 hesap servisi (veritabanı kopyası, sırsız, eşitleme
+  kapalı) kayıttan kuruldu, doğrulandı (DB ok, 2 üye), silindi.
+- **activate:** hesap servisi `/health` v68; bağlar ve ortam değişmedi; web 238/235/14/6;
+  iki konteyner `healthy`.
+
+**Bağımsız kontroller:** `current` → v68/ui; canlı `sync-workspace.js`, `index.html`, `sw.js`,
+`release.json` baytları `d29af55` ile aynı; **canlı hesap konteynerindeki 12 uygulama dosyası
+paketle aynı**; kimliksiz `/backup/previous` 401; sağlık betiği `web v68 api v68: 15 kontrol`;
+genel adres 302. `bilge_defter_backup_previous` tablosu ilk yedek işleminde oluşacak (şu an
+yok; ek tablo, v65'e dönüşü etkilemez). Geri dönüş konteynerleri: `-rollback-v68` (v67 web ve
+v65 hesap) durmuş halde.
+
+**Henüz yapılmadı:** fiziksel iPad ve gerçek hesapla kabul (önceki kopya düğmesi dahil); push
+ve `master`.
+
+Geri dönüş (v68 ya da v67 canlıyken; web v67 + hesap v65; silinmiş konteynerleri kayıttan kurar):
+
+```sh
+sudo python3 -B /opt/bilge-defter-classroom-v68/deploy-v68.py rollback
+```

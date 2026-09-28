@@ -1,5 +1,11 @@
 # Geri dönüş zinciri
 
+> **28 Eylül akşamı güncellemesi:** canlı web **v68**, hesap servisi **v68**. İlk adım artık
+> `sudo python3 -B /opt/bilge-defter-classroom-v68/deploy-v68.py rollback` → web v67 + hesap v65
+> (ikisi birlikte; ön kontrollü, silinmiş konteyneri kayıttan kurar; hesap servisi dahil prova
+> edildi, [RELEASE_V68](RELEASE_V68.md)). Aşağıdaki tablo v67 ve öncesi için geçerli; oradan
+> devam edilir.
+
 28 Eylül 2026 ölçümü. İnceleme raporunun ([INCELEME_2026-09-28](INCELEME_2026-09-28.md)) B2
 maddesi. Her adım kendi yayın betiğiyle yapılır. Betikler yalnız geri dönüş konteynerinin kimliğini
 doğrular; **canlı sürümün beklenen sürüm olduğunu denetlemezler**, bu yüzden aşağıdaki sıraya

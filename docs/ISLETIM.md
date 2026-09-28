@@ -7,13 +7,13 @@ belgelerde; bu sayfa "nereye bakayım, ne yapayım" için.
 
 | Bileşen | Adres / yer | Sürüm | Nasıl bakılır |
 |---|---|---|---|
-| Uygulama (öğrenci) | https://defter.bilgearena.com (Cloudflare Access, e-posta kodu) | web **v67** | `curl -s http://127.0.0.1:18790/release.json` (klipper) |
-| Hesap servisi | konteyner `bilge-defter-accounts`, nginx üzerinden `/api/v1/bilge-defter/` | **v65** | `docker exec bilge-defter-accounts python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8080/health').read())"` |
+| Uygulama (öğrenci) | https://defter.bilgearena.com (Cloudflare Access, e-posta kodu) | web **v68** | `curl -s http://127.0.0.1:18790/release.json` (klipper) |
+| Hesap servisi | konteyner `bilge-defter-accounts`, nginx üzerinden `/api/v1/bilge-defter/`; Docker sağlık kontrolü var | **v68** | `docker exec bilge-defter-accounts python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8080/health').read())"` |
 | Öğrenci verisi | `/opt/bilge-defter-classroom-v49/data/bilge-defter.sqlite` (üyeler, şifreli yedekler) | — | yalnız salt okunur bakılır; sahibi uid 10001 |
 | Sözlük | `/opt/bilge-defter-classroom-v57/dictionary` (salt okunur) | 146.532 madde | `…/dictionaries` uçları kimlik ister |
 | Kütüphane | konteyner `bilge-defter-library-v1`, `/library/` | v58 | `docker inspect` sağlık durumu |
 | Tünel | konteyner `bilge-defter-invited-cloudflared` | — | `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18789/ready` → 200 |
-| Kaynak | github.com/turer73/bilge-defter, `origin/master` = canlı v67 (yerel `master` bayat olabilir, `git fetch`); çalışma dalı `repair/v57-stability` | | |
+| Kaynak | github.com/turer73/bilge-defter, `origin/master` (v68 birleştirilince canlıyla aynı) (yerel `master` bayat olabilir, `git fetch`); çalışma dalı `repair/v57-stability` | | |
 | Sunucu | klipper (Tailscale 100.84.251.49, `klipperos`, sudo) | | |
 
 Canlı sürüm bağı: `readlink -f /opt/bilge-defter-invited/current`. Sürüm dizinleri
