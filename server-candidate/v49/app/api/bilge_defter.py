@@ -460,6 +460,21 @@ def get_backup(
         return Response(status_code=304, headers=headers)
     return JSONResponse(data, headers=headers)
 
+
+@router.get("/backup/previous")
+def get_previous_backup(
+    cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion"),
+):
+    """The encrypted copy the latest upload replaced (one generation); 404 if none."""
+    identity = _require_access(cf_access_jwt_assertion)
+    db = get_conn(_db_path())
+    try:
+        _ensure_backup_table(db)
+        data, headers = backup_store.read_previous(db, identity["email"])
+    finally:
+        db.close()
+    return JSONResponse(data, headers=headers)
+
 class OcrRequest(BaseModel):
     image: str
 

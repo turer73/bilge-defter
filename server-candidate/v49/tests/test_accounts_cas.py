@@ -62,7 +62,7 @@ def test_signup_is_pending_and_idempotent(env):
     assert a.json()["identity"]["status"]=="pending"
     assert a.json()["identity"]["role"]=="student"
 
-@pytest.mark.parametrize("path,method",[("/backup","get"),("/backup","post"),("/ocr","post"),("/vapid-key","get"),("/push-subscription","post"),("/admin/members","get")])
+@pytest.mark.parametrize("path,method",[("/backup","get"),("/backup/previous","get"),("/backup","post"),("/ocr","post"),("/vapid-key","get"),("/push-subscription","post"),("/admin/members","get")])
 def test_pending_cannot_use_protected_endpoints(env,path,method):
     env[0].post(BASE+"/registration",headers=headers(env))
     assert getattr(env[0],method)(BASE+path,headers=headers(env)).status_code==403
@@ -313,3 +313,35 @@ def test_classroom_burst_fifty_manual_additions_never_exceed_48(env):
     assert sum(r.status_code==200 for r in results)==48
     assert sum(r.status_code==422 for r in results)==2
     assert c.get(BASE+"/admin/members",headers=owner).json()["capacity"]["listed_students"]==48
+
+
+def test_previous_copy_keeps_exactly_the_replaced_generation(env):
+    c,h=env[0],approved(env)
+    assert c.get(BASE+"/backup/previous",headers=h).status_code==404
+    first=c.post(BASE+"/backup",headers={**h,"If-None-Match":"*"},json=payload(b"first"))
+    assert c.get(BASE+"/backup/previous",headers=h).status_code==404  # creating replaces nothing
+    second=c.post(BASE+"/backup",headers={**h,"If-Match":first.headers["ETag"]},json=payload(b"second"))
+    prev=c.get(BASE+"/backup/previous",headers=h)
+    assert prev.status_code==200 and prev.json()["ciphertext"]==payload(b"first")["ciphertext"]
+    assert prev.json()["replaced_at"] and prev.headers["Cache-Control"]=="no-store"
+    c.post(BASE+"/backup",headers={**h,"If-Match":second.headers["ETag"]},json=payload(b"third"))
+    assert c.get(BASE+"/backup/previous",headers=h).json()["ciphertext"]==payload(b"second")["ciphertext"]
+    assert c.get(BASE+"/backup",headers=h).json()["ciphertext"]==payload(b"third")["ciphertext"]
+
+
+def test_failed_write_leaves_previous_copy_unchanged(env):
+    c,h=env[0],approved(env)
+    first=c.post(BASE+"/backup",headers={**h,"If-None-Match":"*"},json=payload(b"first"))
+    c.post(BASE+"/backup",headers={**h,"If-Match":first.headers["ETag"]},json=payload(b"second"))
+    assert c.post(BASE+"/backup",headers={**h,"If-Match":first.headers["ETag"]},json=payload(b"stale")).status_code==412
+    assert c.get(BASE+"/backup/previous",headers=h).json()["ciphertext"]==payload(b"first")["ciphertext"]
+    assert c.get(BASE+"/backup",headers=h).json()["ciphertext"]==payload(b"second")["ciphertext"]
+
+
+def test_previous_copy_is_private_to_its_account(env):
+    c=env[0];a=approved(env);b=approved(env,SECOND)
+    first=c.post(BASE+"/backup",headers={**a,"If-None-Match":"*"},json=payload(b"a1"))
+    c.post(BASE+"/backup",headers={**a,"If-Match":first.headers["ETag"]},json=payload(b"a2"))
+    assert c.get(BASE+"/backup/previous",headers=b).status_code==404
+    assert c.get(BASE+"/backup/previous",headers={**b,"X-Bilge-Account":a["X-Bilge-Account"]}).status_code==409
+    assert c.get(BASE+"/backup/previous").status_code==401

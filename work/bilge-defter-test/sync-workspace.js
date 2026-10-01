@@ -23,11 +23,11 @@
   passDialog.addEventListener('cancel',event=>{event.preventDefault();cancelPass()});
   passDialog.addEventListener('close',()=>{document.querySelector('#syncPassInput').value='';document.querySelector('#syncPassConfirm').value=''});
   const syncButtons=document.createElement('div');syncButtons.className='backup-actions';
-  syncButtons.innerHTML='<button class="btn" id="syncUpload">Sunucuya yedekle</button><button class="btn" id="syncDownload">Sunucudan yükle</button><p class="recovery-note" id="syncStatus" role="status"></p><p class="recovery-note" id="syncNote">Sunucu yedeği yalnız davetli adreste ve elle çalışır; içerik uçtan uca şifrelidir, sunucu açık metin görmez. Parolanızı güvenli bir yerde saklayın; JSON yedeğinin yerini tutmaz.</p>';
+  syncButtons.innerHTML='<button class="btn" id="syncUpload">Sunucuya yedekle</button><button class="btn" id="syncDownload">Sunucudan yükle</button><button class="btn" id="syncPrevious">Önceki sunucu kopyası</button><p class="recovery-note" id="syncStatus" role="status"></p><p class="recovery-note" id="syncNote">Sunucu yedeği yalnız davetli adreste ve elle çalışır; içerik uçtan uca şifrelidir, sunucu açık metin görmez. Parolanızı güvenli bir yerde saklayın; JSON yedeğinin yerini tutmaz.</p>';
   document.querySelector('#reliabilityContent').prepend(syncButtons);
   const limitNote=document.createElement('p');limitNote.className='recovery-note';limitNote.id='syncLimitNote';limitNote.textContent='Sunucu yedeği sınırı: 5 MiB şifreli veri. Resim ve PDF içeren defterler bu sınırı aşabilir. Yerel kayıt ve indirdiğiniz JSON yedeği ayrı çalışır.';syncButtons.append(limitNote);
   function renderSyncActions(){
-    const show=invited();document.querySelector('#syncUpload').hidden=!show;document.querySelector('#syncDownload').hidden=!show;
+    const show=invited();document.querySelector('#syncUpload').hidden=!show;document.querySelector('#syncDownload').hidden=!show;document.querySelector('#syncPrevious').hidden=!show;
     limitNote.hidden=!show;
     document.querySelector('#syncNote').hidden=show;
     if(!show){document.querySelector('#syncStatus').textContent='Sunucu yedeği yalnız defter.bilgearena.com adresinde kullanılabilir.';return}
@@ -89,7 +89,7 @@
       // an unknown server tag and raise a conflict against our own upload.
       const switched=syncEnabled&&pass!==syncPass;if(switched)syncPass=pass;
       let recorded=true;try{await acknowledge(expected,revision,tag,snapshot.exportedAt)}catch(error){recorded=false;console.error(error)}
-      setSyncStatus(`Sunucuda şifreli yedek var · ${new Date(snapshot.exportedAt).toLocaleString('tr-TR')}. Yalnız en son kopya saklanır.${switched?' Otomatik eşitleme de artık bu parolayı kullanıyor.':''}${recorded?'':' Eşitleme kaydı güncellenemedi; bir sonraki denetimde çakışma uyarısı görülebilir.'}`);
+      setSyncStatus(`Sunucuda şifreli yedek var · ${new Date(snapshot.exportedAt).toLocaleString('tr-TR')}. Sunucu bunun bir önceki kopyasını da saklar.${switched?' Otomatik eşitleme de artık bu parolayı kullanıyor.':''}${recorded?'':' Eşitleme kaydı güncellenemedi; bir sonraki denetimde çakışma uyarısı görülebilir.'}`);
     }catch(error){setSyncStatus(error.message==='cancelled'?'':`Yedek alınamadı. ${error.message} Notlar değişmedi.`)}
   };
   document.querySelector('#syncDownload').onclick=async()=>{
@@ -104,6 +104,21 @@
       setSyncStatus('');
       previewBackup(info,`Sunucu yedeği (${data.updated_at||'tarih yok'})`);
     }catch(error){setSyncStatus(`Yedek alınamadı. ${error.message} Mevcut defter değişmedi.`)}
+  };
+  // The server keeps the copy the latest upload replaced (one generation). Opening it goes
+  // through the same preview as any backup; nothing changes until the student confirms.
+  document.querySelector('#syncPrevious').onclick=async()=>{
+    if(!invited())return;
+    let pass;try{pass=await askPassphrase('download')}catch{return}
+    setSyncStatus('Önceki sunucu kopyası getiriliyor…');
+    try{
+      let data;try{data=await (await syncApi(BACKUP+'/previous')).json()}catch(error){if(error.status===404){setSyncStatus('Sunucuda önceki kopya yok. Önceki kopya, sunucudaki yedek ilk kez değiştirildiğinde oluşur. Mevcut defter değişmedi.');return}throw error}
+      let text;try{text=await decryptPayload(data,pass)}catch{setSyncStatus('Parola yanlış veya önceki kopya okunamadı. Önceki kopya, o zamanki parolayla açılır. Mevcut defter değişmedi.');return}
+      let info;try{info=parseBackup(JSON.parse(text))}catch(error){setSyncStatus(error.message);return}
+      await validatePdfImages(info.book);await validateMediaImages(info.book);
+      setSyncStatus('');
+      previewBackup(info,`Önceki sunucu kopyası (${data.updated_at||'tarih yok'}; yerine yenisi ${data.replaced_at||'?'} tarihinde yazıldı)`);
+    }catch(error){setSyncStatus(`Önceki kopya alınamadı. ${error.message} Mevcut defter değişmedi.`)}
   };
   window.renderSyncActions=renderSyncActions;
   // Conditional polls with bounded backoff; drawing/hidden windows never poll.
@@ -150,7 +165,7 @@
   document.body.append(conflictBanner);
   const syncStyle=document.createElement('style');syncStyle.textContent='#syncConflictBanner{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:45;width:min(560px,calc(100% - 24px));padding:14px;border:1px solid #d69974;border-radius:12px;background:#fff5df;box-shadow:0 8px 32px #173b3640;color:#502e18}#syncConflictBanner[hidden]{display:none}#syncConflictBanner p{margin:0 0 10px;font-size:13px;line-height:1.4}';document.head.append(syncStyle);
   const syncArea=document.createElement('div');syncArea.className='tool-actions';
-  syncArea.innerHTML='<button class="btn" id="syncUnlock" hidden>Eşitlemeyi aç</button><p class="recovery-note" id="syncAutoStatus" role="status"></p><p class="recovery-note" id="syncAutoNote">Otomatik eşitleme yalnız davetli adreste ve oturum kilidi açılınca çalışır. Yedekler uçtan uca şifrelidir; sunucu tek son kopya tutar. İki cihaz aynı anda düzenlerse çakışmada siz seçersiniz.</p>';
+  syncArea.innerHTML='<button class="btn" id="syncUnlock" hidden>Eşitlemeyi aç</button><p class="recovery-note" id="syncAutoStatus" role="status"></p><p class="recovery-note" id="syncAutoNote">Otomatik eşitleme yalnız davetli adreste ve oturum kilidi açılınca çalışır. Yedekler uçtan uca şifrelidir; sunucu son kopyayı ve ondan bir önceki kopyayı tutar. İki cihaz aynı anda düzenlerse çakışmada siz seçersiniz.</p>';
   syncButtons.after(syncArea);
   function renderSyncUi(){
     const invitedNow=invited();
@@ -217,7 +232,7 @@
     document.querySelector('#syncConflictHold').onclick=()=>{conflictBanner.hidden=true;conflictBanner.dataset.open='';conflictHold=Date.now()+30*60*1000;renderSyncUi()};
   }
   window.renderSyncActions=()=>{renderSyncActions();renderSyncUi()};
-  for(const id of ['syncUpload','syncDownload','syncUnlock']){const button=document.querySelector('#'+id),action=button.onclick;button.onclick=()=>exclusive(action)}
+  for(const id of ['syncUpload','syncDownload','syncPrevious','syncUnlock']){const button=document.querySelector('#'+id),action=button.onclick;button.onclick=()=>exclusive(action)}
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&syncEnabled&&ready)void syncTick()});
   addEventListener('bilge-account-locked',()=>{syncEnabled=false;syncPass=null;keyCache.clear();remoteCache=null;hashMemo=null;conflictPayload=null;conflictBanner.hidden=true;conflictBanner.dataset.open='';passReject?.(Error('cancelled'));renderSyncUi()});
   setInterval(()=>{if(Date.now()>=nextPollAt)void syncTick()},5000);

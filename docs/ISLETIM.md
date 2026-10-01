@@ -7,18 +7,18 @@ belgelerde; bu sayfa "nereye bakayım, ne yapayım" için.
 
 | Bileşen | Adres / yer | Sürüm | Nasıl bakılır |
 |---|---|---|---|
-| Uygulama (öğrenci) | https://defter.bilgearena.com (Cloudflare Access, e-posta kodu) | web **v67** | `curl -s http://127.0.0.1:18790/release.json` (klipper) |
-| Hesap servisi | konteyner `bilge-defter-accounts`, nginx üzerinden `/api/v1/bilge-defter/` | **v65** | `docker exec bilge-defter-accounts python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8080/health').read())"` |
+| Uygulama (öğrenci) | https://defter.bilgearena.com (Cloudflare Access, e-posta kodu) | web **v68** | `curl -s http://127.0.0.1:18790/release.json` (klipper) |
+| Hesap servisi | konteyner `bilge-defter-accounts`, nginx üzerinden `/api/v1/bilge-defter/`; Docker sağlık kontrolü var | **v68** | `docker exec bilge-defter-accounts python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8080/health').read())"` |
 | Öğrenci verisi | `/opt/bilge-defter-classroom-v49/data/bilge-defter.sqlite` (üyeler, şifreli yedekler) | — | yalnız salt okunur bakılır; sahibi uid 10001 |
 | Sözlük | `/opt/bilge-defter-classroom-v57/dictionary` (salt okunur) | 146.532 madde | `…/dictionaries` uçları kimlik ister |
 | Kütüphane | konteyner `bilge-defter-library-v1`, `/library/` | v58 | `docker inspect` sağlık durumu |
 | Tünel | konteyner `bilge-defter-invited-cloudflared` | — | `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18789/ready` → 200 |
-| Kaynak | github.com/turer73/bilge-defter, `origin/master` = canlı v67 (yerel `master` bayat olabilir, `git fetch`); çalışma dalı `repair/v57-stability` | | |
+| Kaynak | github.com/turer73/bilge-defter, `origin/master` (v68 birleştirilince canlıyla aynı) (yerel `master` bayat olabilir, `git fetch`); çalışma dalı `repair/v57-stability` | | |
 | Sunucu | klipper (Tailscale 100.84.251.49, `klipperos`, sudo) | | |
 
 Canlı sürüm bağı: `readlink -f /opt/bilge-defter-invited/current`. Sürüm dizinleri
 `/opt/bilge-defter-classroom-vNN`; şu an v49 (veri), v57 (sözlük), v58 (kütüphane), v64–v66
-(geri dönüş zinciri), v63 (dosyalar duruyor, otomatik geri dönüş yolu yok), v67 (canlı). Başka
+v67 (geri dönüş zinciri), v63 (dosyalar duruyor, otomatik geri dönüş yolu yok), v68 (canlı). Başka
 dizin yok; klipper 28 Eylül'de referanssız 13 dizini arşivleyip sildi
 (`/backups/archive/bilge-defter-unref-20260928.tar.gz`, 110 MB; not #101593, arşiv 28 Eylül'de
 görüldü).
@@ -29,11 +29,12 @@ görüldü).
 /opt/bilge-defter-monitor/bilge-defter-health.sh
 ```
 
-15 kontrol; son satır `OUTCOME: pass` olmalı. Ne ölçtüğü: [IZLEME](IZLEME.md). Betiğin 5
-dakikada bir cron'dan koşması ve düşüşün `notify-cron` üzerinden Telegram'a gelmesi klipper'dan
-görev paketi BILGE-20260928-01 ile istendi; **28 Eylül 15:00 itibarıyla henüz kurulmadı**
-(`cron_outcomes`'ta yalnız elle koşunun tek satırı var). Kurulunca tabloda 5 dakikada bir
-`bilge-defter-health | pass` satırı görünür. Kuma yalnız gösterge, uyarı vermez.
+15 kontrol; son satır `OUTCOME: pass` olmalı. Ne ölçtüğü: [IZLEME](IZLEME.md). Aynı betik
+28 Eylül 18:40'tan beri klipperos'un crontab'ından 5 dakikada bir koşuyor (linux-ai-server
+commit `7920372`, görev paketi BILGE-20260928-01, not #101596); `cron_outcomes` tablosunda
+`bilge-defter-health | pass` satırları birikir. Düşüş `notify-cron` ile Telegram'a gider (18:38'de
+kasıtlı bir başarısızlıkla doğrulandı). Devops ajanı dört bilge-defter konteynerini de izliyor;
+kip `notify`, otomatik yeniden başlatma yok. Kuma yalnız gösterge, uyarı vermez.
 
 ## 3. Bir şey çalışmıyorsa
 
@@ -63,9 +64,9 @@ Günlükler: `docker logs --since 1h <konteyner>`; nginx erişim günlüğü web
    (korunan çalışma zamanı farkı); fark ölçülür, yalnız `main_pid` yenilenir
    ([RELEASE_V67](RELEASE_V67.md)). Klipper artık restart öncesi not atıyor.
 
-Şablon: web için `deploy-v67.py`; web + hesap servisi için `deploy-v65.py`. Üç betiğin
-`rollback`'i de canlı sürümü ön kontrol etmiyor ([GERI_DONUS](GERI_DONUS.md), "Bilinen kusur");
-sonraki araçlar bunu almalı. Sonraki yayın (v68) adayları: sunucuda önceki şifreli kopyayı
+Şablon: web + hesap servisi için `deploy-v68.py` (sağlık kontrolü, `rollback` ön kontrolü,
+silinmiş konteyneri kayıttan kurma, hesap servisi provası, imaj içi bayt karşılaştırması). v65–v67
+betiklerinin `rollback`'i canlı sürümü ön kontrol etmiyor ([GERI_DONUS](GERI_DONUS.md)). Sonraki yayın (v68) adayları: sunucuda önceki şifreli kopyayı
 saklama, web ve hesap konteynerine Docker sağlık kontrolü, hesap servisi için yeniden kurma
 yeteneği ve prova.
 

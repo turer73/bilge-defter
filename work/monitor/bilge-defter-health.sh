@@ -75,7 +75,9 @@ if [ "$code" = 401 ]; then ok "kutuphane (nginx-library) 401"; else fail "kutuph
 # 6) Konteynerler: çalışıyor; sağlık kontrolü olanlar healthy.
 for c in $CONTAINERS; do
   st=$(docker inspect -f '{{.State.Status}}{{if .State.Health}} {{.State.Health.Status}}{{end}}' "$c" 2>/dev/null | tr -d '\n'); [ -n "$st" ] || st=yok
-  case "$st" in running|"running healthy") ok "konteyner $c $st";; *) fail "konteyner $c $st";; esac
+  # "starting": sağlık kontrolünün ilk ~30 saniyesi (v68'den beri web ve hesap konteynerinde de var).
+  # Geçicidir; kontrol düşerse Docker birkaç denemede "unhealthy" yapar ve o zaman burada düşer.
+  case "$st" in running|"running healthy"|"running starting") ok "konteyner $c $st";; *) fail "konteyner $c $st";; esac
 done
 
 # 7) Tünel: cloudflared'ın kendi /ready ucu (host ağı, yalnız loopback) bağlı bağlantı sayısıyla 200 döner.
