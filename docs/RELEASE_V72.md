@@ -38,14 +38,20 @@ biçimi v71 ile aynıdır.
 
 ## Yerel doğrulama
 
-- `verify-v72-fixes.cjs` (Chromium + WebKit, 5×2 = 10 kontrol): bulgu başına bir test ve yayınlanmış
-  v71 paketinin v72 defterini açması.
+- `verify-v72-fixes.cjs` (Chromium + WebKit, 6×2 = 12 kontrol): kopya sayfa ve Çöp Kutusu için
+  gerçek eşitleme yolu, kısmi göç ve kendiliğinden yeniden deneme, görüntüsüz defterde temizlik,
+  PDF/yedek yükleme ve devam eden tarama yarışı, yayınlanmış v71 paketinin v72 defterini açması.
 - **Negatif kontrol:** her bulgunun testi v71'e karşı ayrı ayrı (`ONLY=n`) davranış olarak kalıyor:
   #2053 "images over 5 MiB hold sync" iddiası; #2054 kısmi göç 0 döndürüyor; #2055 temizlik 0
   siliyor; #2056 "not keyed: 1 assets, 1 inline".
-- Tam regresyon (`verify-v72.cjs`: v64 listesi + v66–v72 paketleri, Chromium + WebKit) ve
-  `verify-reliability.cjs` geçti (396 PASS). Paket özeti (SHA256SUMS): `598fd83b…`.
-- `test_deploy_v72.py` (sahte Docker, 6 kontrol).
+- `c7144ed` sonrası tam regresyon 2 Ekim 2026 21:46 (Türkiye) tamamlandı:
+  `verify-v72.cjs` içindeki 26 regresyon grubu ve `verify-reliability.cjs` içindeki 26 ek
+  güvenilirlik kontrolü geçti (`outputs/v72-regression.log`: `EXIT_V72 0`, `EXIT_REL 0`).
+  Yerel Chromium/WebKit kontrolleri; fiziksel iPad veya canlı e-posta girişi değildir.
+- `node work/build-invited.cjs` yeniden çalıştırıldı: 235 çevrim dışı varlık, 238 yayın dosyası.
+  Paket manifestinin SHA-256 özeti:
+  `a602e5241d06aefa7b0f9aea2976bb81fb2ccc071fff5c816a01c812adcd93dc`.
+- `python -B work/test_deploy_v72.py` yeniden çalıştırıldı: sahte Docker ile 6/6 geçti.
 - Fiziksel iPad testi yapılmadı.
 
 ## Öneri (Codex)
@@ -55,7 +61,11 @@ bu yana geçerli).
 
 ## Yayın
 
-Henüz yapılmadı. Kullanıcı onayı gerekir.
+Kullanıcının 2 Ekim 2026 tarihli “işi sen devral ve tamamla” isteğiyle Codex devraldı
+(merkezi CLAIM #101728; önceki Claude CLAIM #101717, devir notu #101724).
+Bu kayıt aşamasında canlı yayın henüz yapılmadı. Son kaynak commit'inden paket üretimi,
+GitHub kontrolleri, izole önizleme ve geri dönüş provası geçmeden etkinleştirme yapılmaz.
+Hesap servisi, kütüphane, veri, Access ve DNS kapsam dışında kalır.
 
 Geri dönüş (v72 ya da v71 canlıyken; web v71):
 
