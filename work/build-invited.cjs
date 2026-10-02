@@ -4,9 +4,9 @@ const src=path.join(__dirname,'bilge-defter-test'),version=fs.readFileSync(path.
 fs.mkdirSync(dest,{recursive:true});
 const indexFile=path.join(src,'index.html');
 let html=fs.readFileSync(indexFile,'utf8').replace(/^\uFEFF/,'');
-const prevBadge=html.match(/<span class="badge">(v\d+)<\/span>/)?.[1],prevApp=html.match(/appVersion:'(v\d+)'/)?.[1];
+const prevBadge=html.match(/<span class="badge">(v\d+)<\/span>/)?.[1],prevApp=html.match(/APP_VERSION='(v\d+)'/)?.[1]??html.match(/appVersion:'(v\d+)'/)?.[1];
 if(prevBadge!==version)html=html.replace(/<span class="badge">v\d+<\/span>/,`<span class="badge">${version}</span>`);
-if(prevApp!==version)html=html.replace(/appVersion:'v\d+'/,`appVersion:'${version}'`);
+if(prevApp!==version)html=html.replace(/appVersion:'v\d+'/,`appVersion:'${version}'`).replace(/APP_VERSION='v\d+'/,`APP_VERSION='${version}'`);
 if(html!==fs.readFileSync(indexFile,'utf8').replace(/^\uFEFF/,''))fs.writeFileSync(indexFile,html);
 if(prevBadge!==version||prevApp!==version)console.log(`index.html surum esitlendi: badge ${prevBadge}->${version}, appVersion ${prevApp}->${version}`);
 // release.json must be current before hashing, otherwise the offline manifest would

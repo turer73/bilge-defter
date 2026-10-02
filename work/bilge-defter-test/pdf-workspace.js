@@ -65,9 +65,26 @@ const pdfZoomControls=document.createElement('div');pdfZoomControls.id='pdfZoomC
 pdfStyle.textContent+='#pdfNavigation{flex-wrap:wrap}#pdfZoomControls{display:flex;align-items:center;gap:6px}#pdfZoomControls .btn{min-width:44px}#pdfZoomValue{min-width:48px;text-align:center;font-size:13px}@media(max-width:650px){#pdfZoomControls{flex-basis:100%;justify-content:center}#pdfFit{font-size:13px}}';
 let pdfBusy=false,pdfPending=null,pdfRequest=0,pdfTask=null,pdfLibrary=null,pdfImage=null,pdfImageSource=null,pdfImageFailed=false;
 const PDF_FILE_LIMIT=20*1024*1024,PDF_IMAGE_LIMIT=24*1024*1024;
+// Every save still rewrites the whole notebook, PDF images included, so new PDFs are refused above
+// this size until PDF pages are stored apart (planned). Notebooks already larger keep working (v69).
+const NOTEBOOK_PDF_LIMIT=48*1024*1024;
+function notebookLimitError(total){return new Error(`Bu PDF ile defter kaydı ${Math.round(total/1048576)} MB olur; iPad'de güvenilir kayıt için sınır ${NOTEBOOK_PDF_LIMIT/1048576} MB. Önce JSON yedeği alın, sonra artık gerekmeyen PDF defterlerini silip Çöp Kutusundan da kaldırın.`)}
+// v69 reads PNG and JPEG page images; it still writes PNG. Accepting JPEG now lets a later release
+// store smaller JPEG pages and still roll back to this one.
+function pdfImageSize(src){
+  const png=src.startsWith('data:image/png;base64,'),jpeg=!png&&src.startsWith('data:image/jpeg;base64,');if(!png&&!jpeg)return null;
+  const b64=src.slice(png?22:23);if(!/^[A-Za-z0-9+/]+={0,2}$/.test(b64))return null;
+  if(png){const h=atob(b64.slice(0,44));if(!h.startsWith('\x89PNG\r\n\x1a\n')||h.slice(12,16)!=='IHDR')return null;const n=i=>((h.charCodeAt(i)*16777216)+(h.charCodeAt(i+1)<<16)+(h.charCodeAt(i+2)<<8)+h.charCodeAt(i+3));return {width:n(16),height:n(20)}}
+  // JPEG: walk the marker segments to the first start-of-frame, which holds the size.
+  const h=atob(b64.length<=65536?b64:b64.slice(0,65536)),c=i=>h.charCodeAt(i);if(c(0)!==255||c(1)!==216)return null;
+  for(let i=2;i+8<h.length;){if(c(i)!==255)return null;const m=c(i+1);if(m===255){i++;continue}
+    if(m>=192&&m<=207&&m!==196&&m!==200&&m!==204)return {width:c(i+7)*256+c(i+8),height:c(i+5)*256+c(i+6)};
+    if(m===216||m===1||(m>=208&&m<=215)){i+=2;continue}i+=2+c(i+2)*256+c(i+3)}
+  return null;
+}
 function validPdfBackground(b){
-  if(!b||b.width!==1000||!Number.isSafeInteger(b.height)||b.height<100||b.height>3000||typeof b.name!=='string'||b.name.length>200||!Number.isSafeInteger(b.number)||!Number.isSafeInteger(b.total)||b.number<1||b.number>b.total||b.total>50||typeof b.image!=='string'||b.image.length>6*1024*1024||!/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(b.image))return false;
-  try{const h=atob(b.image.slice(22,66));if(!h.startsWith('\x89PNG\r\n\x1a\n')||h.slice(12,16)!=='IHDR')return false;const n=i=>((h.charCodeAt(i)*16777216)+(h.charCodeAt(i+1)<<16)+(h.charCodeAt(i+2)<<8)+h.charCodeAt(i+3));return n(16)===b.width&&n(20)===b.height}catch{return false}
+  if(!b||b.width!==1000||!Number.isSafeInteger(b.height)||b.height<100||b.height>3000||typeof b.name!=='string'||b.name.length>200||!Number.isSafeInteger(b.number)||!Number.isSafeInteger(b.total)||b.number<1||b.number>b.total||b.total>50||typeof b.image!=='string'||b.image.length>6*1024*1024)return false;
+  try{const size=pdfImageSize(b.image);return !!size&&size.width===b.width&&size.height===b.height}catch{return false}
 }
 async function validatePdfImages(book){
   const images=new Set([...book.pages,...(book.trash||[]).map(t=>t.page)].filter(p=>p.pdf).map(p=>p.pdf.image));
@@ -143,7 +160,7 @@ document.querySelector('#pdfFile').onchange=async e=>{
       const surface=document.createElement('canvas');surface.width=1000;surface.height=Math.ceil(viewport.height);
       await source.render({canvasContext:surface.getContext('2d'),viewport,background:'#ffffff'}).promise;
       const image=surface.toDataURL('image/png');surface.width=surface.height=1;source.cleanup();bytes+=image.length;
-      if(image.length>6*1024*1024||bytes>PDF_IMAGE_LIMIT)throw new Error('PDF görüntüleri tablet test sınırını aşıyor. Daha az sayfalı dosya deneyin.');
+      if(image.length>6*1024*1024||bytes>PDF_IMAGE_LIMIT)throw new Error('PDF görüntüleri tablet test sınırını aşıyor. Daha az sayfalı dosya deneyin.');if((lastSaveBytes??0)+bytes>NOTEBOOK_PDF_LIMIT)throw notebookLimitError((lastSaveBytes??0)+bytes);
       pages.push({id:newPageId(),title:`PDF · Sayfa ${number}`,strokes:[],viewY:0,pdf:{image,width:1000,height:Math.ceil(viewport.height),name:file.name.slice(0,200),number,total:doc.numPages},updated:new Date().toISOString()});
     }
     if(request!==pdfRequest)return;pdfPending={title:file.name.replace(/\.pdf$/i,'').trim().slice(0,65)||'PDF',pages};pdfMessage(`${file.name} · ${pages.length} sayfa hazır. Yeni deftere ekleyin. Özgün PDF dosyanızı ayrıca koruyun.`);document.querySelector('#pdfApply').disabled=false;
@@ -155,6 +172,9 @@ document.querySelector('#pdfApply').onclick=async()=>{
   pdfBusy=true;document.querySelector('#pdfApply').disabled=true;document.querySelector('#pdfChoose').disabled=true;document.querySelector('#pdfClose').disabled=true;pdfMessage('PDF ve mevcut notlar birlikte kaydediliyor…');
   try{
     if(!await flushSave())throw new Error('Mevcut notlar kaydedilemedi; önce kayıt sorununu düzeltin.');
+    const adding=pdfPending.pages.reduce((n,p)=>n+p.pdf.image.length,0),current=lastSaveBytes??0;if(current+adding>NOTEBOOK_PDF_LIMIT)throw notebookLimitError(current+adding);
+    const estimate=await navigator.storage?.estimate?.().catch(()=>null);
+    if(estimate&&Number.isFinite(estimate.quota)&&Number.isFinite(estimate.usage)&&estimate.quota-estimate.usage<2*(current+adding))throw new Error('Cihazda bu PDF için yeterli boş alan yok. Mevcut notlar korundu; iPad Saklama Alanı’ndan yer açıp yeniden deneyin.');
     const id=newPageId(),titles=new Set(notebooks().map(n=>n.title.toLocaleLowerCase('tr-TR')));let title=pdfPending.title,n=2;while(titles.has(title.toLocaleLowerCase('tr-TR')))title=`${pdfPending.title} (${n++})`;
     const added=pdfPending.pages.map(p=>({...p,notebookId:id})),next={...state,version:Math.max(2,state.version),notebooks:[...(state.notebooks||[]),{id,title}],pages:[...state.pages,...added],active:added[0].id,activeNotebook:id};
     if(!validState(next))throw new Error('PDF kayıt yapısı doğrulanamadı.');
