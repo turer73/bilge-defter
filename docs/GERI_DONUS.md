@@ -1,5 +1,12 @@
 # Geri dönüş zinciri
 
+> **2 Ekim 2026 (v72, son yayın):** canlı web **v72**, hesap servisi **v68**. İlk adım
+> `sudo python3 -B /opt/bilge-defter-classroom-v72/deploy-v72.py rollback` → web v71.
+> v71 dosyaları anlık görüntüden ayrı loopback portunda yeniden kurularak prova edildi;
+> önceki v71 web konteyneri de `-rollback-v72` adıyla korunuyor. Bu prova canlı trafik geçişi değildir.
+> Paket, test ve yayın kanıtı: [RELEASE_V72](RELEASE_V72.md).
+> Gerekirse sonraki adım aşağıdaki v71 → v70 komutudur. **v70'in altına inilmez.**
+
 > **2 Ekim 2026 (v71):** canlı web **v71**, hesap servisi **v68**. İlk adım
 > `sudo python3 -B /opt/bilge-defter-classroom-v71/deploy-v71.py rollback` → web v70 (prova edildi;
 > v70 v71'in anahtarlı defterlerini okur: [RELEASE_V71](RELEASE_V71.md)).
@@ -31,7 +38,7 @@ uyulmalı (bkz. "Bilinen kusur"). Her adımdan sonra sağlık denetimi koşturul
 /opt/bilge-defter-monitor/bilge-defter-health.sh
 ```
 
-## Şu an ne çalışıyor
+## Tarihsel envanter — 28 Eylül 2026 (güncel sürüm üstte)
 
 | Bileşen | Sürüm | Konteyner | Dosyalar |
 |---|---|---|---|
