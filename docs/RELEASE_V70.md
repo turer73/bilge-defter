@@ -83,7 +83,20 @@ Masaüstü, sentetik; Chromium/V8, sayfa + kayıt işçisi JS belleği (CDP):
 
 ## Yayın
 
-Henüz yapılmadı. Kullanıcı onayı gerekir.
+Kullanıcı onayıyla ("Evet, canlıya al") 2 Ekim 2026 akşamı canlıya alındı. Kaynak
+`7ba592ee3176931e3e3c64631f5c704698d93f17`, paket `55cdc902…` (246 dosya), web SHA256SUMS `0f9e4b5f…`,
+nginx `3f3ef2ae…` (değişmedi). PR #8 master'a alındı.
+
+- **prepare:** canlı v69 web ve v68 hesap servisi doğrulandı; anlık görüntüler alındı.
+- **stage:** önizleme (18800) 238/235/14/6, `healthy`.
+- **rehearse:** v69 web kayıttan 18806'da kuruldu, 238/235/14/6, silindi.
+- **activate:** web v70 238/235/14/6, `healthy`; hesap servisi v68 değişmedi; `-rollback-v70` (v69 web) durmuş halde.
+
+**Bağımsız kontroller:** `current` → v70/ui; canlı `index.html`, `pdf-workspace.js`, `save-worker.js`,
+`sync-workspace.js`, `sw.js`, `release.json` baytları `7ba592e` ile aynı; sağlık betiği
+`web v70 api v68: 15 kontrol`; genel adres Access girişine 302.
+
+v70 öğrencinin kayıt maliyetini henüz düşürmez (yazıcı kapalı); bunu v71 yapar.
 
 Geri dönüş (v70 ya da v69 canlıyken; web v69, hesap servisi zaten v68):
 
