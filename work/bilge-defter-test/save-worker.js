@@ -12,7 +12,9 @@
 // an uncloneable value is not retried. Every failure is answered with its real name and nothing is
 // thrown, so a storage problem never looks like a dead worker.
 let db=null,name=null,store=null,stored=null,expect=null,queue=Promise.resolve();
-const FINAL=new Set(['NotebookConflict','QuotaExceededError','DataCloneError','DataError','ConstraintError']);
+const FINAL=new Set(['NotebookConflict','QuotaExceededError','DataCloneError','DataError','ConstraintError','MissingAsset']);
+// v71: image keys a save names; each must exist in the same transaction that writes the record.
+const IMAGE_KEY=/"image":"asset:[0-9a-f]{64}"/g;
 // The page sends save text with wide characters escaped (one-byte string); records read back are
 // compared in that same form.
 const latin1JSON=s=>typeof s==='string'&&/[^\x00-\xff]/.test(s)?s.replace(/[^\x00-\xff]/g,c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')):s;
@@ -29,7 +31,9 @@ function write(data,payload){return new Promise((ok,no)=>{
   let conflict,tx;try{tx=db.transaction(store,'readwrite')}catch(e){no(e);return}
   const os=tx.objectStore(store),fail=e=>{conflict=e;try{tx.abort()}catch{}};
   tx.oncomplete=()=>ok();tx.onabort=()=>no(conflict||tx.error||new Error('Kayıt işlemi iptal edildi'));tx.onerror=()=>{};
-  const commit=previous=>{const meta=os.get('sync-state-v2');meta.onsuccess=()=>{try{if(data.preservePrevious&&previous!==undefined)os.put(previous,'before-import');os.put(payload,'app');os.put({...meta.result,dirty:true},'sync-state-v2');os.put(data.marker,'app-writer')}catch(e){fail(e)}}};
+  const refs=[...new Set(data.json.match(IMAGE_KEY)||[])].map(k=>k.slice(9,-1));
+  const commit=previous=>{let pending=refs.length;const missing=[];if(!pending)put(previous);else for(const r of refs){const c=os.count(r);c.onsuccess=()=>{if(!c.result)missing.push(r);if(!--pending){if(missing.length)fail({name:'MissingAsset',message:missing.join(',')});else put(previous)}}}};
+  const put=previous=>{const meta=os.get('sync-state-v2');meta.onsuccess=()=>{try{if(data.preservePrevious&&previous!==undefined)os.put(previous,'before-import');os.put(payload,'app');os.put({...meta.result,dirty:true},'sync-state-v2');os.put(data.marker,'app-writer')}catch(e){fail(e)}}};
   const mark=os.get('app-writer');
   mark.onsuccess=()=>{try{
     const onDisk=mark.result;

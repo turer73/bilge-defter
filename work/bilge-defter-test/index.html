@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v70</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v71</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -163,7 +163,7 @@ let DB='bilge-defter-test-v1'; const STORE='state'; let db,state,activeId,tool='
 let storedJSON=null,editRevision=0,savedRevision=0,savePromise=null,saveFailed=false,saveConflict=false,importing=false,allowLeave=false,failureMessage='',failureCode='';
 // v69: a short local log of save failures and lifecycle events, kept in localStorage because
 // IndexedDB may be what is failing. No note content: names, sizes, durations, visibility only.
-const APP_VERSION='v70',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
+const APP_VERSION='v71',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
 let lastSaveBytes=null,failStreak=0,failSince=0,saveRetrying=false,retryTimer=null,retryWhenVisible=false,hiddenAt=0,lastShownAt=0;
 function diag(ev,extra={}){try{const list=JSON.parse(localStorage.getItem(DIAG_KEY)||'[]');list.push({t:new Date().toISOString(),ev,vis:document.visibilityState,...extra});while(list.length>80)list.shift();localStorage.setItem(DIAG_KEY,JSON.stringify(list))}catch{}}
 function errorInfo(e){return {name:String(e?.name||'Error').slice(0,40),msg:String(e?.message||'').slice(0,160)}}
@@ -297,8 +297,9 @@ function dbPut(snapshot,{preservePrevious=false,json,cached=false}={}){
       const actual=read.result===undefined?null:latin1JSON(JSON.stringify(read.result));
       if(actual===nextJSON){store.put(marker,'app-writer');return}
       if(actual!==expected){conflict=new Error('Başka bir sekme kayıtlı defteri değiştirdi');conflict.name='NotebookConflict';tx.abort();return}
-      const meta=store.get('sync-state-v2');
-      meta.onsuccess=()=>{try{if(preservePrevious&&read.result!==undefined)store.put(read.result,'before-import');store.put(payload,'app');store.put({...meta.result,dirty:true},'sync-state-v2');store.put(marker,'app-writer')}catch(e){conflict=e;try{tx.abort()}catch{}}};
+      const refs=[...recordRefs(payload)];let pending=refs.length,missing=[];
+      const go=()=>{if(missing.length){conflict=Object.assign(new Error(missing.join(',')),{name:'MissingAsset'});tx.abort();return}const meta=store.get('sync-state-v2');
+      meta.onsuccess=()=>{try{if(preservePrevious&&read.result!==undefined)store.put(read.result,'before-import');store.put(payload,'app');store.put({...meta.result,dirty:true},'sync-state-v2');store.put(marker,'app-writer')}catch(e){conflict=e;try{tx.abort()}catch{}}}};if(!pending)go();else for(const r of refs){const c=store.count(r);c.onsuccess=()=>{if(!c.result)missing.push(r);if(!--pending)go()}}
     };
   }));
 }
@@ -422,9 +423,9 @@ function latin1JSON(s){return typeof s==='string'&&WIDE_CHAR.test(s)?s.replace(W
 // 'asset:<sha-256 of the data URL>' as {data,t}; the record then carries that key instead of the image.
 // The notebook in memory always holds the images, so drawing, export and sync are unchanged; only the
 // saved text uses the key, and only for images whose asset is known to be stored. This release reads
-// that form wherever a record is read and keeps keys it read. It does not create new assets
-// (ASSET_WRITE off), so rolling back from it to v69 stays safe; the next release turns writing on.
-const ASSET_PREFIX='asset:',ASSET_REF=/^asset:[0-9a-f]{64}$/;let ASSET_WRITE=false,assetEpoch=0;
+// that form wherever a record is read and keeps keys it read. v71 turns writing on: inline images
+// are stored once and the record switches to keys (v70 reads them, so rollback to v70 is safe).
+const ASSET_PREFIX='asset:',ASSET_REF=/^asset:[0-9a-f]{64}$/;let ASSET_WRITE=true,assetEpoch=0;
 const assetRefs=new Map(),storedAssets=new Set();
 function assetRef(src){const r=typeof src==='string'?assetRefs.get(src):undefined;return r&&storedAssets.has(r)?r:null}
 function storedPage(p){
@@ -452,12 +453,28 @@ async function inflateRecord(rec){
   const page=p=>{if(!p||typeof p!=='object'||!Array.isArray(p.strokes))return p;let q=p;if(isRef(p.pdf?.image))q={...q,pdf:{...p.pdf,image:image(p.pdf.image)}};if(p.strokes.some(s=>s?.tool==='image'&&isRef(s.image)))q={...q,strokes:p.strokes.map(s=>s?.tool==='image'&&isRef(s.image)?{...s,image:image(s.image)}:s)};return q};
   return {...rec,pages:rec.pages.map(page),...(Array.isArray(rec.trash)?{trash:rec.trash.map(t=>t!==null&&typeof t==='object'&&!Array.isArray(t)&&t.page!==undefined?{...t,page:page(t.page)}:t)}:{})};
 }
-// Writing (ASSET_WRITE, off in v70): each inline image gets its key and is stored once in its own
+// Writing (ASSET_WRITE, on since v71): each inline image gets its key and is stored once in its own
 // small transaction; saves switch to the key only after that commit, so a record never names an
 // asset that is not on disk.
 let assetSweep=null,assetTimer=null;
 async function sha256Hex(text){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return Array.from(new Uint8Array(d),b=>b.toString(16).padStart(2,'0')).join('')}
 function inlineImages(book){const out=new Set();for(const p of [...book.pages,...(book.trash||[]).map(t=>t?.page)]){if(!p||typeof p!=='object')continue;if(typeof p.pdf?.image==='string'&&p.pdf.image.startsWith('data:'))out.add(p.pdf.image);for(const s of Array.isArray(p.strokes)?p.strokes:[])if(s?.tool==='image'&&typeof s.image==='string'&&s.image.startsWith('data:'))out.add(s.image)}return out}
+// Keys a stored record names (PDF pages and inserted images, trash included), without serializing it.
+function recordRefs(rec){const out=new Set(),isRef=v=>typeof v==='string'&&ASSET_REF.test(v);if(!rec||typeof rec!=='object'||!Array.isArray(rec.pages))return out;for(const p of [...rec.pages,...(Array.isArray(rec.trash)?rec.trash.map(t=>t?.page):[])]){if(!p||typeof p!=='object')continue;if(isRef(p.pdf?.image))out.add(p.pdf.image);if(Array.isArray(p.strokes))for(const x of p.strokes)if(x?.tool==='image'&&isRef(x.image))out.add(x.image)}return out}
+function notebookImageBytes(book=state){let n=0;for(const src of inlineImages(book))n+=src.length;return n}
+// v71: an asset is deleted only when neither the record nor the before-import copy names it, no image
+// open in this page uses it, and it is older than seven days (another open tab may have just stored
+// it). Once per session, when idle and visible. A save naming a deleted key is refused by the worker.
+function gcAssets(maxAgeMs=7*864e5){
+  if(!ready||saveConflict||!storedAssets.size)return Promise.resolve(0);
+  const inUse=new Set(assetRefs.values());
+  return withDB(d=>new Promise((ok,no)=>{
+    const tx=d.transaction(STORE,'readwrite'),os=tx.objectStore(STORE),app=os.get('app'),before=os.get('before-import'),keys=os.getAllKeys(IDBKeyRange.bound('asset:','asset;',false,true));let removed=0;
+    keys.onsuccess=()=>{const named=new Set([...recordRefs(app.result),...recordRefs(before.result)]);
+      for(const k of keys.result){if(named.has(k)||inUse.has(k))continue;const v=os.get(k);v.onsuccess=()=>{if(!(Number.isFinite(v.result?.t)&&Date.now()-v.result.t<maxAgeMs)){os.delete(k);storedAssets.delete(k);removed++}}}};
+    tx.oncomplete=()=>{if(removed)diag('assets-removed',{removed});ok(removed)};tx.onabort=()=>no(tx.error||new Error('Görsel temizliği tamamlanamadı'));tx.onerror=()=>{};
+  }));
+}
 function scheduleAssetSweep(){if(!ASSET_WRITE||assetTimer||assetSweep)return;assetTimer=setTimeout(()=>{assetTimer=null;void ensureAssets()},2000)}
 function ensureAssets(){
   if(!ASSET_WRITE||!ready||saveConflict)return Promise.resolve(0);if(assetSweep)return assetSweep;
@@ -534,11 +551,16 @@ function flushSave(auto=false){
   if(auto&&retryTimer)return Promise.resolve(false);
   clearTimeout(retryTimer);retryTimer=null;retryWhenVisible=false;renderSaveStatus();
   savePromise=(async()=>{
+    let assetRetry=false;
     while(isDirty()&&!saveConflict){
       const revision=editRevision;
       const snapshot={...state,active:activeId},full=saveFullNext,started=performance.now();saveFullNext=false;let json=null;
       try{json=serializeNotebook(snapshot,full);await dbPut(snapshot,{json,cached:!full});savedRevision=revision;lastSaveBytes=json.length;scheduleAssetSweep();if(!full)cachedSaves++;saveFailed=false;failureMessage='';failureCode='';saveSucceeded(performance.now()-started)}
-      catch(e){saveFailure(e,{len:json?.length??lastSaveBytes,full,ms:Math.round(performance.now()-started)});return false}
+      catch(e){
+        // A key whose asset is gone (cleaned up by another tab): drop it, save with the image inline once;
+        // the next sweep stores the image again.
+        if(e?.name==='MissingAsset'&&!assetRetry){assetRetry=true;const gone=String(e.message).split(',');for(const r of gone)storedAssets.delete(r);assetEpoch++;diag('asset-missing',{n:gone.length});continue}
+        saveFailure(e,{len:json?.length??lastSaveBytes,full,ms:Math.round(performance.now()-started)});return false}
       // Long strokes checkpoint at a bounded cadence, not one whole-notebook write per move.
       if(drawing&&isDirty()){if(!saveTimer)saveTimer=setTimeout(()=>{saveTimer=null;void flushSave()},5000);break}
     }
@@ -553,7 +575,7 @@ const FULL_LEAVE_LIMIT=8*1024*1024;
 function flushOnLeave(){if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear();lifeWrite(true);if(importing)return;
   // iPadOS gives a hidden page little time and memory. Only a small notebook (≤ 8 MB) still gets the
   // full check and rewrite here; a large one saves just what changed and is checked when idle (v69).
-  if((lastSaveBytes??0)<=FULL_LEAVE_LIMIT){if(!isDirty()&&!saveConflict&&pageCacheStale())markChanged();if(isDirty())saveFullNext=true}
+  if((lastSaveBytes??0)<=FULL_LEAVE_LIMIT&&!storedAssets.size){if(!isDirty()&&!saveConflict&&pageCacheStale())markChanged();if(isDirty())saveFullNext=true}
   if(isDirty())void flushSave()}
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'){hiddenAt=Date.now();if(isDirty()||savePromise||saveFailed||saveRetrying)diag('hide',{dirty:isDirty(),saving:!!savePromise});flushOnLeave();return}
@@ -1002,7 +1024,7 @@ async function init(){
   renderPages();resize();if(storedText(state)!==storedJSON)await dbPut(state);if(saveWorker)storedJSON=null;await refreshRecovery();ready=true;renderSaveStatus();if(typeof plannerStartReminders==='function')plannerStartReminders();
   document.querySelector('#storageState').textContent='Tarayıcı depolaması kullanılıyor';
   diag('start',{version:APP_VERSION,prevClean:previousLife?.clean??null,prevVersion:previousLife?.version??null,sinceBeatS:previousLife?Math.round((Date.now()-previousLife.beat)/1000):null,len:lastSaveBytes,worker:!!saveWorker,trusted});
-  scheduleAssetSweep();lastShownAt=performance.now();lifeWrite(document.visibilityState!=='visible');setInterval(()=>{if(document.visibilityState==='visible')lifeWrite(false)},10000);
+  scheduleAssetSweep();setTimeout(()=>{if(document.visibilityState==='visible'&&!drawing)void gcAssets().catch(e=>diag('asset-gc-fail',errorInfo(e)))},30000);lastShownAt=performance.now();lifeWrite(document.visibilityState!=='visible');setInterval(()=>{if(document.visibilityState==='visible')lifeWrite(false)},10000);
   if(navigator.storage?.persist)navigator.storage.persist().then(yes=>{if(yes)document.querySelector('#storageState').textContent='Kalıcı depolama izni var'}).catch(()=>{});
 }
 new ResizeObserver(resize).observe(canvas.parentElement);init().catch(()=>showStartupRecovery());
