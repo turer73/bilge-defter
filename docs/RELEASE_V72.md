@@ -24,6 +24,18 @@ biçimi v71 ile aynıdır.
   de taramayı zamanlar. Ek olarak, tarama sürerken gelen istek artık kaybolmaz: tarama bitince yeniden
   zamanlanır (aksi halde aynı açık başka yoldan geri gelirdi).
 
+## Codex yeniden incelemesi (not #101718, disc#2058)
+
+- **#2053 kısmi kalmıştı:** sınır görüntüleri tekil sayıyordu; eşitleme metni kopyalanmış sayfa ve Çöp
+  Kutusu tekrarlarını ayrı ayrı taşır. Artık her tekrar sayılır (`imageOccurrenceBytes`), depolama
+  tekilleştirmesi aynı kalır. Test gerçek eşitleme yolundan geçer (taklit sunucu, parola, kopya ve Çöp
+  Kutusu durumları): düzenlemelerden sonra büyük metin kodlanmaz, sunucuya istek gitmez.
+- **#2058:** bekleme süresi dolunca yeniden deneme zamanlanmıyordu. Artık ayrı bir zamanlayıcı var;
+  sayfa gizliyse görünür olunca dener. Test sanal saatle, bekleme süresine ve taramaya elle dokunmadan.
+- Ek yarış: zamanlayıcı bir tarama sürerken tetiklenirse istek kayboluyordu; artık hatırlanır.
+- Negatif kayıtlar `outputs/v72-negative/` (v71'e karşı 4/4 blok kalır; incelenen `e48f782`'ye karşı
+  #2055 dışındaki 3 blok kalır).
+
 ## Yerel doğrulama
 
 - `verify-v72-fixes.cjs` (Chromium + WebKit, 5×2 = 10 kontrol): bulgu başına bir test ve yayınlanmış

@@ -456,15 +456,17 @@ async function inflateRecord(rec){
 // Writing (ASSET_WRITE, on since v71): each inline image gets its key and is stored once in its own
 // small transaction; saves switch to the key only after that commit, so a record never names an
 // asset that is not on disk.
-let assetSweep=null,assetTimer=null,assetAgain=false,assetRetryAt=0;
+let assetSweep=null,assetTimer=null,assetAgain=false,assetRetryAt=0,assetRetryTimer=null,assetRetryWhenVisible=false;
 async function sha256Hex(text){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return Array.from(new Uint8Array(d),b=>b.toString(16).padStart(2,'0')).join('')}
 function inlineImages(book){const out=new Set();for(const p of [...book.pages,...(book.trash||[]).map(t=>t?.page)]){if(!p||typeof p!=='object')continue;if(typeof p.pdf?.image==='string'&&p.pdf.image.startsWith('data:'))out.add(p.pdf.image);for(const s of Array.isArray(p.strokes)?p.strokes:[])if(s?.tool==='image'&&typeof s.image==='string'&&s.image.startsWith('data:'))out.add(s.image)}return out}
 // Keys a stored record names (PDF pages and inserted images, trash included), without serializing it.
 function recordRefs(rec){const out=new Set(),isRef=v=>typeof v==='string'&&ASSET_REF.test(v);if(!rec||typeof rec!=='object'||!Array.isArray(rec.pages))return out;for(const p of [...rec.pages,...(Array.isArray(rec.trash)?rec.trash.map(t=>t?.page):[])]){if(!p||typeof p!=='object')continue;if(isRef(p.pdf?.image))out.add(p.pdf.image);if(Array.isArray(p.strokes))for(const x of p.strokes)if(x?.tool==='image'&&isRef(x.image))out.add(x.image)}return out}
 function notebookImageBytes(book=state){let n=0;for(const src of inlineImages(book))n+=src.length;return n}
-// v72: a lower bound of the sync upload size. Images are ASCII and counted once; the record (escaped
-// text, at most three times its UTF-8 size) adds the rest. The record alone is KB once images are keys.
-function syncCertainlyTooLarge(max){return notebookImageBytes()+16>max||(typeof lastSaveBytes==='number'&&lastSaveBytes>3*max)}
+// v72: a lower bound of the sync upload size. The upload carries every image occurrence (copied pages,
+// Trash) in ASCII, so each occurrence counts, unlike storage, which keeps one copy; the record (escaped
+// text, at most three times its UTF-8 size) is the other bound. The record alone is KB once images are keys.
+function imageOccurrenceBytes(book=state){let n=0;for(const p of [...book.pages,...(book.trash||[]).map(t=>t?.page)]){if(!p||typeof p!=='object')continue;if(typeof p.pdf?.image==='string')n+=p.pdf.image.length;for(const x of Array.isArray(p.strokes)?p.strokes:[])if(x?.tool==='image'&&typeof x.image==='string')n+=x.image.length}return n}
+function syncCertainlyTooLarge(max){return imageOccurrenceBytes()+16>max||(typeof lastSaveBytes==='number'&&lastSaveBytes>3*max)}
 // v71: an asset is deleted only when neither the record nor the before-import copy names it, no image
 // open in this page uses it, and it is older than seven days (another open tab may have just stored
 // it). Once per session, when idle and visible. A save naming a deleted key is refused by the worker.
@@ -478,9 +480,12 @@ function gcAssets(maxAgeMs=7*864e5){
     tx.oncomplete=()=>{if(removed)diag('assets-removed',{removed});ok(removed)};tx.onabort=()=>no(tx.error||new Error('Görsel temizliği tamamlanamadı'));tx.onerror=()=>{};
   }));
 }
+// After a failed migration the remaining images are retried when the cooldown ends, without waiting
+// for another edit; a hidden page retries when it is shown again (v72, finding 2058).
+function armAssetRetry(){if(!ASSET_WRITE||assetRetryTimer)return;assetRetryTimer=setTimeout(()=>{assetRetryTimer=null;if(document.visibilityState!=='visible'){assetRetryWhenVisible=true;return}void ensureAssets()},Math.max(0,assetRetryAt-Date.now())+50)}
 function scheduleAssetSweep(){if(!ASSET_WRITE||assetTimer)return;if(assetSweep){assetAgain=true;return}assetTimer=setTimeout(()=>{assetTimer=null;void ensureAssets()},2000)}
 function ensureAssets(){
-  if(!ASSET_WRITE||!ready||saveConflict||Date.now()<assetRetryAt)return Promise.resolve(0);if(assetSweep)return assetSweep;
+  if(!ASSET_WRITE||!ready||saveConflict)return Promise.resolve(0);if(Date.now()<assetRetryAt){armAssetRetry();return Promise.resolve(0)}if(assetSweep){assetAgain=true;return assetSweep}
   assetSweep=(async()=>{
     const current=inlineImages(state);let added=0;
     // v72: images stored before a failure (a full device mid-migration) are used at once, so the record
@@ -492,7 +497,7 @@ function ensureAssets(){
       storedAssets.add(ref);added++;
     }
     for(const src of assetRefs.keys())if(!current.has(src))assetRefs.delete(src);
-    }catch(e){assetRetryAt=Date.now()+5*60000;diag('asset-fail',{...errorInfo(e),added})}
+    }catch(e){assetRetryAt=Date.now()+5*60000;diag('asset-fail',{...errorInfo(e),added});armAssetRetry()}
     if(added){assetEpoch++;diag('assets',{added});markViewChanged();void flushSave(true)}
     return added;
   })().finally(()=>{assetSweep=null;if(assetAgain){assetAgain=false;scheduleAssetSweep()}});
@@ -587,7 +592,7 @@ document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'){hiddenAt=Date.now();if(isDirty()||savePromise||saveFailed||saveRetrying)diag('hide',{dirty:isDirty(),saving:!!savePromise});flushOnLeave();return}
   lastShownAt=performance.now();lifeWrite(false);
   if(hiddenAt&&(saveFailed||saveRetrying||retryWhenVisible))diag('show',{hiddenS:Math.round((Date.now()-hiddenAt)/1000)});
-  if(retryWhenVisible){retryWhenVisible=false;void flushSave()}
+  if(retryWhenVisible){retryWhenVisible=false;void flushSave()}if(assetRetryWhenVisible){assetRetryWhenVisible=false;void ensureAssets()}
 });
 window.addEventListener('pagehide',flushOnLeave);
 // Losing focus (Control Center, a file picker, Slide Over) only ends the current gesture.
