@@ -2,7 +2,8 @@
 
 > **2 Ekim 2026 (v72, son yayın):** canlı web **v72**, hesap servisi **v68**. İlk adım
 > `sudo python3 -B /opt/bilge-defter-classroom-v72/deploy-v72.py rollback` → web v71.
-> v71 dosyaları anlık görüntüden ayrı loopback portunda yeniden kurularak prova edildi;
+> v71 web konteyneri kayıtlı yapılandırmadan, mevcut v71 dosyalarını bağlayarak ayrı loopback
+> portunda yeniden kuruldu ve doğrulandı; dosya/veritabanı yedeği geri yüklenmedi.
 > önceki v71 web konteyneri de `-rollback-v72` adıyla korunuyor. Bu prova canlı trafik geçişi değildir.
 > Paket, test ve yayın kanıtı: [RELEASE_V72](RELEASE_V72.md).
 > Gerekirse sonraki adım aşağıdaki v71 → v70 komutudur. **v70'in altına inilmez.**
