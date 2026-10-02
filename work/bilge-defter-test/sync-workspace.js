@@ -11,10 +11,9 @@
   async function keyFor(pass,salt){const cacheKey=pass+'|'+toB64(salt);if(keyCache.has(cacheKey))return keyCache.get(cacheKey);const key=await deriveKey(pass,salt);if(keyCache.size>8)keyCache.delete(keyCache.keys().next().value);keyCache.set(cacheKey,key);return key}
   const MAX_CIPHERTEXT_BYTES=5*1024*1024;
   function tooLarge(){const error=Error('Bu defter 5 MiB sunucu yedeği sınırını aşıyor. Notlar bu cihazda korunur; Dosya ve yedek bölümünden JSON yedeği alın.');error.code='backup-too-large';return error}
-  // The local save text is at most three times the UTF-8 size of the notebook (an escaped wide
-  // character is 6 characters, at least 2 bytes). Above three times the limit the notebook is
-  // certainly too large, and sync stops rebuilding, hashing and encoding it after every edit (v69).
-  const certainlyTooLarge=()=>typeof lastSaveBytes==='number'&&lastSaveBytes>3*MAX_CIPHERTEXT_BYTES;
+  // A notebook certainly too large for the server copy is not rebuilt, hashed and encoded after every
+  // edit (v69). Since v71 the record holds image keys, so the bound comes from the images (v72).
+  const certainlyTooLarge=()=>typeof syncCertainlyTooLarge==='function'?syncCertainlyTooLarge(MAX_CIPHERTEXT_BYTES):typeof lastSaveBytes==='number'&&lastSaveBytes>3*MAX_CIPHERTEXT_BYTES;
   async function encryptPayload(pass,text){const plain=enc.encode(text);if(plain.byteLength+16>MAX_CIPHERTEXT_BYTES)throw tooLarge();const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));const key=await deriveKey(pass,salt);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,plain);return {ciphertext:toB64(new Uint8Array(ct)),iv:toB64(iv),salt:toB64(salt),kdf:KDF}}
   async function decryptPayload(data,pass){if(data.kdf!==KDF)throw Error('kdf');const key=await keyFor(pass,fromB64(data.salt));const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:fromB64(data.iv)},key,fromB64(data.ciphertext));return dec.decode(plain)}
   const passDialog=document.createElement('dialog');passDialog.id='syncPassDialog';passDialog.className='tools-dialog';passDialog.setAttribute('aria-labelledby','syncPassTitle');

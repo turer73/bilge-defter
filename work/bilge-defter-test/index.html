@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v71</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v72</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -163,7 +163,7 @@ let DB='bilge-defter-test-v1'; const STORE='state'; let db,state,activeId,tool='
 let storedJSON=null,editRevision=0,savedRevision=0,savePromise=null,saveFailed=false,saveConflict=false,importing=false,allowLeave=false,failureMessage='',failureCode='';
 // v69: a short local log of save failures and lifecycle events, kept in localStorage because
 // IndexedDB may be what is failing. No note content: names, sizes, durations, visibility only.
-const APP_VERSION='v71',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
+const APP_VERSION='v72',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
 let lastSaveBytes=null,failStreak=0,failSince=0,saveRetrying=false,retryTimer=null,retryWhenVisible=false,hiddenAt=0,lastShownAt=0;
 function diag(ev,extra={}){try{const list=JSON.parse(localStorage.getItem(DIAG_KEY)||'[]');list.push({t:new Date().toISOString(),ev,vis:document.visibilityState,...extra});while(list.length>80)list.shift();localStorage.setItem(DIAG_KEY,JSON.stringify(list))}catch{}}
 function errorInfo(e){return {name:String(e?.name||'Error').slice(0,40),msg:String(e?.message||'').slice(0,160)}}
@@ -456,17 +456,20 @@ async function inflateRecord(rec){
 // Writing (ASSET_WRITE, on since v71): each inline image gets its key and is stored once in its own
 // small transaction; saves switch to the key only after that commit, so a record never names an
 // asset that is not on disk.
-let assetSweep=null,assetTimer=null;
+let assetSweep=null,assetTimer=null,assetAgain=false,assetRetryAt=0;
 async function sha256Hex(text){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return Array.from(new Uint8Array(d),b=>b.toString(16).padStart(2,'0')).join('')}
 function inlineImages(book){const out=new Set();for(const p of [...book.pages,...(book.trash||[]).map(t=>t?.page)]){if(!p||typeof p!=='object')continue;if(typeof p.pdf?.image==='string'&&p.pdf.image.startsWith('data:'))out.add(p.pdf.image);for(const s of Array.isArray(p.strokes)?p.strokes:[])if(s?.tool==='image'&&typeof s.image==='string'&&s.image.startsWith('data:'))out.add(s.image)}return out}
 // Keys a stored record names (PDF pages and inserted images, trash included), without serializing it.
 function recordRefs(rec){const out=new Set(),isRef=v=>typeof v==='string'&&ASSET_REF.test(v);if(!rec||typeof rec!=='object'||!Array.isArray(rec.pages))return out;for(const p of [...rec.pages,...(Array.isArray(rec.trash)?rec.trash.map(t=>t?.page):[])]){if(!p||typeof p!=='object')continue;if(isRef(p.pdf?.image))out.add(p.pdf.image);if(Array.isArray(p.strokes))for(const x of p.strokes)if(x?.tool==='image'&&isRef(x.image))out.add(x.image)}return out}
 function notebookImageBytes(book=state){let n=0;for(const src of inlineImages(book))n+=src.length;return n}
+// v72: a lower bound of the sync upload size. Images are ASCII and counted once; the record (escaped
+// text, at most three times its UTF-8 size) adds the rest. The record alone is KB once images are keys.
+function syncCertainlyTooLarge(max){return notebookImageBytes()+16>max||(typeof lastSaveBytes==='number'&&lastSaveBytes>3*max)}
 // v71: an asset is deleted only when neither the record nor the before-import copy names it, no image
 // open in this page uses it, and it is older than seven days (another open tab may have just stored
 // it). Once per session, when idle and visible. A save naming a deleted key is refused by the worker.
 function gcAssets(maxAgeMs=7*864e5){
-  if(!ready||saveConflict||!storedAssets.size)return Promise.resolve(0);
+  if(!ready||saveConflict)return Promise.resolve(0);
   const inUse=new Set(assetRefs.values());
   return withDB(d=>new Promise((ok,no)=>{
     const tx=d.transaction(STORE,'readwrite'),os=tx.objectStore(STORE),app=os.get('app'),before=os.get('before-import'),keys=os.getAllKeys(IDBKeyRange.bound('asset:','asset;',false,true));let removed=0;
@@ -475,21 +478,24 @@ function gcAssets(maxAgeMs=7*864e5){
     tx.oncomplete=()=>{if(removed)diag('assets-removed',{removed});ok(removed)};tx.onabort=()=>no(tx.error||new Error('Görsel temizliği tamamlanamadı'));tx.onerror=()=>{};
   }));
 }
-function scheduleAssetSweep(){if(!ASSET_WRITE||assetTimer||assetSweep)return;assetTimer=setTimeout(()=>{assetTimer=null;void ensureAssets()},2000)}
+function scheduleAssetSweep(){if(!ASSET_WRITE||assetTimer)return;if(assetSweep){assetAgain=true;return}assetTimer=setTimeout(()=>{assetTimer=null;void ensureAssets()},2000)}
 function ensureAssets(){
-  if(!ASSET_WRITE||!ready||saveConflict)return Promise.resolve(0);if(assetSweep)return assetSweep;
+  if(!ASSET_WRITE||!ready||saveConflict||Date.now()<assetRetryAt)return Promise.resolve(0);if(assetSweep)return assetSweep;
   assetSweep=(async()=>{
     const current=inlineImages(state);let added=0;
-    for(const src of current){
+    // v72: images stored before a failure (a full device mid-migration) are used at once, so the record
+    // shrinks and gives back the space their inline copies took; the rest is retried after five minutes.
+    try{for(const src of current){
       let ref=assetRefs.get(src);if(!ref){ref=ASSET_PREFIX+await sha256Hex(src);assetRefs.set(src,ref)}
       if(storedAssets.has(ref))continue;
       await withDB(d=>new Promise((ok,no)=>{const tx=d.transaction(STORE,'readwrite');tx.objectStore(STORE).put({data:src,t:Date.now()},ref);tx.oncomplete=()=>ok();tx.onabort=()=>no(tx.error||new Error('Görsel kaydedilemedi'));tx.onerror=()=>{}}));
       storedAssets.add(ref);added++;
     }
     for(const src of assetRefs.keys())if(!current.has(src))assetRefs.delete(src);
+    }catch(e){assetRetryAt=Date.now()+5*60000;diag('asset-fail',{...errorInfo(e),added})}
     if(added){assetEpoch++;diag('assets',{added});markViewChanged();void flushSave(true)}
     return added;
-  })().catch(e=>{diag('asset-fail',errorInfo(e));return 0}).finally(()=>{assetSweep=null});
+  })().finally(()=>{assetSweep=null;if(assetAgain){assetAgain=false;scheduleAssetSweep()}});
   return assetSweep;
 }
 function cachedPageJSON(p,full){
@@ -912,7 +918,7 @@ async function replaceNotebook(candidate,successText,{preservePrevious=true}={})
     if(!await flushSave())return false;
     const selection=selectionFor(candidate),active=selection.active;
     const next={...candidate,active};
-    await dbPut(next,{preservePrevious});
+    await dbPut(next,{preservePrevious});scheduleAssetSweep();
     state=next;activeId=active;activeNotebook=selection.notebook;clearedPages.clear();mediaUndo.clear();editRevision++;savedRevision=editRevision;saveFailed=false;failureMessage='';
     if(typeof window.markSyncDirty==='function')window.markSyncDirty();
     renderPages();drawAll();await refreshRecovery();importing=false;renderSaveStatus();saveEl.textContent=successText;return true;
