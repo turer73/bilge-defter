@@ -10,7 +10,12 @@
   async function deriveKey(pass,salt){const km=await crypto.subtle.importKey('raw',enc.encode(pass),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:ITERATIONS,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
   async function keyFor(pass,salt){const cacheKey=pass+'|'+toB64(salt);if(keyCache.has(cacheKey))return keyCache.get(cacheKey);const key=await deriveKey(pass,salt);if(keyCache.size>8)keyCache.delete(keyCache.keys().next().value);keyCache.set(cacheKey,key);return key}
   const MAX_CIPHERTEXT_BYTES=5*1024*1024;
-  async function encryptPayload(pass,text){const plain=enc.encode(text);if(plain.byteLength+16>MAX_CIPHERTEXT_BYTES){const error=Error('Bu defter 5 MiB sunucu yedeği sınırını aşıyor. Notlar bu cihazda korunur; Dosya ve yedek bölümünden JSON yedeği alın.');error.code='backup-too-large';throw error}const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));const key=await deriveKey(pass,salt);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,plain);return {ciphertext:toB64(new Uint8Array(ct)),iv:toB64(iv),salt:toB64(salt),kdf:KDF}}
+  function tooLarge(){const error=Error('Bu defter 5 MiB sunucu yedeği sınırını aşıyor. Notlar bu cihazda korunur; Dosya ve yedek bölümünden JSON yedeği alın.');error.code='backup-too-large';return error}
+  // The local save text is at most three times the UTF-8 size of the notebook (an escaped wide
+  // character is 6 characters, at least 2 bytes). Above three times the limit the notebook is
+  // certainly too large, and sync stops rebuilding, hashing and encoding it after every edit (v69).
+  const certainlyTooLarge=()=>typeof lastSaveBytes==='number'&&lastSaveBytes>3*MAX_CIPHERTEXT_BYTES;
+  async function encryptPayload(pass,text){const plain=enc.encode(text);if(plain.byteLength+16>MAX_CIPHERTEXT_BYTES)throw tooLarge();const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));const key=await deriveKey(pass,salt);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,plain);return {ciphertext:toB64(new Uint8Array(ct)),iv:toB64(iv),salt:toB64(salt),kdf:KDF}}
   async function decryptPayload(data,pass){if(data.kdf!==KDF)throw Error('kdf');const key=await keyFor(pass,fromB64(data.salt));const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:fromB64(data.iv)},key,fromB64(data.ciphertext));return dec.decode(plain)}
   const passDialog=document.createElement('dialog');passDialog.id='syncPassDialog';passDialog.className='tools-dialog';passDialog.setAttribute('aria-labelledby','syncPassTitle');
   passDialog.innerHTML='<div class="tools-heading"><h2 id="syncPassTitle">Parola</h2><button class="btn" id="syncPassClose" type="button">× Kapat</button></div><form id="syncPassForm" class="tools-content"><p class="recovery-note">Bu parolayla yedek uçtan uca şifrelenir; sunucu yalnız şifreli yığını saklar. Parola hiçbir yerde saklanmaz; kaybolursa sunucudaki yedek açılamaz. Yüklerken aynı parolayı girmelisiniz.</p><label>Parola (en az 8 karakter)<input id="syncPassInput" type="password" minlength="8" autocomplete="new-password" required></label><label id="syncPassConfirmLabel" hidden>Parolayı tekrar girin<input id="syncPassConfirm" type="password" minlength="8" autocomplete="new-password"></label><p id="syncPassError" role="status"></p><div class="tool-actions"><button class="btn primary" id="syncPassSubmit" type="submit">Devam et</button><button class="btn" id="syncPassCancel" type="button">Vazgeç</button></div></form>';
@@ -125,8 +130,10 @@
   const deviceKey=()=> 'bilge-defter-device-id'+(window.BilgeAccount?.identity?.id?'-'+window.BilgeAccount.identity.id:'');
   let syncPass=null,syncEnabled=false,localDirty=true,lastSyncAt=null,conflictHold=0,conflictPayload=null,receipt=null;
   const hashText=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(text))),n=>n.toString(16).padStart(2,'0')).join('');
-  // Same text as JSON.stringify, rebuilt only for changed pages (see serializeNotebook).
-  const notebookJSON=o=>typeof serializeNotebook==='function'?serializeNotebook(o):JSON.stringify(o);
+  // Plain JSON.stringify text: receipts, acknowledgements and uploads compare and hash exactly this.
+  // The local save text escapes wide characters (v69) and is not used here. Sync carries at most
+  // 5 MiB, so building it in full is cheap.
+  const notebookJSON=o=>JSON.stringify(o);
   let hashMemo=null;
   async function refreshReceipt(){
     receipt=await dbGet('sync-state-v2');
@@ -187,7 +194,7 @@
   };
   async function syncPush(remote){
     if(!syncEnabled||!invited()||!editorIdle()||!await flushSave())return;
-    requireCas(remote);
+    requireCas(remote);if(certainlyTooLarge())throw tooLarge();
     const expected=notebookJSON(state),revision=editRevision;
     const snapshot=notebookSnapshot();
     const payload=await encryptPayload(syncPass,notebookJSON(snapshot));
@@ -213,6 +220,7 @@
     if(document.visibilityState==='hidden')return;
     if(conflictHold>Date.now())return;
     if(oversizeRevision===editRevision)return;
+    if(certainlyTooLarge()){const text=`Eşitleme bekliyor; notlar yerelde korundu. ${tooLarge().message}`,el=document.querySelector('#syncAutoStatus');if(el.textContent!==text)el.textContent=text;return}
     return exclusive(async()=>{try{
       const remote=await readRemote(true);requireCas(remote);await refreshReceipt();
       if(!editorIdle())return;
