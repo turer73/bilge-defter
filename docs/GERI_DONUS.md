@@ -1,5 +1,12 @@
 # Geri dönüş zinciri
 
+> **2 Ekim 2026 (v71):** canlı web **v71**, hesap servisi **v68**. İlk adım
+> `sudo python3 -B /opt/bilge-defter-classroom-v71/deploy-v71.py rollback` → web v70 (prova edildi;
+> v70 v71'in anahtarlı defterlerini okur: [RELEASE_V71](RELEASE_V71.md)).
+> **Zincir v70'te durur:** v71 bir kez canlıya çıktığı için göç etmiş defterleri v69 ve öncesi açamaz.
+> Aşağıdaki v70 → v69 ve daha eski adımlar yalnız v71'i hiç açmamış cihazlar için anlamlıdır;
+> kullanılmamalıdır.
+
 > **2 Ekim 2026 (v70):** canlı web **v70**, hesap servisi **v68**. İlk adım
 > `sudo python3 -B /opt/bilge-defter-classroom-v70/deploy-v70.py rollback` → web v69 (prova edildi:
 > [RELEASE_V70](RELEASE_V70.md)). v70 anahtarlı kayıt yazmadığı için v69'a dönüş güvenlidir.

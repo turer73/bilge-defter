@@ -73,4 +73,18 @@ sudo python3 -B /opt/bilge-defter-classroom-v71/deploy-v71.py rollback
 
 ## Yayın
 
-Henüz yapılmadı. Kullanıcı onayı gerekir.
+Kullanıcı onayıyla ("Evet, canlıya al") 2 Ekim 2026 akşamı canlıya alındı. Kaynak
+`e065f969c63b3d4b5ef0110e6b2d65d684faf56e`, paket `5678ecc1…` (246 dosya), web SHA256SUMS `4e921191…`,
+nginx `3f3ef2ae…` (değişmedi). PR #9 master'a alındı.
+
+- **prepare:** canlı v70 web ve v68 hesap servisi doğrulandı; anlık görüntüler alındı.
+- **stage:** önizleme (18800) 238/235/14/6, `healthy`.
+- **rehearse:** v70 web kayıttan 18806'da kuruldu, 238/235/14/6, silindi.
+- **activate:** web v71 238/235/14/6, `healthy`; hesap servisi v68 değişmedi; `-rollback-v71` (v70 web) durmuş halde.
+
+**Bağımsız kontroller:** `current` → v71/ui; canlı `index.html`, `pdf-workspace.js`, `save-worker.js`,
+`sync-workspace.js`, `sw.js`, `release.json` baytları `e065f96` ile aynı; sağlık betiği
+`web v71 api v68: 15 kontrol`; genel adres Access girişine 302.
+
+**Henüz yapılmadı:** fiziksel iPad kabulü. Öğrenci uygulamayı tamamen kapatıp açınca v71 iner; defter
+açılıştan birkaç saniye sonra kendiliğinden göç eder.
