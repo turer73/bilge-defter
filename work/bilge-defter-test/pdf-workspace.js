@@ -71,6 +71,9 @@ const NOTEBOOK_PDF_LIMIT=48*1024*1024;
 function notebookLimitError(total){return new Error(`Bu PDF ile defter kaydı ${Math.round(total/1048576)} MB olur; iPad'de güvenilir kayıt için sınır ${NOTEBOOK_PDF_LIMIT/1048576} MB. Önce JSON yedeği alın, sonra artık gerekmeyen PDF defterlerini silip Çöp Kutusundan da kaldırın.`)}
 // v69 reads PNG and JPEG page images; it still writes PNG. Accepting JPEG now lets a later release
 // store smaller JPEG pages and still roll back to this one.
+// v70: a page that is mostly photo or slide art is stored as JPEG when that is clearly smaller
+// (under 60% of the PNG); text pages stay PNG and sharp. v69 already reads JPEG pages.
+function pdfPageImage(surface){const png=surface.toDataURL('image/png'),jpeg=surface.toDataURL('image/jpeg',.88);return jpeg.startsWith('data:image/jpeg;base64,')&&jpeg.length<png.length*.6?jpeg:png}
 function pdfImageSize(src){
   const png=src.startsWith('data:image/png;base64,'),jpeg=!png&&src.startsWith('data:image/jpeg;base64,');if(!png&&!jpeg)return null;
   const b64=src.slice(png?22:23);if(!/^[A-Za-z0-9+/]+={0,2}$/.test(b64))return null;
@@ -159,7 +162,7 @@ document.querySelector('#pdfFile').onchange=async e=>{
       if(!Number.isFinite(viewport.height)||viewport.height<100||viewport.height>3000)throw new Error('PDF sayfa oranı bu ilk sürümde desteklenmiyor.');
       const surface=document.createElement('canvas');surface.width=1000;surface.height=Math.ceil(viewport.height);
       await source.render({canvasContext:surface.getContext('2d'),viewport,background:'#ffffff'}).promise;
-      const image=surface.toDataURL('image/png');surface.width=surface.height=1;source.cleanup();bytes+=image.length;
+      const image=pdfPageImage(surface);surface.width=surface.height=1;source.cleanup();bytes+=image.length;
       if(image.length>6*1024*1024||bytes>PDF_IMAGE_LIMIT)throw new Error('PDF görüntüleri tablet test sınırını aşıyor. Daha az sayfalı dosya deneyin.');if((lastSaveBytes??0)+bytes>NOTEBOOK_PDF_LIMIT)throw notebookLimitError((lastSaveBytes??0)+bytes);
       pages.push({id:newPageId(),title:`PDF · Sayfa ${number}`,strokes:[],viewY:0,pdf:{image,width:1000,height:Math.ceil(viewport.height),name:file.name.slice(0,200),number,total:doc.numPages},updated:new Date().toISOString()});
     }
