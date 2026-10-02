@@ -52,6 +52,9 @@ biçimi v71 ile aynıdır.
   Paket manifestinin SHA-256 özeti:
   `a602e5241d06aefa7b0f9aea2976bb81fb2ccc071fff5c816a01c812adcd93dc`.
 - `python -B work/test_deploy_v72.py` yeniden çalıştırıldı: sahte Docker ile 6/6 geçti.
+- Devralma sırasında `node work/verify-v72.cjs verify-v72-fixes.cjs` de yeniden çalıştırıldı:
+  Chromium + WebKit 12/12, çıkış kodu 0. Tam regresyon kaydının SHA-256 özeti:
+  `16a01c3f377346592a6b8aa734f5c21bdbb50c93683e6a6a160e6b38bbe9ffee`.
 - Fiziksel iPad testi yapılmadı.
 
 ## Öneri (Codex)
@@ -63,9 +66,37 @@ bu yana geçerli).
 
 Kullanıcının 2 Ekim 2026 tarihli “işi sen devral ve tamamla” isteğiyle Codex devraldı
 (merkezi CLAIM #101728; önceki Claude CLAIM #101717, devir notu #101724).
-Bu kayıt aşamasında canlı yayın henüz yapılmadı. Son kaynak commit'inden paket üretimi,
-GitHub kontrolleri, izole önizleme ve geri dönüş provası geçmeden etkinleştirme yapılmaz.
-Hesap servisi, kütüphane, veri, Access ve DNS kapsam dışında kalır.
+**v72 canlıya alındı ve yayın sonrası yeniden doğrulandı.** Kaynak
+`8ef7550118f81ee7ac7da96e3e9f82d024b0ae74`; PR #10, `synthetic-checks` geçtikten sonra
+`f4e690bbbb3c1e674651fadf5202f48d30c60633` ile master'a birleştirildi. Bu belgeyi ekleyen
+sonraki commit yalnız yayın kanıtıdır; paket kaynağı yukarıdaki commit olarak kalır.
+
+- Paket: 246 dosya, SHA-256
+  `806501f593e85a64a1c9e7d049e306e0b877cb2676ee9274e7f3a5f08e0f855f`.
+- `prepare`: canlı v71 ve hesap v68 doğrulandı; özel dizine geri dönüş yapılandırması kaydedildi.
+- `stage`: loopback 18800 üzerinde v72, 238 HTTP dosya özeti, 235 çevrim dışı varlık,
+  14 yetkisiz istek reddi, 6 korumalı yol kontrolü; Docker `healthy`.
+- `rehearse`: v71, anlık görüntüden loopback 18806 üzerinde yeniden kuruldu ve aynı
+  238/235/14/6 kontrollerinden geçti; yalnız prova konteyneri kaldırıldı. Canlı trafik
+  geri alınmadı; bu, tam trafik geri dönüş testi değildir.
+- `activate` ve bağımsız tekrar `verify`: v72 238/235/14/6, `healthy`.
+  `current` → `/opt/bilge-defter-classroom-v72/ui`.
+- Sağlık betiği: web v72 / API v68 **15/15**. Genel adres **302 Cloudflare Access**;
+  izin sınırı korunuyor. Kimliği doğrulanmış öğrenci oturumu denenmedi.
+- Hesap servisi v68, kütüphane, veri, Access, DNS ve diğer servisler değişmedi. nginx özeti
+  `3f3ef2ae4982758cfaafa659835aec6e03bd2e2edeceddb81378ecabaad389cf` aynı.
+- Önceki v71 web, `bilge-defter-invited-web-rollback-v72` adıyla durmuş halde korunuyor.
+
+Sunucu kanıtları `/opt/bilge-defter-classroom-v72/{stage-proof,rehearsal-proof,live-proof,source-receipt}.json`;
+yerel kopyaları `outputs/v72-publication-codex/`. Kaynak makbuzu yerel paketle birebir eşleştirildi.
+Önceki, `e48f782` kaynaklı yayın çıktısı `outputs/v72-release-before-8ef7550/` altında korundu;
+yeni yayın için kullanılmadı. Merkezi yayın kaydı #101734; bulgular #2053–2056 ve #2058,
+kod/test/yayın kanıtıyla kapatıldı. Fiziksel cihaz kabulü bu kapanışın kapsamında değildir.
+
+**iPad kabulü hâlâ gerekli:** önce JSON yedeği alın; uygulamada v72 göründüğünü doğrulayın.
+Görselli/PDF defterde yazma, iki parmak kaydırma, arka plana alıp geri dönme ve kapatıp yeniden
+açmada yazı/görsel korunumu denenmeli. Tarayıcı verilerini silmeyin; yedek, eşitleme ve yerel
+kayıt aynı şey değildir.
 
 Geri dönüş (v72 ya da v71 canlıyken; web v71):
 
