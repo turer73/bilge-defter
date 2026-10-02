@@ -65,10 +65,11 @@ const pdfZoomControls=document.createElement('div');pdfZoomControls.id='pdfZoomC
 pdfStyle.textContent+='#pdfNavigation{flex-wrap:wrap}#pdfZoomControls{display:flex;align-items:center;gap:6px}#pdfZoomControls .btn{min-width:44px}#pdfZoomValue{min-width:48px;text-align:center;font-size:13px}@media(max-width:650px){#pdfZoomControls{flex-basis:100%;justify-content:center}#pdfFit{font-size:13px}}';
 let pdfBusy=false,pdfPending=null,pdfRequest=0,pdfTask=null,pdfLibrary=null,pdfImage=null,pdfImageSource=null,pdfImageFailed=false;
 const PDF_FILE_LIMIT=20*1024*1024,PDF_IMAGE_LIMIT=24*1024*1024;
-// Every save still rewrites the whole notebook, PDF images included, so new PDFs are refused above
-// this size until PDF pages are stored apart (planned). Notebooks already larger keep working (v69).
-const NOTEBOOK_PDF_LIMIT=48*1024*1024;
-function notebookLimitError(total){return new Error(`Bu PDF ile defter kaydı ${Math.round(total/1048576)} MB olur; iPad'de güvenilir kayıt için sınır ${NOTEBOOK_PDF_LIMIT/1048576} MB. Önce JSON yedeği alın, sonra artık gerekmeyen PDF defterlerini silip Çöp Kutusundan da kaldırın.`)}
+// v71: images are stored apart, so a pen stroke no longer rewrites them; they are still all held in
+// memory and checked at startup. New PDFs are refused when the notebook's images would exceed this.
+// Notebooks already larger keep working.
+const NOTEBOOK_PDF_LIMIT=96*1024*1024;
+function notebookLimitError(total){return new Error(`Bu PDF ile defterdeki görseller ${Math.round(total/1048576)} MB olur; iPad'de güvenilir kayıt için sınır ${NOTEBOOK_PDF_LIMIT/1048576} MB. Önce JSON yedeği alın, sonra artık gerekmeyen PDF defterlerini silip Çöp Kutusundan da kaldırın.`)}
 // v69 reads PNG and JPEG page images; it still writes PNG. Accepting JPEG now lets a later release
 // store smaller JPEG pages and still roll back to this one.
 // v70: a page that is mostly photo or slide art is stored as JPEG when that is clearly smaller
@@ -155,7 +156,7 @@ document.querySelector('#pdfFile').onchange=async e=>{
     timeout=setTimeout(()=>{if(request===pdfRequest){cancelPdf();pdfMessage('PDF hazırlığı zaman aşımına uğradı. Daha küçük bir dosya deneyin.')}},60000);
     const doc=await task.promise;if(request!==pdfRequest)return;
     if(doc.numPages>50)throw new Error('Bu ilk sürüm en fazla 50 sayfa PDF kabul eder. Dosyayı bölerek deneyin.');
-    const pages=[];let bytes=0;
+    const pages=[];let bytes=0;const existingImages=notebookImageBytes();
     for(let number=1;number<=doc.numPages;number++){
       if(request!==pdfRequest)return;pdfMessage(`PDF sayfası hazırlanıyor: ${number}/${doc.numPages}`);
       const source=await doc.getPage(number),base=source.getViewport({scale:1}),viewport=source.getViewport({scale:1000/base.width});
@@ -163,7 +164,7 @@ document.querySelector('#pdfFile').onchange=async e=>{
       const surface=document.createElement('canvas');surface.width=1000;surface.height=Math.ceil(viewport.height);
       await source.render({canvasContext:surface.getContext('2d'),viewport,background:'#ffffff'}).promise;
       const image=pdfPageImage(surface);surface.width=surface.height=1;source.cleanup();bytes+=image.length;
-      if(image.length>6*1024*1024||bytes>PDF_IMAGE_LIMIT)throw new Error('PDF görüntüleri tablet test sınırını aşıyor. Daha az sayfalı dosya deneyin.');if((lastSaveBytes??0)+bytes>NOTEBOOK_PDF_LIMIT)throw notebookLimitError((lastSaveBytes??0)+bytes);
+      if(image.length>6*1024*1024||bytes>PDF_IMAGE_LIMIT)throw new Error('PDF görüntüleri tablet test sınırını aşıyor. Daha az sayfalı dosya deneyin.');if(existingImages+bytes>NOTEBOOK_PDF_LIMIT)throw notebookLimitError(existingImages+bytes);
       pages.push({id:newPageId(),title:`PDF · Sayfa ${number}`,strokes:[],viewY:0,pdf:{image,width:1000,height:Math.ceil(viewport.height),name:file.name.slice(0,200),number,total:doc.numPages},updated:new Date().toISOString()});
     }
     if(request!==pdfRequest)return;pdfPending={title:file.name.replace(/\.pdf$/i,'').trim().slice(0,65)||'PDF',pages};pdfMessage(`${file.name} · ${pages.length} sayfa hazır. Yeni deftere ekleyin. Özgün PDF dosyanızı ayrıca koruyun.`);document.querySelector('#pdfApply').disabled=false;
@@ -175,7 +176,7 @@ document.querySelector('#pdfApply').onclick=async()=>{
   pdfBusy=true;document.querySelector('#pdfApply').disabled=true;document.querySelector('#pdfChoose').disabled=true;document.querySelector('#pdfClose').disabled=true;pdfMessage('PDF ve mevcut notlar birlikte kaydediliyor…');
   try{
     if(!await flushSave())throw new Error('Mevcut notlar kaydedilemedi; önce kayıt sorununu düzeltin.');
-    const adding=pdfPending.pages.reduce((n,p)=>n+p.pdf.image.length,0),current=lastSaveBytes??0;if(current+adding>NOTEBOOK_PDF_LIMIT)throw notebookLimitError(current+adding);
+    const adding=pdfPending.pages.reduce((n,p)=>n+p.pdf.image.length,0),current=notebookImageBytes();if(current+adding>NOTEBOOK_PDF_LIMIT)throw notebookLimitError(current+adding);
     const estimate=await navigator.storage?.estimate?.().catch(()=>null);
     if(estimate&&Number.isFinite(estimate.quota)&&Number.isFinite(estimate.usage)&&estimate.quota-estimate.usage<2*(current+adding))throw new Error('Cihazda bu PDF için yeterli boş alan yok. Mevcut notlar korundu; iPad Saklama Alanı’ndan yer açıp yeniden deneyin.');
     const id=newPageId(),titles=new Set(notebooks().map(n=>n.title.toLocaleLowerCase('tr-TR')));let title=pdfPending.title,n=2;while(titles.has(title.toLocaleLowerCase('tr-TR')))title=`${pdfPending.title} (${n++})`;
