@@ -1,5 +1,10 @@
 # Geri dönüş zinciri
 
+> **2 Ekim 2026 güncellemesi:** canlı web **v69**, hesap servisi **v68**. İlk adım
+> `sudo python3 -B /opt/bilge-defter-classroom-v69/deploy-v69.py rollback` → web v68 (hesap servisi
+> zaten v68; ön kontrollü, silinmiş konteyneri kayıttan kurar, prova edildi: [RELEASE_V69](RELEASE_V69.md)).
+> Oradan sonra aşağıdaki v68 adımıyla devam edilir.
+
 > **28 Eylül akşamı güncellemesi:** canlı web **v68**, hesap servisi **v68**. İlk adım artık
 > `sudo python3 -B /opt/bilge-defter-classroom-v68/deploy-v68.py rollback` → web v67 + hesap v65
 > (ikisi birlikte; ön kontrollü, silinmiş konteyneri kayıttan kurar; hesap servisi dahil prova

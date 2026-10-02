@@ -118,7 +118,22 @@ Sınırlar, dürüstçe:
 
 ## Yayın
 
-Henüz yapılmadı. Kullanıcı onayı gerekir.
+Kullanıcı onayıyla ("Evet, canlıya al") 2 Ekim 2026 akşamı canlıya alındı. Kaynak
+`cf06b8d8c72b79cf9e79f27e11d885446fa88e2a`, paket `698d6735…` (246 dosya), web SHA256SUMS `95e9ca51…`,
+nginx `3f3ef2ae…` (değişmedi). PR #7 master'a alındı (`1d79c1d`).
+
+- **prepare:** canlı v68 web ve v68 hesap servisi (görüntü ve `healthy`) doğrulandı; anlık görüntüler alındı.
+- **stage:** önizleme web (18800) 238/235/14/6, Docker sağlık denetimi `healthy`.
+- **rehearse:** v68 web kayıttan 18806'da kuruldu, v68 doğrulayıcısıyla 238/235/14/6, silindi.
+- **activate:** web v69 238/235/14/6, `healthy`; hesap servisi v68 değişmedi (3 gündür ayakta);
+  diğer servisler değişmedi; `-rollback-v69` (v68 web) durmuş halde.
+
+**Bağımsız kontroller:** `current` → v69/ui; canlı `index.html`, `save-worker.js`, `sync-workspace.js`,
+`pdf-workspace.js`, `sw.js`, `release.json` baytları `cf06b8d` ile aynı; sağlık betiği
+`web v69 api v68: 15 kontrol`; genel adres Access girişine 302.
+
+**Henüz yapılmadı:** fiziksel iPad kabulü. Öğrenci uygulamayı tamamen kapatıp açınca v69 iner;
+sorun sürerse "Kayıt ve eşitleme" › "Tanı günlüğünü indir" dosyası kesin nedeni gösterir.
 
 Geri dönüş (v69 ya da v68 canlıyken; web v68, hesap servisi zaten v68):
 
