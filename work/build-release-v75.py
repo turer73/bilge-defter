@@ -62,7 +62,7 @@ def build():
             paths[prefix + name] = data
         paths[prefix + 'SHA256SUMS'] = sums
     assert manifests['v74'] == '932de743ac5baf5c71b9e9ec82e51361dbd15c6b2b1f16da6ebb0445b58dd566'
-    assert manifests['v75'] == '47b4799127d9d52653648d89cd05ee9db8a984c8e54e66cc18de191097101fdc'
+    assert manifests['v75'] == '7c69619acb19562123ab9d6ef59ac4985275fc7c7a5dee9d5bdc57acc520de85'
     fixture = FIXTURE.read_bytes()
     assert 0 < len(fixture) < 20 * 1024 * 1024
     with zipfile.ZipFile(io.BytesIO(fixture)) as archive:

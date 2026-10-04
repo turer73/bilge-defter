@@ -373,6 +373,31 @@ async function run(browser, engine) {
     }
   }
 
+  if (enabled('cancel-ack')) {
+    const f = await fixture(browser, {seedInk: true});
+    const outcome = await f.page.evaluate(async () => {
+      let releaseCancel, enteredCancel, returned = false;
+      const entered = new Promise(resolve => { enteredCancel = resolve; });
+      // Cancellation acknowledgements are allowed to remain pending while the
+      // remote peer withholds EOF. Never make editor recovery depend on them.
+      const response = new Response(new ReadableStream({
+        start(controller) { controller.enqueue(new Uint8Array(4097)); },
+        cancel() { enteredCancel(); return new Promise(resolve => { releaseCancel = resolve; }); }
+      }), {status: 422, headers: {'Content-Type': 'application/json'}});
+      const handling = presentationErrorMessage(response).then(message => { returned = true; return message; });
+      await entered;
+      await new Promise(resolve => setTimeout(resolve, 0));
+      const beforeAcknowledgement = returned;
+      releaseCancel();
+      const message = await handling;
+      return {beforeAcknowledgement, safeFallback: message.startsWith('Sunum açılamadı.')};
+    });
+    await f.finish();
+    assert.equal(outcome.beforeAcknowledgement, true, 'oversized error recovery must not wait for the stream cancellation acknowledgement');
+    assert.equal(outcome.safeFallback, true);
+    pass('oversized error returns the safe fallback before a deliberately withheld stream cancellation acknowledgement');
+  }
+
   if (enabled('streams')) {
     const json = JSON.stringify({detail: {code: 'presentation_slide_limit', max_slides: 100, actual_slides: 101}});
     const exact = Buffer.from(json + ' '.repeat(4096 - Buffer.byteLength(json)));
@@ -386,8 +411,31 @@ async function run(browser, engine) {
       {name: 'non-422 error cancels before withheld EOF', chunks: ['UNTRUSTED_DETAIL'], status: 503, hold: true}
     ]) {
       const f = await fixture(browser, {seedInk: true, errorStream: test});
+      await f.page.evaluate(() => {
+        const events = window.__pageLimitStreamEvents = [], record = event => { if (events.length < 40) events.push(event); };
+        const helper = presentationErrorMessage;
+        presentationErrorMessage = async response => {
+          record({step: 'helper', status: response.status, contentType: response.headers.get('content-type')});
+          try { return await helper(response); } finally { record({step: 'helper-finished'}); }
+        };
+        for (const method of ['read', 'cancel']) {
+          const original = ReadableStreamDefaultReader.prototype[method];
+          ReadableStreamDefaultReader.prototype[method] = function (...args) {
+            record({step: method + '-started'});
+            return original.apply(this, args).then(value => {
+              record({step: method + '-finished', ...(method === 'read' ? {done: value.done, bytes: value.value?.byteLength || 0} : {})});
+              return value;
+            }, error => { record({step: method + '-failed', name: error.name}); throw error; });
+          };
+        }
+      });
       await f.choose(); await f.consent(); await f.errorStreamStarted;
-      await f.page.waitForFunction(() => !pdfBusy && /eklenmedi/.test(document.querySelector('#pdfProgress').textContent), null, {timeout: 12000});
+      try {
+        await f.page.waitForFunction(() => !pdfBusy && /eklenmedi/.test(document.querySelector('#pdfProgress').textContent), null, {timeout: 12000});
+      } catch (error) {
+        const client = await f.page.evaluate(() => ({busy: pdfBusy, events: window.__pageLimitStreamEvents}));
+        throw Error('Error stream did not recover: ' + JSON.stringify({engine, case: test.name, server: f.errorStreamState, client}) + '; ' + error.name);
+      }
       const message = await f.page.locator('#pdfProgress').textContent();
       assert.ok(!message.includes('UNTRUSTED_DETAIL'));
       assert.equal(message.includes('101 slayt var'), !!test.safe);

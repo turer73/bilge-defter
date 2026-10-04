@@ -58,8 +58,8 @@ doğrudan v75'e çıkıp v73'e geri dönmek güvenli değildir.
 
 v74 `SHA256SUMS` özeti:
 `932de743ac5baf5c71b9e9ec82e51361dbd15c6b2b1f16da6ebb0445b58dd566`.
-Test edilen v75 `SHA256SUMS` özeti (235 varlık, yeniden build ile aynı):
-`47b4799127d9d52653648d89cd05ee9db8a984c8e54e66cc18de191097101fdc`.
+Son v75 `SHA256SUMS` özeti (235 varlık; hata yanıtı iptal düzeltmesi dahil):
+`7c69619acb19562123ab9d6ef59ac4985275fc7c7a5dee9d5bdc57acc520de85`.
 Üretici farklı bir mevcut v74 paketini üzerine yazmayı reddeder; karşılaştırma
 kanıtı `outputs/page-limit-20261005/v74-compat/build-proof.json`.
 
@@ -168,6 +168,9 @@ sunumu artık açabileceği anlamına gelmez.
 
 ## 5 Ekim yayın provası (henüz canlı değil)
 
+**Aşağıdaki prova ilk adayın kanıtıdır; iptal beklemesi düzeltmesi nedeniyle
+eski paket canlıya alınmayacak. Son aday için prova yeniden üretilmelidir.**
+
 Kaynak paket commit'i `456b92498f82832e10f6553bc35559cfd261998c`; PR #16.
 Paket SHA256 `6c210d546f45207a59506e44fdc61ca8e052ca976a580d23c5007b7e2741af1d`.
 Tam tarihsel istemci regresyonu geçti. Klipper'da ayrı v75 test imajında
@@ -194,3 +197,10 @@ paketi değiştirilmeden test düzeltmesi yapılırsa iki commit'in uygulama/yay
 dosyaları byte düzeyinde eşit olmalıdır. Özel sunucu dışı hesap yedeği aktarımı
 güvenlik denetimi nedeniyle açık kullanıcı onayını beklemektedir; bu koşul
 atlanarak canlıya geçilmez.
+
+İkinci CI'da WebKit'in EOF gelmeyen büyük JSON hata yanıtında beklediği görüldü.
+İptal onayı bilerek bekletilen gerçek ReadableStream ile eski helper'ın dönmediği
+ayrıca doğrulandı. 4096 bayt aşılınca iptal artık başlatılıp beklenmeden güvenli
+mesaj dönüyor; dış istek temizliği AbortController ile taşıma bağlantısını kapatıyor.
+Negatif kontrol eski helper'da kalır; test süreleri artırılmaz ve kontrol atlanmaz.
+Bu dar uygulama değişikliği yeni paket/hash ve yeniden CI/prova gerektirir.

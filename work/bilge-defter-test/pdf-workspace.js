@@ -209,7 +209,7 @@ async function presentationErrorMessage(response){
   if(response.status!==422||!(response.headers.get('content-type')||'').toLowerCase().startsWith('application/json')||!response.body){void response.body?.cancel().catch(()=>{});return fallback}
   const reader=response.body.getReader();let size=0,text='';const decoder=new TextDecoder();
   try{
-    for(;;){const {value,done}=await reader.read();if(done)break;size+=value.byteLength;if(size>4096){await reader.cancel();return fallback}text+=decoder.decode(value,{stream:true})}
+    for(;;){const {value,done}=await reader.read();if(done)break;size+=value.byteLength;if(size>4096){void reader.cancel().catch(()=>{});return fallback}text+=decoder.decode(value,{stream:true})}
     text+=decoder.decode();const detail=JSON.parse(text)?.detail;
     if(detail?.code==='presentation_slide_limit'&&detail.max_slides===PDF_PAGE_LIMIT&&Number.isSafeInteger(detail.actual_slides)&&detail.actual_slides>PDF_PAGE_LIMIT&&detail.actual_slides<=1000000)return `Bu sunumda ${detail.actual_slides} slayt var. En fazla ${PDF_PAGE_LIMIT} slayt kabul edilir. Sunumu bölerek deneyin.`;
   }catch{/* Only the specific safe numeric contract is user-visible. */}finally{reader.releaseLock()}
