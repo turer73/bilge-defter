@@ -66,3 +66,20 @@ Onceki klasor silinmedi:
 Bu islem yalnizca yerel proje dosyalarini kopyaladi; canli yayin ve
 tarayicida saklanan notlar degistirilmedi. Codex gorevinin mevcut calisma
 dizini otomatik degismedi; sonraki islemlerde yeni proje yolu kullanilmalidir.
+
+## Lisans
+
+Bu depodaki kod **GNU Affero General Public License v3.0** (`AGPL-3.0-only`) ile
+lisanslanmıştır. Tam metin: [LICENSE](LICENSE).
+
+Kısaca: kodu kullanabilir, değiştirebilir ve dağıtabilirsiniz. Ancak değiştirilmiş
+bir sürümü dağıtırsanız **veya bir ağ üzerinden hizmet olarak sunarsanız**, kaynak
+kodunu aynı lisansla açmanız gerekir.
+
+Üçüncü taraf bağımlılıklar ve `vendor/` benzeri dizinlerdeki bileşenler kendi
+lisanslarıyla gelir; bu lisans onları kapsamaz.
+
+Telif hakkı (c) 2026 turer73.
+
+`work/bilge-defter-test/vendor/pdfjs/` altındaki pdf.js ve yazı tipleri
+Apache-2.0 ve ilgili lisans dosyalarıyla gelir; o dizindeki `LICENSE*` dosyaları geçerlidir.
