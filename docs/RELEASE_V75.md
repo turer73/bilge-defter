@@ -58,8 +58,8 @@ doğrudan v75'e çıkıp v73'e geri dönmek güvenli değildir.
 
 v74 `SHA256SUMS` özeti:
 `932de743ac5baf5c71b9e9ec82e51361dbd15c6b2b1f16da6ebb0445b58dd566`.
-Son v75 `SHA256SUMS` özeti (235 varlık; hata yanıtı iptal düzeltmesi dahil):
-`7c69619acb19562123ab9d6ef59ac4985275fc7c7a5dee9d5bdc57acc520de85`.
+Son v75 `SHA256SUMS` özeti (235 varlık; hata yanıtı iptal ve süre sınırı dahil):
+`52fc08547724935d63718d0b092e39221171565facd8d77d748e68cfa30a0c8f`.
 Üretici farklı bir mevcut v74 paketini üzerine yazmayı reddeder; karşılaştırma
 kanıtı `outputs/page-limit-20261005/v74-compat/build-proof.json`.
 
@@ -204,3 +204,11 @@ ayrıca doğrulandı. 4096 bayt aşılınca iptal artık başlatılıp beklenmed
 mesaj dönüyor; dış istek temizliği AbortController ile taşıma bağlantısını kapatıyor.
 Negatif kontrol eski helper'da kalır; test süreleri artırılmaz ve kontrol atlanmaz.
 Bu dar uygulama değişikliği yeni paket/hash ve yeniden CI/prova gerektirir.
+
+Sonraki Linux tanılaması iki farklı sorunu ayırdı: bekleyen iptal onayı düzeldi,
+ancak sunucu 4.113 bayt gönderdiği halde WebKit okuyucuya önce yalnız 2.171 bayt
+aktarıp EOF bekleyebiliyor. Bu yüzden isteğe bağlı JSON hata açıklaması için
+ayrıca toplam **5 saniyelik** süre sınırı kondu; her parçada yenilenmez. Süre
+dolunca güvenli genel mesaj ve istek iptali uygulanır. Dönüştürmenin 100 saniyelik
+istemci sınırı ve sunucu kaynak sınırları değişmedi. Böylece bayt sınırı henüz
+ulaşmamış, yavaş veya yarım hata yanıtı da editörü belirsiz süre bekletemez.

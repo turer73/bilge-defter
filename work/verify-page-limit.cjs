@@ -398,6 +398,44 @@ async function run(browser, engine) {
     pass('oversized error returns the safe fallback before a deliberately withheld stream cancellation acknowledgement');
   }
 
+  if (enabled('error-deadline')) {
+    for (const drip of [false, true]) {
+      const f = await fixture(browser, {seedInk: true});
+      const outcome = await f.page.evaluate(async drip => {
+        let controller, interval, watchdog, chunks = 1, cancelled = 0;
+        const encoder = new TextEncoder();
+        const response = new Response(new ReadableStream({
+          start(value) {
+            controller = value;
+            value.enqueue(encoder.encode('{"detail":'));
+          },
+          cancel() { cancelled++; clearInterval(interval); }
+        }), {status: 422, headers: {'Content-Type': 'application/json'}});
+        // A continuous trickle must not reset the whole-body deadline. Keep the
+        // body incomplete and well below the byte cap, without providing EOF.
+        if (drip) interval = setInterval(() => {
+          chunks++; controller.enqueue(encoder.encode(' '));
+        }, 400);
+        const started = performance.now();
+        try {
+          const message = await Promise.race([
+            presentationErrorMessage(response),
+            new Promise(resolve => { watchdog = setTimeout(() => resolve(null), 8000); })
+          ]);
+          return {elapsed: performance.now() - started, chunks, cancelled,
+            timedOut: message === null, safeFallback: message?.startsWith('Sunum açılamadı.') === true};
+        } finally { clearInterval(interval); clearTimeout(watchdog); }
+      }, drip);
+      await f.finish();
+      assert.equal(outcome.timedOut, false, 'incomplete error body must finish before the independent test watchdog');
+      assert.equal(outcome.safeFallback, true);
+      assert.equal(outcome.cancelled, 1, 'deadline must cancel the unread error body');
+      assert.ok(outcome.elapsed >= 4500 && outcome.elapsed < 8000, 'use the real shared five-second deadline: ' + JSON.stringify(outcome));
+      if (drip) assert.ok(outcome.chunks >= 5, 'several body reads must occur before the original deadline');
+      pass((drip ? 'dripping' : 'stalled') + ' incomplete JSON returns safely at the shared five-second deadline; stored ink unchanged');
+    }
+  }
+
   if (enabled('streams')) {
     const json = JSON.stringify({detail: {code: 'presentation_slide_limit', max_slides: 100, actual_slides: 101}});
     const exact = Buffer.from(json + ' '.repeat(4096 - Buffer.byteLength(json)));
@@ -405,6 +443,7 @@ async function run(browser, engine) {
     for (const test of [
       {name: '4096-byte chunked JSON boundary accepted', chunks: [exact.subarray(0, 2048), exact.subarray(2048)], safe: true},
       {name: 'over-4096 chunked JSON cancels before withheld EOF', chunks: [oversized.subarray(0, 2048), oversized.subarray(2048)], hold: true},
+      {name: 'incomplete JSON without EOF reaches the deadline and aborts transport', chunks: [json.slice(0, 36)], hold: true},
       {name: 'incomplete JSON at EOF falls back safely', chunks: [json.slice(0, -2)]},
       {name: 'connection lost midway through JSON falls back safely', chunks: [json.slice(0, 36)], disconnect: true},
       {name: 'non-JSON error cancels before withheld EOF', chunks: ['UNTRUSTED_DETAIL'], contentType: 'text/html', hold: true},

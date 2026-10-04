@@ -207,12 +207,15 @@ document.querySelector('#pdfApply').onclick=async()=>{
 async function presentationErrorMessage(response){
   const fallback=({429:'Sunucu meşgul. Biraz sonra yeniden deneyin.',413:'Sunum boyut sınırını aşıyor.',415:'Sunum türü veya içeriği desteklenmiyor.',422:'Sunum açılamadı. Dosya bozuk, şifreli ya da güvenlik nedeniyle reddedilmiş olabilir.',503:'Sunum hizmeti şu anda kullanılamıyor; yöneticinize bildirin.',504:'Dönüştürme zaman aşımına uğradı. Yeniden göndermeden önce yöneticinin hizmeti denetlemesi gerekiyor.'})[response.status]||'İşlem tamamlanamadı. Hesabınızı ve bağlantınızı denetleyin.';
   if(response.status!==422||!(response.headers.get('content-type')||'').toLowerCase().startsWith('application/json')||!response.body){void response.body?.cancel().catch(()=>{});return fallback}
-  const reader=response.body.getReader();let size=0,text='';const decoder=new TextDecoder();
+  const reader=response.body.getReader();let size=0,text='',timer;const decoder=new TextDecoder();
+  // Some engines buffer a partial error body until EOF. A byte cap alone cannot
+  // release the editor then; bound this optional explanation separately from conversion.
+  const deadline=new Promise(resolve=>{timer=setTimeout(()=>resolve(null),5000)});
   try{
-    for(;;){const {value,done}=await reader.read();if(done)break;size+=value.byteLength;if(size>4096){void reader.cancel().catch(()=>{});return fallback}text+=decoder.decode(value,{stream:true})}
+    for(;;){const part=await Promise.race([reader.read(),deadline]);if(!part){void reader.cancel().catch(()=>{});return fallback}const {value,done}=part;if(done)break;size+=value.byteLength;if(size>4096){void reader.cancel().catch(()=>{});return fallback}text+=decoder.decode(value,{stream:true})}
     text+=decoder.decode();const detail=JSON.parse(text)?.detail;
     if(detail?.code==='presentation_slide_limit'&&detail.max_slides===PDF_PAGE_LIMIT&&Number.isSafeInteger(detail.actual_slides)&&detail.actual_slides>PDF_PAGE_LIMIT&&detail.actual_slides<=1000000)return `Bu sunumda ${detail.actual_slides} slayt var. En fazla ${PDF_PAGE_LIMIT} slayt kabul edilir. Sunumu bölerek deneyin.`;
-  }catch{/* Only the specific safe numeric contract is user-visible. */}finally{reader.releaseLock()}
+  }catch{/* Only the specific safe numeric contract is user-visible. */}finally{clearTimeout(timer);reader.releaseLock()}
   return fallback;
 }
 // Adapted from b03bb10's opt-in import, integrated with v72's save/asset safeguards.
