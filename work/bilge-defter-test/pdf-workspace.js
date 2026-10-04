@@ -52,7 +52,8 @@ document.querySelector('#pdfExportStart').onclick=async()=>{
  }catch(error){if(alive())status.textContent=`PDF hazırlanamadı. ${error.message} Notlar değişmedi.`}
  finally{pdfExportBusy=false;document.querySelector('#pdfExportScope').disabled=false;if(pdfExportDialog.open)describePdfExport()}
 };
-// PDF.js 6.3.289 is served locally. Documents never leave the browser.
+// PDF.js renders locally. Device PDFs never leave the browser; PowerPoint conversion
+// below requires separate explicit consent before uploading the selected deck.
 const pdfDialog=document.createElement('dialog');pdfDialog.id='pdfDialog';pdfDialog.setAttribute('aria-labelledby','pdfTitle');
 pdfDialog.innerHTML='<div class="tools-heading"><h2 id="pdfTitle">PDF üzerine çalış</h2><button class="btn" id="pdfClose">× Kapat</button></div><div class="tools-content"><p class="recovery-note">PDF cihazda işlenir, sunucuya gönderilmez. İlk sürüm: en fazla 20 MB / 50 sayfa. Sayfalar 1000 piksel genişlikte görüntü olarak saklanır; özgün PDF dosyanızı ayrıca koruyun.</p><p class="recovery-note">Metin seçimi, bağlantılar ve form doldurma yoktur. Notlu PDF çıktısı için Araçlar → Notlu PDF indir kullanın. PDF zemini silinmez; kalem, fosforlu ve silgi yalnız eklediğiniz notlara uygulanır.</p><button class="btn" id="pdfChoose">Cihazdan PDF seç</button><input id="pdfFile" type="file" accept="application/pdf,.pdf" hidden><p id="pdfProgress" role="status">Bir PDF seçin. Hazır olunca yeni deftere ekleyin.</p><button class="btn primary" id="pdfApply" disabled>Yeni deftere ekle</button><p class="recovery-note">PDF görüntüleri ve yazılar JSON yedeğine dahildir. İçe aktarma mevcut sayfaların yerine geçmez.</p></div>';
 document.body.append(pdfDialog);
@@ -64,6 +65,7 @@ const pdfNavigation=document.createElement('div');pdfNavigation.id='pdfNavigatio
 const pdfZoomControls=document.createElement('div');pdfZoomControls.id='pdfZoomControls';pdfZoomControls.innerHTML='<button class="btn" id="pdfZoomOut" aria-label="PDF küçült">−</button><output id="pdfZoomValue" aria-live="polite">%100</output><button class="btn" id="pdfZoomIn" aria-label="PDF büyüt">+</button><button class="btn" id="pdfFit">Genişliğe sığdır</button>';pdfNavigation.append(pdfZoomControls);
 pdfStyle.textContent+='#pdfNavigation{flex-wrap:wrap}#pdfZoomControls{display:flex;align-items:center;gap:6px}#pdfZoomControls .btn{min-width:44px}#pdfZoomValue{min-width:48px;text-align:center;font-size:13px}@media(max-width:650px){#pdfZoomControls{flex-basis:100%;justify-content:center}#pdfFit{font-size:13px}}';
 let pdfBusy=false,pdfPending=null,pdfRequest=0,pdfTask=null,pdfLibrary=null,pdfImage=null,pdfImageSource=null,pdfImageFailed=false;
+let cancelPresentation=()=>{},updatePresentationControls=()=>{};
 const PDF_FILE_LIMIT=20*1024*1024,PDF_IMAGE_LIMIT=24*1024*1024;
 // v71: images are stored apart, so a pen stroke no longer rewrites them; they are still all held in
 // memory and checked at startup. New PDFs are refused when the notebook's images would exceed this.
@@ -136,15 +138,23 @@ function updatePdfNavigation(){
 function navigatePdf(delta){if(!canEdit()||drawing||pan)return;const pages=notebookPages(),index=pages.findIndex(p=>p.id===activeId),target=pages[index+delta];if(!target?.pdf)return;activeId=target.id;renderPages();drawAll();scheduleSave()}
 document.querySelector('#pdfPrevious').onclick=()=>navigatePdf(-1);document.querySelector('#pdfNext').onclick=()=>navigatePdf(1);
 function pdfMessage(text){document.querySelector('#pdfProgress').textContent=text}
-function cancelPdf(){pdfRequest++;pdfPending=null;pdfBusy=false;const task=pdfTask;pdfTask=null;if(task)void task.destroy().catch(()=>{});document.querySelector('#pdfChoose').disabled=false;document.querySelector('#pdfApply').disabled=true}
-pdfDialog.addEventListener('close',()=>{cancelPdf();document.querySelector('#toolsToggle').focus({preventScroll:true})});
+function cancelPdf(){pdfRequest++;pdfPending=null;pdfBusy=false;const task=pdfTask;pdfTask=null;if(task)void task.destroy().catch(()=>{});cancelPresentation();document.querySelector('#pdfChoose').disabled=false;document.querySelector('#pdfApply').disabled=true;updatePresentationControls()}
+pdfDialog.addEventListener('close',()=>{
+  // A queued close event may belong to the previous opening of this dialog.
+  if(pdfDialog.open)return;
+  cancelPdf();document.querySelector('#toolsToggle').focus({preventScroll:true});
+});
 document.querySelector('#pdfClose').onclick=()=>{if(document.querySelector('#pdfClose').disabled)return;pdfDialog.close()};
 pdfDialog.addEventListener('cancel',e=>{if(document.querySelector('#pdfClose').disabled)e.preventDefault()});
 pdfOpen.onclick=()=>{if(!canEdit()||drawing||pan)return;closeTools();cancelPdf();pdfMessage('Bir PDF seçin. Hazır olunca yeni deftere ekleyin.');pdfDialog.showModal()};
 document.querySelector('#pdfChoose').onclick=()=>document.querySelector('#pdfFile').click();
-document.querySelector('#pdfFile').onchange=async e=>{
-  const file=e.target.files[0];e.target.value='';if(!file||!ready||saveConflict||pdfBusy||!pdfDialog.open)return;
+document.querySelector('#pdfFile').onchange=e=>{const file=e.target.files[0];e.target.value='';if(file)void importPdfFile(file)};
+// Shared import preserves the v72 image budget, atomic save and asset migration.
+async function importPdfFile(file,presentationName=null){
+  if(!file||!ready||saveConflict||pdfBusy||!pdfDialog.open)return;
   cancelPdf();const request=pdfRequest;pdfBusy=true;document.querySelector('#pdfChoose').disabled=true;let task,timeout;
+  updatePresentationControls();
+  const sourceName=presentationName||file.name;
   try{
     if(file.size>PDF_FILE_LIMIT)throw new Error('Bu ilk sürüm en fazla 20 MB PDF kabul eder. Daha küçük bir dosya seçin.');
     if(!await flushSave())throw new Error('Mevcut notlar kaydedilemedi. Önce pencereyi kapatıp kaydı düzeltin.');
@@ -165,15 +175,16 @@ document.querySelector('#pdfFile').onchange=async e=>{
       await source.render({canvasContext:surface.getContext('2d'),viewport,background:'#ffffff'}).promise;
       const image=pdfPageImage(surface);surface.width=surface.height=1;source.cleanup();bytes+=image.length;
       if(image.length>6*1024*1024||bytes>PDF_IMAGE_LIMIT)throw new Error('PDF görüntüleri tablet test sınırını aşıyor. Daha az sayfalı dosya deneyin.');if(existingImages+bytes>NOTEBOOK_PDF_LIMIT)throw notebookLimitError(existingImages+bytes);
-      pages.push({id:newPageId(),title:`PDF · Sayfa ${number}`,strokes:[],viewY:0,pdf:{image,width:1000,height:Math.ceil(viewport.height),name:file.name.slice(0,200),number,total:doc.numPages},updated:new Date().toISOString()});
+      pages.push({id:newPageId(),title:presentationName?`Sunum · Slayt ${number}`:`PDF · Sayfa ${number}`,strokes:[],viewY:0,pdf:{image,width:1000,height:Math.ceil(viewport.height),name:sourceName.slice(0,200),number,total:doc.numPages},updated:new Date().toISOString()});
     }
-    if(request!==pdfRequest)return;pdfPending={title:file.name.replace(/\.pdf$/i,'').trim().slice(0,65)||'PDF',pages};pdfMessage(`${file.name} · ${pages.length} sayfa hazır. Yeni deftere ekleyin. Özgün PDF dosyanızı ayrıca koruyun.`);document.querySelector('#pdfApply').disabled=false;
+    if(request!==pdfRequest)return;pdfPending={title:sourceName.replace(/\.(pdf|pptx?)$/i,'').trim().slice(0,65)||'Belge',pages,presentation:!!presentationName};pdfMessage(`${sourceName} · ${pages.length} ${presentationName?'slayt':'sayfa'} hazır. Yeni deftere ekleyin. Özgün dosyanızı ayrıca koruyun.`);document.querySelector('#pdfApply').disabled=false;
   }catch(error){if(request===pdfRequest){pdfPending=null;pdfMessage(error?.name==='PasswordException'?'Şifreli PDF bu ilk sürümde desteklenmiyor. Şifresiz bir kopya seçin.':`PDF eklenmedi. ${error?.message||'Dosya okunamadı.'}`)}}
-  finally{clearTimeout(timeout);if(task)await task.destroy().catch(()=>{});if(request===pdfRequest){pdfTask=null;pdfBusy=false;document.querySelector('#pdfChoose').disabled=false}}
-};
+  finally{clearTimeout(timeout);if(task)await task.destroy().catch(()=>{});if(request===pdfRequest){pdfTask=null;pdfBusy=false;document.querySelector('#pdfChoose').disabled=false;updatePresentationControls()}}
+}
 document.querySelector('#pdfApply').onclick=async()=>{
   if(!pdfPending||pdfBusy||!ready||saveConflict)return;
   pdfBusy=true;document.querySelector('#pdfApply').disabled=true;document.querySelector('#pdfChoose').disabled=true;document.querySelector('#pdfClose').disabled=true;pdfMessage('PDF ve mevcut notlar birlikte kaydediliyor…');
+  updatePresentationControls();
   try{
     if(!await flushSave())throw new Error('Mevcut notlar kaydedilemedi; önce kayıt sorununu düzeltin.');
     const adding=pdfPending.pages.reduce((n,p)=>n+p.pdf.image.length,0),current=notebookImageBytes();if(current+adding>NOTEBOOK_PDF_LIMIT)throw notebookLimitError(current+adding);
@@ -184,5 +195,89 @@ document.querySelector('#pdfApply').onclick=async()=>{
     if(!validState(next))throw new Error('PDF kayıt yapısı doğrulanamadı.');
     await dbPut(next,{preservePrevious:true});scheduleAssetSweep();state=next;activeId=next.active;activeNotebook=id;editRevision++;savedRevision=editRevision;saveFailed=false;failureMessage='';pdfPending=null;pdfDialog.close();renderPages();resize();renderSaveStatus();await refreshRecovery();document.querySelector('#inputState').textContent='PDF eklendi · kalemle yazın, iki parmakla kaydırın';
   }catch(error){pdfMessage(`PDF eklenmedi; mevcut notlar korundu. ${error?.name==='NotebookConflict'?'Başka sekmede değişiklik var. Pencereyi kapatıp kayıtlı defteri yeniden açın.':error?.message||'Kaydı tekrar deneyin.'}`);if(error?.name==='NotebookConflict'){saveError(error);pdfDialog.close()}}
-  finally{pdfBusy=false;document.querySelector('#pdfClose').disabled=false;document.querySelector('#pdfChoose').disabled=false;document.querySelector('#pdfApply').disabled=!pdfPending}
+  finally{pdfBusy=false;document.querySelector('#pdfClose').disabled=false;document.querySelector('#pdfChoose').disabled=false;document.querySelector('#pdfApply').disabled=!pdfPending;updatePresentationControls()}
 };
+
+// Adapted from b03bb10's opt-in import, integrated with v72's save/asset safeguards.
+// Closing/offline/account lock invalidates both the upload and any delayed response.
+(() => {
+  'use strict';
+  const base='./api/v1/bilge-defter/pdf-tools/',types={pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation'};
+  const section=document.createElement('section');section.id='pdfPresentationSection';
+  section.innerHTML='<button class="btn" id="pdfPresentationChoose">PowerPoint seç (.pptx)</button><input id="pdfPresentationFile" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden><p class="recovery-note">Eski .ppt dosyalarını PowerPoint’ten PDF olarak dışa aktarıp Cihazdan PDF seç ile açın.</p><div id="pdfPresentationConsent" hidden><p class="recovery-note">Yalnız seçtiğiniz sunum, onayınızla Bilge Defter sunucusunda PDF’e çevrilir. Mevcut defteriniz gönderilmez. Dönüşüm internet ve onaylı hesap gerektirir. Slaytlar sabit görüntü olur; animasyon, video ve konuşmacı notları aktarılmaz. Yazı tipi ve yerleşim değişebilir; eklemeden önce slaytları kontrol edin. En fazla 20 MB / 50 slayt. Makro, gömülü nesne ve dış bağlantı içeren dosyalar güvenlik nedeniyle reddedilebilir.</p><label class="presentation-consent"><input id="pdfPresentationAgree" type="checkbox"> Seçtiğim sunumun sunucuda dönüştürülmesini onaylıyorum.</label><button class="btn primary" id="pdfPresentationSend" disabled>Sunumu gönder ve dönüştür</button></div>';
+  document.querySelector('#pdfProgress').before(section);
+  const preview=document.createElement('div');preview.id='presentationPreview';preview.hidden=true;
+  preview.innerHTML='<p class="recovery-note">Dönüşüm önizlemesi: yerleşimi kontrol edin. Henüz deftere eklenmedi.</p><img id="presentationPreviewImage" alt="Dönüştürülen slayt önizlemesi"><div class="presentation-preview-controls"><button class="btn" id="presentationPreviewPrevious" aria-label="Önceki slayt önizlemesi">←</button><output id="presentationPreviewCount" aria-live="polite"></output><button class="btn" id="presentationPreviewNext" aria-label="Sonraki slayt önizlemesi">→</button></div>';
+  section.append(preview);
+  pdfStyle.textContent+='#pdfDialog{overflow:auto}#pdfPresentationSection{margin:12px 0}#pdfPresentationConsent[hidden]{display:none}#pdfPresentationSection .presentation-consent{display:flex;gap:10px;align-items:flex-start;line-height:1.5;margin:12px 0}#pdfPresentationAgree{flex:none;width:22px;height:22px}#pdfPresentationSection .btn{max-width:100%;white-space:normal}';
+  pdfStyle.textContent+='#presentationPreview[hidden]{display:none}#presentationPreviewImage{display:block;width:100%;height:auto;border:1px solid #d5e2dc}#presentationPreview .presentation-preview-controls{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}';
+  const choose=section.querySelector('#pdfPresentationChoose'),input=section.querySelector('#pdfPresentationFile'),block=section.querySelector('#pdfPresentationConsent'),agree=section.querySelector('#pdfPresentationAgree'),send=section.querySelector('#pdfPresentationSend');
+  const open=document.createElement('button');open.id='presentationOpen';open.className='btn';open.textContent='PowerPoint aç';pdfOpen.after(open);
+  open.onclick=()=>{pdfOpen.click();if(pdfDialog.open)choose.focus({preventScroll:true})};
+  let selected=null,busy=false,epoch=0,controller=null,previewPending=null,previewIndex=0;
+  function allowed(){const a=window.BilgeAccount;return !!(a?.required&&!a.locked&&a.identity?.status==='approved'&&navigator.onLine)}
+  function controls(){
+    choose.disabled=pdfBusy||busy;agree.disabled=pdfBusy||busy;send.disabled=pdfBusy||busy||!selected||!agree.checked||!allowed();block.hidden=!selected;
+    if(previewPending!==pdfPending){previewPending=pdfPending;previewIndex=0}
+    preview.hidden=!pdfPending?.presentation;
+    const image=preview.querySelector('img');
+    if(preview.hidden){image.removeAttribute('src');return}
+    const pages=pdfPending.pages;image.src=pages[previewIndex].pdf.image;
+    preview.querySelector('output').textContent=`Slayt ${previewIndex+1} / ${pages.length}`;
+    preview.querySelector('#presentationPreviewPrevious').disabled=pdfBusy||previewIndex===0;
+    preview.querySelector('#presentationPreviewNext').disabled=pdfBusy||previewIndex>=pages.length-1;
+  }
+  preview.querySelector('#presentationPreviewPrevious').onclick=()=>{if(!pdfBusy&&previewIndex>0){previewIndex--;controls()}};
+  preview.querySelector('#presentationPreviewNext').onclick=()=>{if(!pdfBusy&&previewIndex<(pdfPending?.pages.length||0)-1){previewIndex++;controls()}};
+  function reset(){epoch++;controller?.abort();controller=null;selected=null;busy=false;input.value='';agree.checked=false;controls()}
+  cancelPresentation=reset;updatePresentationControls=controls;
+  choose.onclick=()=>{if(!choose.disabled&&pdfDialog.open)input.click()};
+  input.onchange=async()=>{
+    const file=input.files[0];if(!file||pdfBusy||!pdfDialog.open)return;
+    cancelPdf();const token=epoch;
+    if(!allowed()){pdfMessage('PowerPoint aktarımı internet ve onaylı hesap gerektirir. Hiçbir dosya gönderilmedi. Sunumu PDF olarak dışa aktarıp cihazdan açabilirsiniz.');return}
+    const ext=(file.name.match(/\.(pptx?)$/i)||[])[1]?.toLowerCase(),media=types[ext];
+    if(!media){pdfMessage('Bu sürüm yalnız .pptx sunumlarını destekler. Eski .ppt dosyasını PowerPoint’ten PDF olarak dışa aktarıp açın. Hiçbir dosya gönderilmedi.');return}
+    if(file.size<8||file.size>PDF_FILE_LIMIT){pdfMessage('Boş olmayan, en fazla 20 MB sunum seçin. Hiçbir dosya gönderilmedi.');return}
+    try{
+      const bytes=new Uint8Array(await file.slice(0,8).arrayBuffer()),magic=ext==='pptx'?[0x50,0x4b,0x03,0x04]:[0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1];
+      if(!magic.every((b,i)=>bytes[i]===b))throw Error('Sunum dosyası doğrulanamadı.');
+      if(token!==epoch||!pdfDialog.open)return;
+      selected={file,media};pdfMessage(`${file.name} seçildi. Henüz gönderilmedi; dönüştürmek için aşağıdaki onayı işaretleyin.`);controls();
+    }catch{if(token===epoch)pdfMessage('Sunum dosyası okunamadı veya doğrulanamadı. Hiçbir dosya gönderilmedi.')}
+  };
+  agree.onchange=controls;
+  send.onclick=async()=>{
+    controls();if(send.disabled||!ready||saveConflict)return;
+    const token=++epoch,account=window.BilgeAccount.identity.id,{file,media}=selected,abort=new AbortController();controller=abort;busy=true;pdfBusy=true;document.querySelector('#pdfChoose').disabled=true;controls();
+    const alive=()=>token===epoch&&pdfDialog.open&&allowed()&&window.BilgeAccount.identity.id===account;
+    const timer=setTimeout(()=>abort.abort(),100000);
+    try{
+      if(!await flushSave())throw Error('Mevcut notlar kaydedilemedi; sunum gönderilmedi.');
+      if(!alive())return;
+      pdfMessage('Sunum hizmeti denetleniyor… Henüz dosya gönderilmedi.');
+      const status=await window.BilgeAccount.fetch(base+'status',{signal:abort.signal});if(!alive())return;
+      const info=status.ok&&(status.headers.get('content-type')||'').includes('application/json')?await status.json():null;if(!alive())return;
+      if(info?.worker_state==='unknown')throw Error('Önceki dönüştürme işleminin sonucu belirsiz. Yöneticinin sunum hizmetini denetlemesi gerekiyor; yeni dosya gönderilmedi.');
+      if(!(info?.configured===true&&info.consent_required===true&&info.operations?.includes('convert')))throw Error('Sunucuda PowerPoint aktarımı henüz açılmadı. Sunumu PDF olarak dışa aktarıp cihazdan açabilirsiniz.');
+      pdfMessage('Sunum PDF’e dönüştürülüyor… Pencereyi kapatarak beklemeyi iptal edebilirsiniz.');
+      const response=await window.BilgeAccount.fetch(base+'convert',{method:'POST',headers:{'Content-Type':media,'X-Bilge-Pdf-Consent':'1'},body:file,signal:abort.signal});
+      if(!alive())return;
+      if(!response.ok)throw Error(({429:'Sunucu meşgul. Biraz sonra yeniden deneyin.',413:'Sunum boyut sınırını aşıyor.',415:'Sunum türü veya içeriği desteklenmiyor.',422:'Sunum açılamadı. Dosya bozuk, şifreli ya da güvenlik nedeniyle reddedilmiş olabilir.',503:'Sunum hizmeti şu anda kullanılamıyor; yöneticinize bildirin.',504:'Dönüştürme zaman aşımına uğradı. Yeniden göndermeden önce yöneticinin hizmeti denetlemesi gerekiyor.'})[response.status]||'İşlem tamamlanamadı. Hesabınızı ve bağlantınızı denetleyin.');
+      if((response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase()!=='application/pdf'||Number(response.headers.get('content-length')||0)>PDF_FILE_LIMIT||!response.body)throw Error('Sunucudan geçerli PDF alınamadı.');
+      const reader=response.body.getReader(),chunks=[];let size=0;
+      try{for(;;){const {value,done}=await reader.read();if(!alive()){await reader.cancel();return}if(done)break;size+=value.length;if(size>PDF_FILE_LIMIT)throw Error('Dönüşüm sonucu 20 MB sınırını aşıyor.');chunks.push(value)}}catch(e){await reader.cancel().catch(()=>{});throw e}finally{reader.releaseLock()}
+      const blob=new Blob(chunks,{type:'application/pdf'});
+      if(!new TextDecoder().decode(await blob.slice(0,5).arrayBuffer()).startsWith('%PDF-')||!new TextDecoder().decode(await blob.slice(-1024).arrayBuffer()).includes('%%EOF'))throw Error('Sunucu eksik PDF döndürdü.');
+      if(!alive())return;
+      // End the upload before handing over; cancelPdf inside import revokes this epoch.
+      clearTimeout(timer);controller=null;busy=false;pdfBusy=false;selected=null;agree.checked=false;controls();
+      await importPdfFile(new File([blob],file.name.replace(/\.pptx?$/i,'')+'.pdf',{type:'application/pdf'}),file.name);
+    }catch(e){if(token===epoch&&pdfDialog.open)pdfMessage(e.name==='AbortError'?'Dönüştürme zaman aşımına uğradı veya iptal edildi. Notlar değişmedi.':`Sunum eklenmedi. ${e.message==='Failed to fetch'?'Bağlantı kurulamadı.':e.message||'İşlem tamamlanamadı.'}`)}
+    finally{clearTimeout(timer);if(token===epoch){controller=null;busy=false;pdfBusy=false;agree.checked=false;document.querySelector('#pdfChoose').disabled=false;controls()}}
+  };
+  // Network loss does not imply an already-uploaded file was never sent.
+  addEventListener('offline',()=>{if(selected||busy){cancelPdf();if(pdfDialog.open)pdfMessage('Bağlantı kesildi; aktarım tamamlanmadı. Notlar değişmedi. Sunucuya ulaşan işlem bir süre daha çalışabilir.')}});
+  addEventListener('bilge-account-locked',()=>{cancelPdf();if(pdfDialog.open)pdfMessage('Hesap erişimi değişti. Aktarım durduruldu; notlar değişmedi.')});
+  addEventListener('pagehide',()=>cancelPdf());
+})();

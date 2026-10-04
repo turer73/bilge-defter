@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.72.0",
   "scripts": {
+    "test:presentations": "node work/verify-presentations.cjs",
     "test:reliability": "node work/verify-reliability.cjs",
     "test:save-recovery": "node work/verify-v72.cjs verify-v66-save-recovery.cjs",
     "test:sync-new-device": "node work/verify-v72.cjs verify-v67-sync.cjs",
