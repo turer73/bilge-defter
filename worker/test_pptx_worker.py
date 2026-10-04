@@ -262,7 +262,9 @@ def test_one_job_and_connection_cap(server):
     ({'Content-Type': worker.PPTX_TYPE, 'Transfer-Encoding': 'chunked'}, 400),
 ])
 def test_http_limits(server, headers, code):
-    assert request(server[1], headers=headers)[0] == code
+    # These are header-level rejections; do not race a second body write against
+    # the server's deliberate early close. Still require the exact HTTP response.
+    assert request(server[1], body=None, headers={'Content-Length': '6', **headers})[0] == code
 
 
 @LINUX
