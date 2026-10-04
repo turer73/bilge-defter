@@ -8,7 +8,10 @@ const http = require('http');
 const assert = require('node:assert/strict');
 const {chromium, webkit} = require('playwright');
 
-const root = path.resolve(process.env.BILGE_TEST_ROOT || path.join(__dirname, 'bilge-defter-invited-v72'));
+const releaseVersion = JSON.parse(fs.readFileSync(path.join(__dirname, 'bilge-defter-test/release.json'), 'utf8')).version;
+assert.match(releaseVersion, /^v\d+$/);
+const root = path.resolve(process.env.BILGE_TEST_ROOT || path.join(__dirname, 'bilge-defter-invited-' + releaseVersion));
+assert.ok(fs.existsSync(path.join(root, 'index.html')), 'Build the current release before running presentation tests: ' + root);
 const out = path.resolve(process.env.BILGE_TEST_OUTPUT || path.join(__dirname, '../outputs/presentations'));
 const accountId = '11111111-1111-4111-8111-111111111111';
 const changedId = '22222222-2222-4222-8222-222222222222';
