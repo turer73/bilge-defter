@@ -2,6 +2,12 @@
 
 4 Ekim 2026. **Yerel geliştirme adayı; canlı v72'ye yayımlanmadı.**
 
+5 Ekim devamı: v73 birleşik yayın adayı [RELEASE_V73.md](RELEASE_V73.md).
+Aşağıdaki Stirling/UNO gözlemleri tarihsel kabul ölçümleridir. Yeni aday aynı
+LibreOffice bağımlılığını ayrı, ağsız ve Unix socket üzerinden erişilen süreç
+işçisiyle kullanır; kalıcı UNO/Java süreci veya 40 saniyelik geri dönüş yoktur.
+Yayın durumu yalnız v73 live-proof ve origin doğrulamasıyla kesinleşir.
+
 ## Kapsam
 
 - Ekle > PowerPoint aç > `.pptx` seç > dosya gönderimine onay ver > dönüştür.
@@ -12,12 +18,16 @@
 - En fazla 20 MiB / 50 slayt. Dönüştürülen PDF de 20 MiB ile sınırlı.
 - v72'nin 96 MiB yerel görsel bütçesi ve 5 MiB şifreli eşitleme sınırı değişmez.
 - Eski `.ppt` desteklenmez: PowerPoint'ten PDF dışa aktarılır ve cihazda açılır.
-  `.pptm`, makro, dış bağlantı, ActiveX ve OLE nesneleri reddedilir.
+  `.pptm`, makro, dışarıdan yüklenen resim/belge, ActiveX ve OLE nesneleri reddedilir.
+  Slayt ve konuşmacı notu metnindeki sıradan HTTP(S) kaynak bağlantıları dar
+  doğrulamayla kabul edilir; özgün sunumun baytları/atıfları değiştirilmez.
 - Yerel grafiklerin `ppt/embeddings/*.xlsx` veri paketleri desteklenir: uzantı
   yeterli değildir; grafiğe bağlı ilişki, içerik türü, workbook/worksheet yapısı
   ve gömülü paketin tamamı doğrulanır. İç içe paketleme ve gömülü DOCX desteklenmez.
   PPTX ile içindeki XLSX'ler aynı dosya sayısı, açılmış bayt ve XML bütçesini paylaşır.
 - Animasyon, video ve konuşmacı notları aktarılmaz. Slaytlar sabit görüntüdür.
+  Notlardaki atıflar özgün sunumda kalır; slayt PDF'i konuşmacı notlarını içermez.
+  Paylaşılacak bir PDF için kaynak/lisans atıfları ayrıca korunmalıdır.
   Yazı tipi/yerleşim sadakati gerçek dönüştürücüyle ayrıca sınanmalıdır.
 
 ## Gizlilik ve güvenlik
@@ -122,7 +132,7 @@ birlikte doğrulanır. İç XLSX'te makro/XL4, ActiveX, OLE, DDE, dış bağlant
 connection/queryTable ve yeniden gömülü paketler reddedilir.
 
 Dar pilot sınırı: yüzde kaçışlı part/hedef adları (geçerli `%20` dahil), sorgu ve
-fragment URI'leri, alışılmadık XML uzantıları ve worksheet dışı XLSX sayfa türleri
+fragment iç paket URI'leri, alışılmadık XML uzantıları ve worksheet dışı XLSX sayfa türleri
 desteklenmez. Bu doğrulayıcı bütün geçerli OOXML dosyalarını
 kabul eden bir genel Office ayrıştırıcısı veya zararlı yazılım temizleyicisi değildir.
 
@@ -162,9 +172,76 @@ içeriğinin farklı uzantıyla gizlenmesi hem dış PPTX hem gömülü XLSX iç
 Eski kusurları örten test-fixture sıfırlaması yerine, aynı kesici durumunda ardışık
 bozuk yanıt / geçerli istek senaryosu kullanılır.
 
-Bu sonuçlar yerel kod/test durumudur. CI, gerçek Stirling/LibreOffice dönüşümü,
+Bu önceki sonuçlar yerel kod/test durumudur. O ölçümde CI, gerçek Stirling/LibreOffice dönüşümü,
 font ve yerleşim sadakati, gerçek nginx sınırları ve fiziksel iPad kabulü
 doğrulanmadı. Bu ölçüm anında commit, push, birleştirme veya yayın yapılmamıştı.
+
+## 4 Ekim takip düzeltmesi: kaynak bağlantıları ve dönüşüm gecikmesi
+
+PR #15 tabanı `d87867f`; takip yaması bu ölçüm sırasında henüz commit/push edilmedi.
+Canlı v72 ve diğer servisler değiştirilmedi. Üç yayın kapısı açılmadı.
+
+### Kaynak bağlantıları (#2178)
+
+Lumen Learning'in [CC BY 4.0 biyoloji sunumu](https://courses.lumenlearning.com/wm-biology2/chapter/powerpoints/)
+30 slayt ve 53 kaynak/lisans hyperlink ilişkisi içeriyor. Eski doğrulayıcı özgün
+dosyayı reddetti; yeni doğrulayıcı aynı SHA256 ile kabul ediyor:
+`58224395ad6e4c9019cddc72058a6ad56d4da79200717c96887cf24c30d65d02`.
+Dosyadan bağlantı veya atıf çıkarılmadı. Kaynak fixture Git'e eklenmedi.
+
+İstisna yalnız doğru içerik türü/köke sahip slide/notes parçalarında, metin
+biçimlendirme düğümüne bağlı DrawingML `hlinkClick` içindir. Aynı ilişki bir resim
+veya başka yükleme düğümünde de kullanılıyorsa reddedilir. Kullanılmayan ilişkiler,
+fareyle üzerine gelme, özel action, alt düğüm/ses, belirsiz URL, kimlik bilgisi,
+dosya/diğer şema, yerel adres ve standart dışı port bu pilotun dışındadır.
+Gömülü XLSX için dış ilişki yasağı değişmedi. URL hedefi çözülmez veya istenmez.
+URI denetimi DNS/redirect koruması değildir; dış ağı kapalı dönüştürücü zorunludur.
+
+Referans: Microsoft [HyperlinkOnClick](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.hyperlinkonclick?view=openxml-3.0.1)
+ve [NotesSlidePart](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.packaging.notesslidepart?view=openxml-3.0.1).
+İlişki kullanımları her kaynak XML için bir kez indekslenir; her bağlantıda tekrar
+bütün kaynak taranmaz. Ham dosya API'den dönüştürücüye aynen aktarılır.
+
+Sunucu regresyonu **295/295** geçti (önceki 248'e 47 yeni kabul/ret testi).
+Kanıt: `outputs/pptx-followup-20261004/backend-tests.xml`, `original-validation.json`.
+Bu yeni yamanın bağımsız ajan incelemesi araç engeline takıldı; tamamlanmış sayılmaz.
+
+### Yalnız geçici işçide sıcak UNO karşılaştırması
+
+Kurulu unoserver **3.6** kodunda `_connect(retries=5, sleep=10)` doğrulandı.
+Dinleyici yokken dört kez 10 saniye bekleniyor. Java'ya `auto-uno-server=true`
+demek tek başına süreç başlatmayı kanıtlamaz; resmi giriş betiği bunu ayrı başlatır.
+Bu denemede mevcut servis değiştirilmeden ayrı `network=none` işçide UNO,
+loopback üzerinde açıkça başlatıldı ve XML-RPC `info()` ile hazır olduğu ölçüldü.
+Hazır olma süresi **6,259 saniye**, aşağıdaki dönüşüm sürelerinden ayrıdır.
+
+| Aynı dosya | Önceki UNO dinleyicisiz ölçüm | Hazır UNO ölçümü |
+| --- | --- | --- |
+| Yerel grafik, 1 slayt | 41,188 sn; sonraki işlem 41,101 sn | 0,535 / 0,304 / 0,296 sn |
+| Lumen, 30 slayt | 43,544 sn | 0,799 sn |
+| Bozuk paket | 500; 41,015 sn | 500; 1,117 sn |
+| Bozuk paket sonrası geçerli grafik | 41,772 sn | 0,312 sn |
+
+Bu az sayıda kontrollü ölçümdür; eşzamanlı sınıf kapasitesi veya her dosya için
+garanti değildir. Sıcak PDF'in 30 sayfası soğuk çıktıyla aynı metni içeriyor;
+aynı Poppler ayarında **30/30 sayfanın PNG hash'i aynı**. Önceki font ikameleri
+değişmedi; özgün PowerPoint font/yerleşim sadakati onaylanmış değildir.
+
+UNO'ya 45 saniye dönüşüm sınırı ve 12 iş sonrası çıkış verildi. Ancak HTTP istemcisi
+57 ms sonra kapatıldığında `unoconvert` çalışmaya devam etti; 2,55 saniye sonraki
+örnekte bitmişti. **Bağlantının kapanması uzak işi iptal etmiyor.** API'nin belirsiz
+iş kesicisi kaldırılmadı. Gerçek uzun işte 45 saniyelik sınırın süreçleri öldürmesi,
+Stirling fallback davranışı ve tam API/nginx zinciri henüz doğrulanmadı.
+
+Sabit imaj `sha256:96eed6dc542afca240700857c633379e7d5992259903026f1f629b7a8df21359`;
+2 GiB, 1 CPU, 160 PID, UID1000, salt-okunur kök, sınırlı tmpfs, port/bind mount yok.
+Geçici konteyner kimlik/claim etiketiyle kaldırıldı. Mevcut konteynerlerin ID,
+başlama zamanı ve restart sayısı değişmedi. Kanıtlar `outputs/pptx-followup-20261004/`.
+Bu test betiği üretim süreç yöneticisi veya yayın paketi değildir.
+
+Resmi kaynaklar: [Stirling v2.10.1 dönüşüm yolu](https://github.com/Stirling-Tools/Stirling-PDF/blob/v2.10.1/app/core/src/main/java/stirling/software/SPDF/controller/api/converters/ConvertOfficeController.java),
+[Unoserver 3.6 istemcisi](https://github.com/unoconv/unoserver/blob/3.6/src/unoserver/client.py),
+[süreç seçenekleri](https://github.com/unoconv/unoserver/blob/3.6/README.rst).
 
 ## Yayın öncesi zorunlu kapılar
 
@@ -174,8 +251,9 @@ doğrulanmadı. Bu ölçüm anında commit, push, birleştirme veya yayın yapı
 2. API ve nginx de değişti. `deploy-v72.py` web-only akışı API v68'i sabit tutar;
    bu özelliği tek başına yayımlayamaz. Yeni API imajı, nginx ve web için kontrollü
    yayın/geri dönüş paketi gerekir. Hesap DB şeması değişmez.
-3. Var olan v53 işçisini önce test et: önceki oturum uzun soğuk LibreOffice
-   başlangıcı bildirdi. Bu tur UNO ayarı değiştirilmedi, canlı dönüşüm yapılmadı.
+3. Eski v53 işçisini doğrudan açma/değiştirme. Yukarıdaki izole karşılaştırma
+   gecikmeyi daralttı; sıcak UNO için gözetim, hazır olma, süreç sonlandırma ve
+   geri dönüşü doğrulanmış yeni bir yayın paketi hâlâ gerekli.
 4. Ayrı işçi; dış ağa çıkış yok, yalnız API'den erişim; kullanıcı verisi mount'u
    yok; CPU/RAM/PID/süre sınırı, makro kapatma, geçici dosya temizliği ve iptalde
    süreç sonlanması gerçek kötü/şifreli/büyük dosyalarla doğrulanmalı.

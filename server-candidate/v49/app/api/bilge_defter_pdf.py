@@ -1,17 +1,20 @@
 """Opt-in presentation adapter; no notebook access or stored conversion results.
 
-Adapted from b03bb10 (private PDF adapter), with bounded PPTX validation and a
-fail-closed worker breaker. A request timeout does NOT stop the remote converter.
+Adapted from b03bb10 (private PDF adapter), with bounded PPTX validation. Legacy
+converters use a fail-closed breaker: request timeout does not stop them. The
+fixed UDS worker owns its lease until bounded conversion/process-group cleanup.
 Legacy OLE .ppt is deliberately unsupported until a bounded parser is available.
 """
 import asyncio
 import io
 import os
+import re
 import stat
 import struct
 import threading
 import zipfile
 import zlib
+from urllib.parse import unquote, urlsplit
 from xml.etree import ElementTree
 
 import httpx
@@ -28,6 +31,8 @@ MAX_XML_TOTAL_BYTES = 16 * 1024 * 1024
 MAX_RATIO = 200
 MAX_SLIDES = 50
 DEADLINE_SECONDS = 90
+UDS_WORKER_URL = "http://bilge-pptx-worker"
+UDS_WORKER_SOCKET = "/run/bilge-pdf/worker.sock"
 PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 MAIN_TYPE = "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"
 PRESENTATION_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
@@ -36,6 +41,9 @@ PACKAGE_REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
 CONTENT_TYPES_NS = "http://schemas.openxmlformats.org/package/2006/content-types"
 SHEET_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 CHART_NS = "http://schemas.openxmlformats.org/drawingml/2006/chart"
+DRAWING_NS = "http://schemas.openxmlformats.org/drawingml/2006/main"
+SLIDE_TYPE = "application/vnd.openxmlformats-officedocument.presentationml.slide+xml"
+NOTES_TYPE = "application/vnd.openxmlformats-officedocument.presentationml.notesSlide+xml"
 SHEET_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 WORKBOOK_TYPE = SHEET_TYPE + ".main+xml"
 WORKSHEET_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"
@@ -52,21 +60,23 @@ def configured_url():
             "BILGE_DEFTER_PDF_ISOLATION_VERIFIED")):
         raise HTTPException(503, "Sunum dönüştürme henüz açılmadı; sunumu PDF olarak dışa aktarın")
     url = os.environ.get("BILGE_DEFTER_PDF_URL", "")
-    if url not in {"http://stirling-pdf:8080", "http://127.0.0.1:8090"}:
+    if url not in {"http://stirling-pdf:8080", "http://127.0.0.1:8090", UDS_WORKER_URL}:
         raise HTTPException(503, "Sunum hizmeti yapılandırması eksik")
     return url
 
 
 @router.get("/status")
 def status():
+    url = None
     try:
-        configured_url()
+        url = configured_url()
         configured = True
     except HTTPException:
         configured = False
-    available = configured and not _worker_uncertain
+    uncertain = _worker_uncertain and url != UDS_WORKER_URL
+    available = configured and not uncertain
     return {"configured": configured, "available": available,
-            "upstream_verified": False, "worker_state": "unknown" if _worker_uncertain else "unchecked",
+            "upstream_verified": False, "worker_state": "unknown" if uncertain else "unchecked",
             "operations": ["convert"] if available else [],
             "convert_input_types": [PPTX] if available else [],
             "max_input_bytes": MAX_BYTES, "max_slides": MAX_SLIDES, "consent_required": True}
@@ -258,7 +268,61 @@ def _content_types(documents, files):
     return types
 
 
-def _package_relationships(documents, files):
+def _citation_url(target):
+    """Literal HTTP(S) citation, never a destination fetched by this adapter.
+
+    URI checks are not DNS/redirect protection: converter network isolation is
+    still mandatory. Keep credentials, local names, other schemes and ambiguous
+    spellings outside this small pilot.
+    """
+    if (not target or len(target) > 4096 or not target.isascii()
+            or re.search(r"[\x00-\x20\x7f\\<>\"']|%(?![0-9a-fA-F]{2})", target)
+            or re.search(r"[\x00-\x1f\x7f\\]", unquote(target))):
+        _reject_package()
+    try:
+        parsed = urlsplit(target)
+        host = parsed.hostname or ""
+        if (parsed.scheme not in {"http", "https"} or parsed.username is not None
+                or parsed.password is not None or '%' in parsed.netloc
+                or parsed.port not in {None, 80 if parsed.scheme == "http" else 443}
+                or len(host) > 253 or '.' not in host
+                or not re.fullmatch(r"[a-z0-9.-]+", host)
+                or not any('a' <= char <= 'z' for char in host)
+                or any(not re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", label)
+                       for label in host.split('.'))
+                or host.endswith(('.localhost', '.local', '.internal'))):
+            _reject_package()
+    except ValueError:
+        _reject_package()
+    return target
+
+
+def _citation_references(root):
+    # Index once per source part, not once per relationship (bounded linear work).
+    references = {}
+    allowed_attributes = {"{" + REL_NS + "}id", "tooltip", "history", "highlightClick",
+                          "endSnd", "tgtFrame", "action", "invalidUrl"}
+    text_parents = {"{" + DRAWING_NS + "}" + name for name in ("rPr", "defRPr", "endParaRPr")}
+    for parent in root.iter():
+        if "{http://www.w3.org/XML/1998/namespace}base" in parent.attrib:
+            _reject_package()
+        for node in parent:
+            plain_click = (node.tag == "{" + DRAWING_NS + "}hlinkClick"
+                           and parent.tag in text_parents and not len(node)
+                           and set(node.attrib) <= allowed_attributes
+                           and not node.attrib.get("action") and not node.attrib.get("invalidUrl"))
+            for attribute, rid in node.attrib.items():
+                if attribute.startswith("{" + REL_NS + "}"):
+                    references.setdefault(rid, []).append(
+                        plain_click and attribute == "{" + REL_NS + "}id")
+    # Root-level relationship attributes cannot describe an ordinary text click.
+    for attribute, rid in root.attrib.items():
+        if attribute.startswith("{" + REL_NS + "}"):
+            references.setdefault(rid, []).append(False)
+    return references
+
+
+def _package_relationships(documents, files, citation_types=None):
     relationships = {}
     for name, root in documents.items():
         if not name.lower().endswith(".rels"):
@@ -278,14 +342,30 @@ def _package_relationships(documents, files):
                 or root.tag != "{" + PACKAGE_REL_NS + "}Relationships"):
             _reject_package()
         edges = {}
+        citation_references = None
         for node in root.iter():
             if "{http://www.w3.org/XML/1998/namespace}base" in node.attrib:
                 _reject_package()
         for node in root:
             rid, kind = node.attrib.get("Id", ""), node.attrib.get("Type", "")
             if (node.tag != "{" + PACKAGE_REL_NS + "}Relationship" or len(node) or not rid or rid in edges
-                    or not kind or _unsafe_ooxml_type(kind)
-                    or node.attrib.get("TargetMode", "Internal") != "Internal"):
+                    or not kind or _unsafe_ooxml_type(kind)):
+                _reject_package()
+            mode = node.attrib.get("TargetMode", "Internal")
+            if mode == "External":
+                source_root = documents.get(source)
+                expected_root = {SLIDE_TYPE: "sld", NOTES_TYPE: "notes"}.get((citation_types or {}).get(source))
+                if (kind != REL_NS + "/hyperlink" or not expected_root or source_root is None
+                        or source_root.tag != "{" + PRESENTATION_NS + "}" + expected_root):
+                    _reject_package()
+                if citation_references is None:
+                    citation_references = _citation_references(source_root)
+                uses = citation_references.get(rid, [])
+                if not uses or not all(uses):
+                    _reject_package()
+                edges[rid] = (kind, _citation_url(node.attrib.get("Target", "")))
+                continue
+            if mode != "Internal":
                 _reject_package()
             target = _internal_target(source, node.attrib.get("Target", ""))
             if target not in files or target.lower().endswith(".rels"):
@@ -327,7 +407,8 @@ def validate_pptx(data):
 
     Only chart-owned, macro-free XLSX packages may be embedded. Their directory,
     expanded bytes and XML count against the SAME limits as the outer PPTX.
-    No deeper packages, OLE, macros, active content or external relationships.
+    No deeper packages, OLE, macros or linked resources. Plain HTTP(S) text
+    citations in slides/notes are retained, without fetching their targets.
     """
     if len(data) > MAX_BYTES:
         _reject_package()
@@ -335,7 +416,7 @@ def validate_pptx(data):
         budget = {"files": 0, "expanded": 0, "xml": 0}
         files, documents, embedded = _read_ooxml(data, budget)
         types = _content_types(documents, files)
-        relationships = _package_relationships(documents, files)
+        relationships = _package_relationships(documents, files, citation_types=types)
         presentation = _require_main(documents, types, relationships, "ppt/presentation.xml",
                                      MAIN_TYPE, PRESENTATION_NS, "presentation")
         slide_lists = presentation.findall("{" + PRESENTATION_NS + "}sldIdLst")
@@ -377,12 +458,24 @@ def validate_pptx(data):
 
 
 async def forward(url, data, job):
-    secret = os.environ.get("BILGE_DEFTER_PDF_API_KEY", "")
-    headers = {"Accept-Encoding": "identity", **({"X-API-KEY": secret} if secret else {})}
-    async with httpx.AsyncClient(timeout=httpx.Timeout(75, connect=5),
-                                 trust_env=False, follow_redirects=False) as client:
-        async with client.stream("POST", url + "/api/v1/convert/file/pdf", headers=headers,
-                                 files={"fileInput": ("document.pptx", data, PPTX)}) as upstream:
+    headers = {"Accept-Encoding": "identity"}
+    options = {"timeout": httpx.Timeout(75, connect=5),
+               "trust_env": False, "follow_redirects": False}
+    if url == UDS_WORKER_URL:
+        # The URL is a mode selector, never a DNS/network destination. Neither
+        # request headers nor environment-provided secrets/socket paths cross it.
+        options["transport"] = httpx.AsyncHTTPTransport(uds=UDS_WORKER_SOCKET, retries=0)
+        headers["Content-Type"] = PPTX
+        destination = url + "/convert"
+        upload = {"content": data}
+    else:
+        secret = os.environ.get("BILGE_DEFTER_PDF_API_KEY", "")
+        if secret:
+            headers["X-API-KEY"] = secret
+        destination = url + "/api/v1/convert/file/pdf"
+        upload = {"files": {"fileInput": ("document.pptx", data, PPTX)}}
+    async with httpx.AsyncClient(**options) as client:
+        async with client.stream("POST", destination, headers=headers, **upload) as upstream:
             # Headers alone do not prove the remote job has finished. Consume a
             # bounded raw body to EOF, including error replies, without decoding
             # potentially compressed input or exposing worker error details.
@@ -412,6 +505,49 @@ async def forward(url, data, job):
     return bytes(result)
 
 
+async def forward_while_connected(request, url, data, job):
+    # Only called after read_presentation consumed the body: polling receive
+    # earlier could steal an upload chunk. Minimal internal callers may lack a
+    # receive channel; ASGI requests always provide is_disconnected.
+    is_disconnected = getattr(request, "is_disconnected", None)
+    if is_disconnected is None:
+        job["remote_started"] = True
+        return await forward(url, data, job)
+    if await is_disconnected():
+        raise HTTPException(499, "İstemci bağlantısı kesildi")
+
+    stop_watching = asyncio.Event()
+
+    async def watch_disconnect():
+        while not stop_watching.is_set() and not await is_disconnected():
+            await asyncio.sleep(.1)
+
+    job["remote_started"] = True
+    upstream = asyncio.create_task(forward(url, data, job))
+    disconnected = asyncio.create_task(watch_disconnect())
+    try:
+        done, _ = await asyncio.wait((upstream, disconnected), return_when=asyncio.FIRST_COMPLETED)
+        if upstream in done:
+            return await upstream
+        await disconnected
+        raise HTTPException(499, "İstemci bağlantısı kesildi")
+    finally:
+        # Close the UDS request so the worker can kill its process group, and
+        # finish HTTP cleanup before releasing the API's only conversion slot.
+        # Cancellation is not proof of worker completion. The fixed UDS worker
+        # owns a separate lease through process-group cleanup, so a retry gets
+        # 429 while busy (503 if cleanup failed). Legacy converters instead need
+        # the API breaker until a bounded response has been consumed through EOF.
+        # Starlette's nonblocking receive probe uses its own cancellation scope;
+        # it may consume cancellation arriving inside that probe. An explicit
+        # stop signal also makes the watcher terminate in that race.
+        stop_watching.set()
+        for task in (upstream, disconnected):
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(upstream, disconnected, return_exceptions=True)
+
+
 async def process(request, url, job):
     data = await read_presentation(request)
     try:
@@ -421,8 +557,7 @@ async def process(request, url, job):
         await asyncio.shield(job["validation"])
     except ValueError:
         raise HTTPException(415, "Sunum doğrulanamadı veya güvenli sınırları aşıyor; PDF olarak dışa aktarın") from None
-    job["remote_started"] = True
-    result = await forward(url, data, job)
+    result = await forward_while_connected(request, url, data, job)
     return Response(result, media_type="application/pdf", headers={
         "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff",
         "Content-Disposition": 'attachment; filename="bilge-defter-sunum.pdf"',
@@ -435,7 +570,7 @@ async def convert(request: Request):
     url = configured_url()
     if request.headers.get("x-bilge-pdf-consent") != "1":
         raise HTTPException(400, "Seçilen sunumu Klipper'a göndermek için açık onay gerekli")
-    if _worker_uncertain:
+    if _worker_uncertain and url != UDS_WORKER_URL:
         raise HTTPException(503, "Önceki işlemin durumu belirsiz; yönetici hizmeti denetlemeli")
     if not _slot.acquire(blocking=False):
         raise HTTPException(429, "Başka bir sunum işleniyor; biraz sonra deneyin", headers={"Retry-After": "10"})
@@ -444,6 +579,8 @@ async def convert(request: Request):
         return await asyncio.wait_for(process(request, url, job), timeout=DEADLINE_SECONDS)
     except (TimeoutError, httpx.TimeoutException):
         if job["remote_started"] and not job["remote_completed"]:
+            if url == UDS_WORKER_URL:
+                raise HTTPException(504, "Sunum işlemi zaman aşımına uğradı; yeniden deneyin") from None
             _worker_uncertain = True
             raise HTTPException(504, "İşlem zaman aşımına uğradı; uzak işlem durumu belirsiz, yönetici denetimi gerekli") from None
         if job["remote_completed"]:
@@ -451,17 +588,19 @@ async def convert(request: Request):
         raise HTTPException(504, "Sunum alımı veya doğrulaması zaman aşımına uğradı; dönüştürücüye gönderilmedi") from None
     except httpx.HTTPError:
         if job["remote_started"] and not job["remote_completed"]:
+            if url == UDS_WORKER_URL:
+                raise HTTPException(503, "Sunum hizmetine erişilemiyor; yeniden deneyin") from None
             _worker_uncertain = True
             raise HTTPException(503, "Bağlantı kesildi; uzak işlem durumu belirsiz, yönetici denetimi gerekli") from None
         if job["remote_completed"]:
             raise HTTPException(503, "Sunum hizmetinin yanıtı işlenemedi; yeniden deneyin") from None
         raise HTTPException(503, "Sunum gönderilemedi; dönüştürücüye ulaşılmadı") from None
     except asyncio.CancelledError:
-        if job["remote_started"] and not job["remote_completed"]:
+        if url != UDS_WORKER_URL and job["remote_started"] and not job["remote_completed"]:
             _worker_uncertain = True
         raise
     except HTTPException:
-        if job["remote_started"] and not job["remote_completed"]:
+        if url != UDS_WORKER_URL and job["remote_started"] and not job["remote_completed"]:
             _worker_uncertain = True
         raise
     finally:

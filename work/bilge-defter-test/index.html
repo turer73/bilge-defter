@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v72</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v73</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -163,7 +163,7 @@ let DB='bilge-defter-test-v1'; const STORE='state'; let db,state,activeId,tool='
 let storedJSON=null,editRevision=0,savedRevision=0,savePromise=null,saveFailed=false,saveConflict=false,importing=false,allowLeave=false,failureMessage='',failureCode='';
 // v69: a short local log of save failures and lifecycle events, kept in localStorage because
 // IndexedDB may be what is failing. No note content: names, sizes, durations, visibility only.
-const APP_VERSION='v72',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
+const APP_VERSION='v73',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
 let lastSaveBytes=null,failStreak=0,failSince=0,saveRetrying=false,retryTimer=null,retryWhenVisible=false,hiddenAt=0,lastShownAt=0;
 function diag(ev,extra={}){try{const list=JSON.parse(localStorage.getItem(DIAG_KEY)||'[]');list.push({t:new Date().toISOString(),ev,vis:document.visibilityState,...extra});while(list.length>80)list.shift();localStorage.setItem(DIAG_KEY,JSON.stringify(list))}catch{}}
 function errorInfo(e){return {name:String(e?.name||'Error').slice(0,40),msg:String(e?.message||'').slice(0,160)}}

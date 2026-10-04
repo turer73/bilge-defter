@@ -110,6 +110,98 @@ def test_percent_encoded_names_are_a_conservative_pilot_limit():
         ppt.validate_pptx(archive(chart_parts(workbook_name="ppt/embeddings/Chart%20Data.xlsx")))
 
 
+def citation_parts(target="https://example.org/source", notes=False):
+    """A visible citation run with an ordinary DrawingML text hyperlink."""
+    with zipfile.ZipFile(io.BytesIO(deck())) as package:
+        parts = {name: package.read(name) for name in package.namelist()}
+    source = "ppt/notesSlides/notesSlide1.xml" if notes else "ppt/slides/slide1.xml"
+    rel_name = source.rsplit('/', 1)[0] + '/_rels/' + source.rsplit('/', 1)[1] + '.rels'
+    root = 'notes' if notes else 'sld'
+    kind = ppt.NOTES_TYPE if notes else ppt.SLIDE_TYPE
+    parts['[Content_Types].xml'] = parts['[Content_Types].xml'].decode().replace('</Types>',
+        '<Override PartName="/' + source + '" ContentType="' + kind + '"/></Types>')
+    parts[source] = ('<p:' + root + ' xmlns:p="' + ppt.PRESENTATION_NS + '" xmlns:a="' + ppt.DRAWING_NS
+        + '" xmlns:r="' + REL_NS + '"><p:cSld><p:spTree><p:sp><p:txBody><a:bodyPr/><a:lstStyle/>'
+        '<a:p><a:r><a:rPr><a:hlinkClick r:id="citation" tooltip="Source and license"/></a:rPr>'
+        '<a:t>Source: Example. CC BY 4.0.</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:' + root + '>')
+    parts[rel_name] = relationships(('citation', 'hyperlink', target, True))
+    if notes:
+        parts['ppt/slides/_rels/slide1.xml.rels'] = relationships(('notes', 'notesSlide', '../notesSlides/notesSlide1.xml', False))
+    return parts, source, rel_name
+
+
+@pytest.mark.parametrize('notes', [False, True])
+@pytest.mark.parametrize('target', ['https://example.org/source', 'http://example.org/chapter?q=skin#section',
+                                   'https://example.org/My%20Source?q=%C3%B6', 'https://example.org:443/a'])
+def test_plain_web_citations_are_preserved_and_forwarded(setup, notes, target):
+    client, headers, state = setup
+    parts, source, _ = citation_parts(target, notes)
+    raw = archive(parts)
+    response = client.post(PATH, headers=headers, content=raw)
+    assert response.status_code == 200
+    assert raw in state['calls'][0].content  # Original bytes, including attribution, unchanged.
+    assert 'Source: Example. CC BY 4.0.' in parts[source]
+
+
+@pytest.mark.parametrize('target', [
+    'file:///etc/passwd', 'javascript:alert(1)', 'data:text/html,test', 'ftp://example.org/a',
+    'mailto:person@example.org', '//example.org/a', 'https://user:pass@example.org/a',
+    'https://example.org:8443/a', 'https://localhost/a', 'https://foo.local/a',
+    'https://127.0.0.1/a', 'https://[::1]/a', 'https://169.254.169.254/a',
+    'https://exa%6dple.org/a', 'https://example.org\\other/a', 'https://example.org/%5cpath',
+    'https://example.org/%0aheader', 'https://example.org/%00', 'https://example.org/%ZZ',
+    'https://example.org/raw space', 'https://example..org/', 'https://-example.org/',
+    'https://example.org:bad/', 'https://example.org/' + 'a' * 4096,
+])
+def test_non_web_or_ambiguous_citation_targets_are_rejected_before_upload(setup, target):
+    client, headers, state = setup
+    parts, _, _ = citation_parts(target)
+    assert client.post(PATH, headers=headers, content=archive(parts)).status_code == 415
+    assert not state['calls']
+
+
+@pytest.mark.parametrize('mutation', ['external_image', 'unreferenced', 'reused_by_image',
+    'action', 'hover', 'child_sound', 'unknown_attribute', 'root_reference', 'other_owner',
+    'wrong_mime', 'wrong_root', 'wrong_parent', 'xml_base', 'wrong_id_attribute', 'invalid_url'])
+def test_web_link_exception_is_only_an_ordinary_text_citation(setup, mutation):
+    client, headers, state = setup
+    parts, source, rel_name = citation_parts()
+    if mutation == 'external_image':
+        parts[rel_name] = relationships(('citation', 'image', 'https://example.org/image.png', True))
+    elif mutation == 'unreferenced':
+        parts[source] = parts[source].replace('r:id="citation"', 'r:id="missing"')
+    elif mutation == 'reused_by_image':
+        parts[source] = parts[source].replace('</p:cSld>', '<a:blip r:link="citation"/></p:cSld>')
+    elif mutation == 'action':
+        parts[source] = parts[source].replace(' tooltip=', ' action="ppaction://program" tooltip=')
+    elif mutation == 'hover':
+        parts[source] = parts[source].replace('hlinkClick', 'hlinkMouseOver')
+    elif mutation == 'child_sound':
+        parts[source] = parts[source].replace('license"/>', 'license"><a:snd/></a:hlinkClick>')
+    elif mutation == 'unknown_attribute':
+        parts[source] = parts[source].replace(' tooltip=', ' extra="unexpected" tooltip=')
+    elif mutation == 'root_reference':
+        parts[source] = parts[source].replace('<p:sld ', '<p:sld r:id="citation" ')
+    elif mutation == 'other_owner':
+        parts['ppt/presentation.xml'] = parts['ppt/presentation.xml'].decode().replace('</p:presentation>',
+            '<a:rPr xmlns:a="' + ppt.DRAWING_NS + '"><a:hlinkClick r:id="citation"/></a:rPr></p:presentation>')
+        parts['ppt/_rels/presentation.xml.rels'] = relationships(('citation', 'hyperlink', 'https://example.org/', True))
+    elif mutation == 'wrong_mime':
+        parts['[Content_Types].xml'] = parts['[Content_Types].xml'].replace(ppt.SLIDE_TYPE, 'application/xml')
+    elif mutation == 'wrong_root':
+        parts[source] = parts[source].replace('p:sld', 'p:notes')
+    elif mutation == 'wrong_parent':
+        parts[source] = parts[source].replace('a:rPr', 'p:cNvPr')
+    elif mutation == 'xml_base':
+        parts[source] = parts[source].replace('<a:rPr>', '<a:rPr xml:base="https://other.example/">')
+    elif mutation == 'wrong_id_attribute':
+        parts[source] = parts[source].replace('r:id="citation"', 'r:embed="citation"')
+    elif mutation == 'invalid_url':
+        parts[source] = parts[source].replace(' tooltip=', ' invalidUrl="file:///etc/passwd" tooltip=')
+    assert client.post(PATH, headers=headers, content=archive(parts)).status_code == 415
+    assert not state['calls']
+
+
 def test_chart_owned_workbook_does_not_require_a_fixed_chart_directory():
     parts = chart_parts()
     parts["ppt/slides/charts/chart1.xml"] = parts.pop("ppt/charts/chart1.xml")

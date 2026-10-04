@@ -27,6 +27,8 @@ jobs:
       - run: npm run build
       - run: npm run test:presentations
       - run: python -m pytest server-candidate/v49/tests -q
+      - run: python -m pytest worker -q
+      - run: python -B work/test_deploy_v73.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
