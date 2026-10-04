@@ -165,3 +165,32 @@ açar; eski DB yedeğini canlı verinin üzerine yazmaz. Eski betikler kullanıl
 
 Yerel testlerin geçmesi bu kapıların tamamlandığı veya canlı v73'ün 69 sayfa
 sunumu artık açabileceği anlamına gelmez.
+
+## 5 Ekim yayın provası (henüz canlı değil)
+
+Kaynak paket commit'i `456b92498f82832e10f6553bc35559cfd261998c`; PR #16.
+Paket SHA256 `6c210d546f45207a59506e44fdc61ca8e052ca976a580d23c5007b7e2741af1d`.
+Tam tarihsel istemci regresyonu geçti. Klipper'da ayrı v75 test imajında
+**331 API testi** (330 uygulama + yayın sözlük kontrolü) geçti.
+
+Yalnız sentetik hesaplarla gerçek nginx/yetki/dönüştürücü yolu sınandı:
+100 slayt kabul, 101 için açıklamalı 422 ret, 20 MiB ve hesap/CSRF/onay
+korumaları, sözlükte 146.532 madde, yedek hesap yalıtımı ve önceki kopya.
+100 slayt **2,37 saniyede** 100 sayfalık PDF oldu; bağımsız pypdf okuyucusu
+100 farklı sayfa işaretini doğruladı. PDF SHA256:
+`3f356b489827b7dd3d3568965c67a012ab666e10fb62e13559e9e844a0d435a1`.
+Gerçek PDF'nin 1/50/100 sayfalarında Türkçe karakterler ve yerleşim görsel
+olarak da incelendi; bu tüm sayfaların veya fiziksel cihazın kabulü değildir.
+
+v74 web + v73 API geri dönüş provası ayrı veritabanı kopyasında geçti:
+238 HTTP dosya hash'i, 235 çevrimdışı varlık, 16 yetkisiz istek reddi ve
+6 özel yol engeli doğrulandı. Canlı DB mount edilmedi, yedek canlıya yazılmadı.
+Mevcut işçi ve diğer uygulamalar değişmedi.
+
+İlk CI çalışması WebKit testindeki fiziksel kayıt karşılaştırmasında durdu:
+arka plan görsel göçü aynı içeriği `data:` yerine `asset:` ile saklayabiliyor.
+Bu testin düzeltmesi ve CI tekrarının sonucu ayrıca doğrulanmalı; uygulama
+paketi değiştirilmeden test düzeltmesi yapılırsa iki commit'in uygulama/yayın
+dosyaları byte düzeyinde eşit olmalıdır. Özel sunucu dışı hesap yedeği aktarımı
+güvenlik denetimi nedeniyle açık kullanıcı onayını beklemektedir; bu koşul
+atlanarak canlıya geçilmez.

@@ -80,6 +80,51 @@ async function pagesDigest(page) {
     new TextEncoder().encode(JSON.stringify(state.pages)))), b => b.toString(16).padStart(2, '0')).join(''));
 }
 
+// Background asset migration may replace inline image bytes with asset: keys
+// after a rejected import. Compare the complete persisted notebook, not its
+// temporary encoding. Read the record and its assets in ONE readonly transaction;
+// independently verify each named asset's hash so missing/changed images cannot
+// make this comparison pass. Do not call the app's inflater (it updates caches).
+async function storedNotebookDigest(page) {
+  return page.evaluate(async () => {
+    const snapshot = await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly'), store = tx.objectStore(STORE), request = store.get('app');
+      const assets = new Map(); let record;
+      const refs = value => {
+        if (!value || typeof value !== 'object') return;
+        for (const [key, child] of Object.entries(value)) {
+          if (key === 'image' && typeof child === 'string' && child.startsWith('asset:')) assets.set(child, undefined);
+          else if (child && typeof child === 'object') refs(child);
+        }
+      };
+      request.onsuccess = () => {
+        record = request.result; refs(record);
+        for (const key of assets.keys()) {
+          const asset = store.get(key); asset.onsuccess = () => assets.set(key, asset.result);
+        }
+      };
+      tx.oncomplete = () => resolve({record, assets});
+      tx.onabort = () => reject(tx.error || Error('Persisted notebook read aborted'));
+      tx.onerror = () => {};
+    });
+    const hash = async text => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',
+      new TextEncoder().encode(text))), byte => byte.toString(16).padStart(2, '0')).join('');
+    for (const [key, asset] of snapshot.assets) {
+      if (!/^asset:[0-9a-f]{64}$/.test(key) || typeof asset?.data !== 'string' || !asset.data.startsWith('data:image/')) throw Error('Missing or invalid persisted image');
+      if ('asset:' + await hash(asset.data) !== key) throw Error('Persisted image hash mismatch');
+    }
+    const inflate = value => {
+      if (!value || typeof value !== 'object') return;
+      for (const [key, child] of Object.entries(value)) {
+        if (key === 'image' && typeof child === 'string' && child.startsWith('asset:')) value[key] = snapshot.assets.get(child).data;
+        else if (child && typeof child === 'object') inflate(child);
+      }
+    };
+    inflate(snapshot.record);
+    return hash(JSON.stringify(snapshot.record));
+  });
+}
+
 async function restore(page, book) {
   await page.locator('#importFile').setInputFiles({name: 'sentetik-yedek.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(book))});
   await page.locator('#backupDialog[open]').waitFor();
@@ -185,16 +230,16 @@ async function run(browser, engine) {
       });
       assert.deepEqual(validation, {first: [true, true], mutated: [false, false], restored: [true, true]}, 'trash metadata must not bypass validation through a cached 100-page verdict');
       const invalidBackup = JSON.parse(JSON.stringify(v74Backup)); invalidBackup.pages.find(p => p.pdf).pdf.total = 101;
-      const beforeInvalid = await memory(f.page), beforeInvalidStored = await stored(f.page);
+      const beforeInvalid = await memory(f.page), beforeInvalidStored = await storedNotebookDigest(f.page);
       const invalidDialog = f.page.waitForEvent('dialog');
       await f.page.locator('#importFile').setInputFiles({name: 'invalid-total-101.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(invalidBackup))});
       const alert = await invalidDialog; assert.match(alert.message(), /Geçerli/); await alert.accept();
-      assert.equal(await memory(f.page), beforeInvalid); assert.equal(await stored(f.page), beforeInvalidStored);
+      assert.equal(await memory(f.page), beforeInvalid); assert.equal(await storedNotebookDigest(f.page), beforeInvalidStored);
       await f.page.evaluate(() => document.querySelector('#pdfOpen').click());
       await uploadPdf(f, 51);
       await f.page.waitForFunction(() => !pdfBusy && /50 sayfa/.test(document.querySelector('#pdfProgress').textContent));
       assert.equal(await f.page.locator('#pdfApply').isDisabled(), true, 'v74 may read saved total100 but must not create new 51-page imports');
-      assert.equal(await memory(f.page), beforeInvalid); assert.equal(await stored(f.page), beforeInvalidStored);
+      assert.equal(await memory(f.page), beforeInvalid); assert.equal(await storedNotebookDigest(f.page), beforeInvalidStored);
       await f.page.locator('#pdfClose').click();
       await f.page.waitForFunction(() => canEdit());
       await f.page.evaluate(() => document.querySelector('#pdfExportOpen').click());
@@ -223,6 +268,55 @@ async function run(browser, engine) {
       assert.equal(await memory(f.page), beforeExport, 'PDF export must not modify the notebook');
       measurements.push({engine, case: '100-roundtrip', elapsedMs: Date.now() - began, imageDataUrlBytes: pending.bytes, exportedPdfBytes: exported.length});
       pass('v75 reopens after v74; all 100 exported PDF page dictionaries open and first/last page pixels/order survive');
+      await f.finish({changed: true});
+    } catch (error) { await f.context.close(); throw error; }
+  }
+
+  if (enabled('migration')) {
+    const f = await fixture(browser, {root: rollbackRoot, seedInk: true});
+    try {
+      // Hold the first image hash in v74, allowing a rejected 51-page import to
+      // straddle the real inline -> asset-key rewrite deterministically.
+      await f.page.evaluate(() => {
+        const original = sha256Hex;
+        window.__pageLimitMigrationGate = new Promise(resolve => { window.__releasePageLimitMigration = resolve; });
+        window.__pageLimitMigrationStarted = false;
+        sha256Hex = async text => { window.__pageLimitMigrationStarted = true; await window.__pageLimitMigrationGate; return original(text); };
+      });
+      await uploadPdf(f, 1); await f.readyToApply(); await f.page.locator('#pdfApply').click();
+      await f.page.waitForFunction(() => !pdfDialog.open && !pdfBusy && pdfBackgroundReady() && canEdit());
+      await f.page.evaluate(() => { window.__pageLimitMigration = ensureAssets(); });
+      await f.page.waitForFunction(() => window.__pageLimitMigrationStarted);
+      const beforeRaw = await stored(f.page), beforeNotes = await storedNotebookDigest(f.page), beforeMemory = await memory(f.page);
+      assert.ok(beforeRaw.includes('data:image/'), 'the before sample must precede migration');
+      await f.open(); await uploadPdf(f, 51);
+      await f.page.waitForFunction(() => !pdfBusy && /50 sayfa/.test(document.querySelector('#pdfProgress').textContent));
+      await f.page.evaluate(async () => { window.__releasePageLimitMigration(); await window.__pageLimitMigration; await flushSave(); });
+      await settled(f.page);
+      const afterRaw = await stored(f.page);
+      assert.notEqual(afterRaw, beforeRaw, 'negative control: the old raw equality assertion must fail across this real migration');
+      assert.ok(afterRaw.includes('"image":"asset:'), 'the after sample must include the separately stored image');
+      assert.equal(await storedNotebookDigest(f.page), beforeNotes, 'rejected import plus migration preserves every logical persisted field');
+      assert.equal(await memory(f.page), beforeMemory);
+
+      // Negative controls prove the new comparison does not hide actual edits,
+      // missing assets or corrupt image bytes; all writes are synthetic only.
+      const actual = JSON.parse(afterRaw), changed = structuredClone(actual); changed.pages[0].title += ' changed';
+      const put = (key, value) => f.page.evaluate(([key, value]) => new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite'); tx.objectStore(STORE).put(value, key);
+        tx.oncomplete = resolve; tx.onabort = () => reject(tx.error); tx.onerror = () => {};
+      }), [key, value]);
+      await put('app', changed); assert.notEqual(await storedNotebookDigest(f.page), beforeNotes, 'real note mutation must be detected'); await put('app', actual);
+      const key = actual.pages.find(item => item.pdf).pdf.image;
+      const asset = await f.page.evaluate(key => new Promise((resolve, reject) => {
+        const request = db.transaction(STORE).objectStore(STORE).get(key);
+        request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+      }), key);
+      await put(key, {data: 'data:image/png;base64,broken', t: asset.t});
+      await assert.rejects(() => storedNotebookDigest(f.page), /Persisted image hash mismatch/);
+      await put(key, {t: asset.t}); await assert.rejects(() => storedNotebookDigest(f.page), /Missing or invalid persisted image/);
+      await put(key, asset); assert.equal(await storedNotebookDigest(f.page), beforeNotes);
+      pass('v74 delayed real asset migration changes raw encoding, not notes; logical comparison detects edits, missing assets and corrupt bytes');
       await f.finish({changed: true});
     } catch (error) { await f.context.close(); throw error; }
   }
