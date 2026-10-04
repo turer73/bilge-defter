@@ -40,13 +40,15 @@ PPTX_TYPE = 'application/vnd.openxmlformats-officedocument.presentationml.presen
 # LibreOffice Office.Common/Security/Scripting schema: maximum macro security,
 # unconditional macro disable, no trusted document locations, and blocked links.
 # The no-network container remains mandatory; configuration is defence in depth.
+# DisableActiveContent also hides native charts. Permit those after the API's
+# OOXML/OLE/external-resource validator; macros and untrusted links stay blocked.
 # https://github.com/LibreOffice/core/blob/master/officecfg/registry/schema/org/openoffice/Office/Common.xcs
 PROFILE_XML = '''<?xml version="1.0" encoding="UTF-8"?>
 <oor:items xmlns:oor="http://openoffice.org/2001/registry">
  <item oor:path="/org.openoffice.Office.Common/Security/Scripting">
   <prop oor:name="MacroSecurityLevel" oor:op="fuse" oor:finalized="true"><value>3</value></prop>
   <prop oor:name="DisableMacrosExecution" oor:op="fuse" oor:finalized="true"><value>true</value></prop>
-  <prop oor:name="DisableActiveContent" oor:op="fuse" oor:finalized="true"><value>true</value></prop>
+  <prop oor:name="DisableActiveContent" oor:op="fuse" oor:finalized="true"><value>false</value></prop>
   <prop oor:name="BlockUntrustedRefererLinks" oor:op="fuse" oor:finalized="true"><value>true</value></prop>
   <prop oor:name="SecureURL" oor:op="fuse" oor:finalized="true"><value/></prop>
  </item>

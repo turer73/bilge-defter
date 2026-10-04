@@ -28,12 +28,12 @@ def test_fixed_limits_and_no_environment_override(monkeypatch):
     assert worker.SOCKET_PATH.as_posix() == '/run/bilge-pdf/worker.sock'
 
 
-def test_profile_disables_macros_links_and_active_content():
+def test_profile_disables_macros_links_but_preserves_validated_native_charts():
     root = ElementTree.fromstring(worker.PROFILE_XML)
     ns = '{http://openoffice.org/2001/registry}'
     props = {p.attrib[ns + 'name']: p for p in root.iter('prop')}
     for name, value in [('MacroSecurityLevel', '3'), ('DisableMacrosExecution', 'true'),
-                        ('DisableActiveContent', 'true'), ('BlockUntrustedRefererLinks', 'true')]:
+                        ('DisableActiveContent', 'false'), ('BlockUntrustedRefererLinks', 'true')]:
         assert props[name].findtext('value') == value
         assert props[name].attrib[ns + 'finalized'] == 'true'
     assert not list(props['SecureURL'].find('value'))

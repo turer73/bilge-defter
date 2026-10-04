@@ -47,3 +47,20 @@ fonts were copied. The public Lumen fixture and synthetic chart can establish
 conversion behavior, not universal layout fidelity or medical correctness.
 Review the preview before adding it to a notebook. Physical iPad/Pencil
 acceptance is performed separately by the user.
+
+## Pre-publication corrections
+
+Visual review rejected the first worker candidate: LibreOffice's
+`DisableActiveContent=true` hid native charts even though OOXML validation
+accepted the embedded workbook. A network-isolated A/B test reproduced the
+loss and restored the chart by changing only this preference to false.
+The owner explicitly approved this narrower worker policy on 2026-10-05.
+Macro execution remains unconditionally disabled, security level 3, with no
+trusted locations and blocked untrusted links; the API still rejects OLE,
+macros and external resources. Native chart pixels must match the previous
+reference before publication; a valid PDF header alone is not acceptance.
+
+The first preview also stopped at Docker's read-only-root `cp` restriction.
+Test fixtures now stream to the existing tmpfs through the unprivileged
+process, with an exact filename allowlist, exclusive creation and SHA-256
+check. Read-only root is not relaxed. Both attempts left live v72 unchanged.

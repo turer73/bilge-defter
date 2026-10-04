@@ -88,6 +88,21 @@ class Deploy73(unittest.TestCase):
     def created_for(self, name):
         return next(args for args in self.created if args[args.index('--name') + 1] == name)
 
+    def test_fixture_copy_keeps_readonly_container_and_verifies_tmpfs_bytes(self):
+        from subprocess import CompletedProcess
+        fixture = r.ROOT / 'native-chart.pptx'
+        fixture.write_bytes(b'PK synthetic')
+        with patch.object(r.subprocess, 'run', return_value=CompletedProcess([], 0, (b.sha(fixture)+'\n').encode(), b'')) as run:
+            r.copy_fixture(fixture)
+        args, kwargs = run.call_args
+        self.assertEqual(args[0][:4], ['docker', 'exec', '-i', b.API+'-preview-v73'])
+        self.assertEqual(args[0][-1], 'native-chart.pptx')
+        self.assertEqual(kwargs['input'], b'PK synthetic')
+        self.assertNotIn('--privileged', args[0])
+        with patch.object(r.subprocess, 'run', return_value=CompletedProcess([], 0, b'wrong', b'')):
+            with self.assertRaises(RuntimeError): r.copy_fixture(fixture)
+        with self.assertRaises(RuntimeError): r.copy_fixture(r.ROOT / 'unexpected.pptx')
+
     def test_new_api_adds_only_readonly_socket_and_pdf_env(self):
         r.clone(b.API, b.API)
         args = self.created_for(b.API)

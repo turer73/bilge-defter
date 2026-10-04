@@ -221,6 +221,19 @@ def verify_prior(port=18790):
     return json.loads(b.run('python3', str(PRIOR / 'verify-publication-v72.py'), str(PRIOR / 'ui'), str(port), timeout=120))
 
 
+def copy_fixture(fixture):
+    # docker cp rejects a read-only root even for this existing tmpfs mount.
+    # Stream only reviewed fixtures through the unprivileged process, keeping
+    # read-only root, exact /tmp destination, exclusive create and hash check.
+    need(fixture.name in {'native-chart.pptx', 'lumen-integumentary-original.pptx'}, 'Unexpected fixture name')
+    data = fixture.read_bytes()
+    need(0 < len(data) <= 20 * 1024 * 1024, 'Fixture exceeds bounded upload')
+    code = "import hashlib,pathlib,sys;data=sys.stdin.buffer.read(20*1024*1024+1);assert 0<len(data)<=20*1024*1024;p=pathlib.Path('/tmp')/sys.argv[1];f=p.open('xb');f.write(data);f.close();print(hashlib.sha256(p.read_bytes()).hexdigest())"
+    copied = subprocess.run(['docker', 'exec', '-i', b.API + '-preview-v73', 'python', '-c', code, fixture.name],
+                            input=data, capture_output=True, timeout=30)
+    need(copied.returncode == 0 and copied.stdout.decode().strip() == b.sha(fixture), 'Fixture tmpfs copy/hash failed')
+
+
 def stage():
     old(); value = package(); unchanged(); worker = worker_ok()
     need(value.get('base_images'), 'Pinned dependency base images missing')
@@ -258,7 +271,7 @@ def stage():
     for name, digest in fixture_hashes.items():
         fixture = ROOT / 'acceptance' / name
         need(b.sha(fixture) == digest, 'Acceptance fixture hash mismatch')
-        b.run('docker', 'cp', str(fixture), b.API + '-preview-v73:/tmp/' + name)
+        copy_fixture(fixture)
     proxy = json.loads(b.run('docker', 'exec', b.API + '-preview-v73', 'python', '/srv/tests/test_release_proxy_v73.py', 'check', timeout=240))
     need(proxy.get('passed') is True, 'Independent nginx/auth/conversion acceptance missing')
     docker_healthy(b.API + '-preview-v73'); docker_healthy(b.WEB + '-preview-v73')
