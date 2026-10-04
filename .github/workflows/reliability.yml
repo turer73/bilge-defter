@@ -13,6 +13,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Reconstruct the immutable v73 source for the v74 reader bridge.
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -26,9 +28,12 @@ jobs:
       - run: npm run test:reliability
       - run: npm run build
       - run: npm run test:presentations
+      - run: npm run test:page-limit
+      - run: node work/verify-page-limit-sw.cjs
       - run: python -m pytest server-candidate/v49/tests -q
       - run: python -m pytest worker -q
       - run: python -B work/test_deploy_v73.py
+      - run: python -B work/test_deploy_v75.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -36,6 +41,8 @@ jobs:
           path: |
             outputs/reliability-1/
             outputs/presentations/
+            outputs/page-limit/
+            outputs/page-limit-sw/
           retention-days: 7
 # No secrets, live accounts, deployment, self-hosted runner or paid API.
 # This supplements (does not replace) the historical release/device test matrix.

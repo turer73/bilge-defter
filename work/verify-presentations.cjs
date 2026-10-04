@@ -30,7 +30,11 @@ function slidePdfBytes(pageCount = 1) {
     `<< /Type /Pages /Kids [${Array.from({length: pageCount}, (_, i) => `${3 + i * 2} 0 R`).join(' ')}] /Count ${pageCount} >>`
   ];
   for (let i = 0; i < pageCount; i++) {
-    const content = `${i % 2 ? '1 0 0' : '0 0 1'} rg 100 100 300 200 re f`;
+    // Distinct, reproducible pages: retain the original pixel probe and add a
+    // seven-bit page marker. A 100-page test must not reuse two identical images.
+    const marker = Array.from({length: 7}, (_, bit) =>
+      `${(i + 1) & (1 << bit) ? '0 0 0' : '.8 .8 .8'} rg ${30 + bit * 35} 30 25 25 re f`).join('\n');
+    const content = `${i % 2 ? '1 0 0' : '0 0 1'} rg 100 100 300 200 re f\n${marker}`;
     objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 720 540] /Contents ${4 + i * 2} 0 R >>`);
     objects.push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
   }
@@ -57,6 +61,9 @@ const settled = page => page.waitForFunction(() => !isDirty() && !savePromise, n
 
 async function fixture(browser, options = {}) {
   const calls = [], errors = [], hold = deferred(), reached = deferred();
+  const errorStreamStarted = deferred(), errorStreamClosed = deferred();
+  const errorStreamState = {chunksSent: 0, bytesSent: 0, ended: false, closed: false};
+  let servingRoot = path.resolve(options.root || root);
   let identityChanged = false;
   // WebKit's interception API omits File bodies. A loopback mock observes the real raw upload
   // in both engines, without replacing fetch or assuming that a File was transmitted correctly.
@@ -71,10 +78,32 @@ async function fixture(browser, options = {}) {
       reached.resolve();
       if (options.holdConvert) await hold.promise;
       if (response.destroyed) return;
+      if (options.errorStream) {
+        // Real loopback HTTP chunks, deliberately without Content-Length. EOF
+        // can be withheld to prove the client bounds/cancels a response rather
+        // than succeeding only because our mock helpfully closes the stream.
+        const config = options.errorStream;
+        response.on('close', () => { errorStreamState.closed = true; errorStreamClosed.resolve(); });
+        response.writeHead(config.status || 422, {'Content-Type': config.contentType || 'application/json'});
+        response.flushHeaders();
+        for (const part of config.chunks) {
+          if (response.destroyed) break;
+          const bytes = Buffer.from(part);
+          response.write(bytes); errorStreamState.chunksSent++; errorStreamState.bytesSent += bytes.length;
+          await new Promise(resolve => setTimeout(resolve, 25));
+        }
+        errorStreamStarted.resolve();
+        if (config.hold) await hold.promise;
+        if (!response.destroyed) {
+          if (config.disconnect) response.destroy();
+          else { errorStreamState.ended = true; response.end(); }
+        }
+        return;
+      }
       response.writeHead(options.responseCode || 200, {
-        'Content-Type': options.html ? 'text/html' : 'application/pdf', 'X-Bilge-Pdf-Result': 'converted'
+        'Content-Type': options.jsonResponse ? 'application/json' : options.html ? 'text/html' : 'application/pdf', 'X-Bilge-Pdf-Result': 'converted'
       });
-      response.end(options.html ? '<html>login</html>' : options.badPdf ? Buffer.from('not a PDF') : options.slideCount ? slidePdfBytes(options.slideCount) : slidePdf);
+      response.end(options.jsonResponse ? JSON.stringify(options.jsonResponse) : options.html ? '<html>login</html>' : options.badPdf ? Buffer.from('not a PDF') : options.slideCount ? slidePdfBytes(options.slideCount) : slidePdf);
     });
   });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
@@ -104,6 +133,7 @@ async function fixture(browser, options = {}) {
         configured: options.enabled !== false,
         operations: options.noConvert ? ['compress'] : ['compress', 'convert'],
         consent_required: true, max_input_bytes: options.backendLimit || 20 * 1024 * 1024,
+        max_slides: options.maxSlides || 100,
         worker_state: options.workerState || 'ready'
       }}).catch(() => {});
     }
@@ -111,8 +141,8 @@ async function fixture(browser, options = {}) {
       return route.continue();
     }
     if (url.pathname.includes('/api/')) return route.fulfill({status: 404, body: '{}'});
-    const file = path.resolve(root, '.' + (url.pathname === '/' ? '/index.html' : decodeURIComponent(url.pathname)));
-    if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return route.fulfill({status: 404, body: 'missing'});
+    const file = path.resolve(servingRoot, '.' + (url.pathname === '/' ? '/index.html' : decodeURIComponent(url.pathname)));
+    if (!file.startsWith(servingRoot + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return route.fulfill({status: 404, body: 'missing'});
     if (options.withoutReopenGuard && url.pathname.endsWith('/pdf-workspace.js')) {
       // Test-only negative control: restore the old close-listener behavior without editing disk.
       const source = fs.readFileSync(file, 'utf8'), guard = 'if(pdfDialog.open)return;';
@@ -124,6 +154,15 @@ async function fixture(browser, options = {}) {
   const page = await context.newPage();
   await page.goto(origin);
   await page.waitForFunction(() => typeof ready !== 'undefined' && ready && window.__v2UI, null, {timeout: 20000});
+  if (options.seedInk) {
+    await page.locator('#canvas').evaluate(canvas => {
+      const r = canvas.getBoundingClientRect();
+      for (const [type, dx] of [['pointerdown', 0], ['pointermove', 40], ['pointerup', 80]]) canvas.dispatchEvent(new PointerEvent(type, {
+        bubbles: true, cancelable: true, pointerId: 17, pointerType: 'pen', clientX: r.x + 120 + dx, clientY: r.y + 120, pressure: .5
+      }));
+    });
+    await page.waitForFunction(() => page().strokes.length > 0);
+  }
   await page.evaluate(() => flushSave());
   await settled(page);
   const beforeMemory = await memory(page), beforeStored = await stored(page);
@@ -143,7 +182,9 @@ async function fixture(browser, options = {}) {
     await page.waitForFunction(() => /seçildi|doğrulanamadı|20 MB|\.pptx|onaylı|desteklenmiyor|boş olmayan/.test(document.querySelector('#pdfProgress').textContent));
   };
   const consent = async () => { await page.locator('#pdfPresentationAgree').check(); await page.locator('#pdfPresentationSend').click(); };
-  const readyToApply = () => page.waitForFunction(() => !document.querySelector('#pdfApply').disabled, null, {timeout: 60000});
+  // The button is prepared before PDF.js worker cleanup completes. Wait for the
+  // actual interactive state; a hidden input write must not bypass busy controls.
+  const readyToApply = () => page.waitForFunction(() => !pdfBusy && !document.querySelector('#pdfApply').disabled, null, {timeout: 60000});
   const unchanged = async () => {
     assert.equal(await memory(page), beforeMemory, 'pending/cancelled import must not mutate notebook memory');
     assert.equal(await stored(page), beforeStored, 'pending/cancelled import must not mutate stored notebook');
@@ -158,6 +199,13 @@ async function fixture(browser, options = {}) {
     servers.delete(server);
   };
   return {context, page, calls, errors, open, choose, consent, readyToApply, unchanged, finish,
+    beforeMemory, beforeStored,
+    errorStreamState, errorStreamStarted: errorStreamStarted.promise, errorStreamClosed: errorStreamClosed.promise,
+    switchRoot: next => {
+      const candidate = path.resolve(next);
+      assert.ok(fs.existsSync(path.join(candidate, 'index.html')), 'missing reader package: ' + candidate);
+      servingRoot = candidate;
+    },
     reached: reached.promise, release: () => hold.resolve(), changeIdentity: () => { identityChanged = true; }};
 }
 
@@ -487,7 +535,7 @@ async function run(browser, engine) {
   }
 }
 
-(async () => {
+async function main() {
   let failed = null;
   try {
     for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
@@ -508,4 +556,7 @@ async function run(browser, engine) {
     }, null, 2));
   }
   console.log(JSON.stringify({passed: results.length, failed: 0, mockedApi: true, physicalDevice: false}));
-})().catch(error => { console.error(error); process.exitCode = 1; });
+}
+
+module.exports = {fixture, slidePdfBytes, pptx, PPTX, memory, stored, settled, servers, root, out};
+if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });

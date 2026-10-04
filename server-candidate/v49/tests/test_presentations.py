@@ -165,11 +165,33 @@ def test_real_presentation_type_is_required(setup, replace):
     assert not state["calls"]
 
 
-@pytest.mark.parametrize("slides,code", [(0, 415), (1, 200), (50, 200), (51, 415)])
+@pytest.mark.parametrize("slides,code", [(0, 415), (1, 200), (50, 200), (51, 200), (100, 200), (101, 422)])
 def test_slide_count_checked_before_conversion(setup, slides, code):
     client, h, state = setup
-    assert client.post(PATH, headers=h, content=deck(slides=slides)).status_code == code
+    response = client.post(PATH, headers=h, content=deck(slides=slides))
+    assert response.status_code == code
     assert bool(state["calls"]) is (code == 200)
+    if code == 422:
+        assert response.json() == {"detail": {"code": "presentation_slide_limit",
+                                             "max_slides": 100, "actual_slides": 101}}
+    status = client.get(STATUS, headers=h).json()
+    assert status["max_slides"] == 100 and status["max_input_bytes"] == 20 * 1024 * 1024
+
+
+@pytest.mark.parametrize("mutation", ["bad_slide_node", "missing_list", "macro"])
+def test_over_limit_malformed_or_unsafe_deck_is_still_generic_415(setup, mutation):
+    client, h, state = setup
+    extra, replace = {}, {}
+    if mutation == "bad_slide_node":
+        replace["ppt/presentation.xml"] = presentation(101).replace("<p:sldId ", "<p:invalidSlide ")
+    elif mutation == "missing_list":
+        replace["ppt/presentation.xml"] = '<p:presentation xmlns:p="' + ppt.PRESENTATION_NS + '"/>'
+    else:
+        extra["ppt/vbaProject.bin"] = b"private macro data"
+    response = client.post(PATH, headers=h, content=deck(extra, replace, slides=101))
+    assert response.status_code == 415
+    assert isinstance(response.json()["detail"], str)
+    assert not state["calls"]
 
 
 @pytest.mark.parametrize("limit,value", [("MAX_FILES", 2), ("MAX_EXPANDED_BYTES", 20), ("MAX_ENTRY_BYTES", 20),

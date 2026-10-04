@@ -29,7 +29,7 @@ MAX_ENTRY_BYTES = 32 * 1024 * 1024
 MAX_XML_BYTES = 2 * 1024 * 1024
 MAX_XML_TOTAL_BYTES = 16 * 1024 * 1024
 MAX_RATIO = 200
-MAX_SLIDES = 50
+MAX_SLIDES = 100
 DEADLINE_SECONDS = 90
 UDS_WORKER_URL = "http://bilge-pptx-worker"
 UDS_WORKER_SOCKET = "/run/bilge-pdf/worker.sock"
@@ -52,6 +52,14 @@ _slot = threading.BoundedSemaphore(1)  # Supported production configuration: one
 _worker_uncertain = False
 router = APIRouter(prefix="/api/v1/bilge-defter/pdf-tools",
                    dependencies=[Depends(account_guard)])
+
+
+class PresentationSlideLimit(ValueError):
+    """Safe structural limit metadata; never include names or document content."""
+
+    def __init__(self, actual_slides):
+        super().__init__("Presentation slide limit exceeded")
+        self.actual_slides = actual_slides
 
 
 def configured_url():
@@ -423,7 +431,7 @@ def validate_pptx(data):
         if len(slide_lists) != 1:
             _reject_package()
         slides = list(slide_lists[0])
-        if not 1 <= len(slides) <= MAX_SLIDES or any(
+        if not slides or any(
                 node.tag != "{" + PRESENTATION_NS + "}sldId" for node in slides):
             _reject_package()
         # Chart locations vary by producer. Trust the part's type, XML root and
@@ -452,6 +460,10 @@ def validate_pptx(data):
             _reject_package()
         for target in sorted(bound):
             _validate_workbook(embedded[target], budget)
+        # Only distinguish the slide limit once all package/security checks pass.
+        # Malformed lists or unsafe embedded parts retain the generic rejection.
+        if len(slides) > MAX_SLIDES:
+            raise PresentationSlideLimit(len(slides))
     except (zipfile.BadZipFile, OSError, RuntimeError, NotImplementedError, EOFError,
             ElementTree.ParseError, struct.error, zlib.error) as exc:
         raise ValueError("Unsupported presentation") from exc
@@ -555,6 +567,10 @@ async def process(request, url, job):
         # lease remains held until the actual bounded parser thread has finished.
         job["validation"] = asyncio.create_task(asyncio.to_thread(validate_pptx, data))
         await asyncio.shield(job["validation"])
+    except PresentationSlideLimit as exc:
+        raise HTTPException(422, {"code": "presentation_slide_limit",
+                                  "max_slides": MAX_SLIDES,
+                                  "actual_slides": exc.actual_slides}) from None
     except ValueError:
         raise HTTPException(415, "Sunum doğrulanamadı veya güvenli sınırları aşıyor; PDF olarak dışa aktarın") from None
     result = await forward_while_connected(request, url, data, job)

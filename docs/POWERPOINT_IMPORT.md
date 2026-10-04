@@ -1,5 +1,14 @@
 # PowerPoint içe aktarma adayı
 
+## 5 Ekim 2026: 100 sayfa adayı
+
+Yeni çalışma [RELEASE_V75.md](RELEASE_V75.md) altında belgelenir. Yerel adayda
+PPTX/PDF içe aktarma, kayıt/yedek okuma ve PDF dışa aktarma sınırı 100'dür.
+Canlı v73 bu çalışma sırasında değiştirilmedi; aşağıdaki 50/51 sayfa ve eski
+Stirling yayın kapıları tarihsel v72/v73 kayıtlarıdır, yeni sürüm talimatı değildir.
+v75 öncesinde v74 uyumluluk okuyucusu gerekir; 100 sayfalık kayıt yazıldıktan
+sonra v73 veya daha eski istemciye geri dönülmez.
+
 4 Ekim 2026. **Yerel geliştirme adayı; canlı v72'ye yayımlanmadı.**
 
 5 Ekim devamı: v73 birleşik yayın adayı [RELEASE_V73.md](RELEASE_V73.md).

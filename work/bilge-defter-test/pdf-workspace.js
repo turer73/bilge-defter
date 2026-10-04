@@ -1,3 +1,5 @@
+// v74 must be installed as a read-compatible rollback target before this v75 writer.
+const PDF_PAGE_LIMIT=100;
 // Local raster PDF export. Separate ink layer preserves the document under eraser strokes.
 const pdfExportDialog=document.createElement('dialog');pdfExportDialog.id='pdfExportDialog';pdfExportDialog.className='tools-dialog';pdfExportDialog.setAttribute('aria-labelledby','pdfExportTitle');
 pdfExportDialog.innerHTML='<div class="tools-heading"><h2 id="pdfExportTitle">Notlu PDF indir</h2><button class="btn" id="pdfExportClose">× Kapat / iptal</button></div><div class="tools-content"><p class="recovery-note">PDF zemini, kalem, fosforlu, metin ve görseller birlikte aktarılır. İşlem tamamen bu cihazda yapılır.</p><label>Kapsam <select id="pdfExportScope"><option value="page">Açık PDF sayfası</option><option value="notebook">Bu defterdeki PDF sayfaları</option></select></label><p id="pdfExportSummary" class="recovery-note"></p><p class="recovery-note">Görüntü tabanlı çıktı: metin aranamaz veya seçilemez. Sayfa oranı korunur; özgün baskı ölçüsü korunmaz. PDF sınırları dışındaki notlar ve normal defter sayfaları dahil edilmez. Düzenlenebilir kopya için ayrıca JSON yedeği alın.</p><button class="btn primary" id="pdfExportStart">PDF hazırla</button><p id="pdfExportStatus" role="status">Kapsamı seçin.</p><a class="btn primary" id="pdfExportDownload" hidden>PDF indir</a></div>';
@@ -8,7 +10,7 @@ let pdfExportRequest=0,pdfExportUrl=null,pdfExportBusy=false;
 const PDF_EXPORT_LIMIT=64*1024*1024;
 function clearPdfDownload(){if(pdfExportUrl)URL.revokeObjectURL(pdfExportUrl);pdfExportUrl=null;const a=document.querySelector('#pdfExportDownload');a.hidden=true;a.removeAttribute('href')}
 function pdfExportPages(){return document.querySelector('#pdfExportScope').value==='page'?(page()?.pdf?[page()]:[]):notebookPages().filter(p=>p.pdf)}
-function describePdfExport(){const pages=pdfExportPages(),ignored=notebookPages().filter(p=>!p.pdf).length;document.querySelector('#pdfExportSummary').textContent=`${pages.length} PDF sayfası seçili (en fazla 50).`+(document.querySelector('#pdfExportScope').value==='notebook'&&ignored?` ${ignored} normal sayfa dahil edilmeyecek.`:'');document.querySelector('#pdfExportStart').disabled=pdfExportBusy||!pages.length||pages.length>50}
+function describePdfExport(){const pages=pdfExportPages(),ignored=notebookPages().filter(p=>!p.pdf).length;document.querySelector('#pdfExportSummary').textContent=`${pages.length} PDF sayfası seçili (en fazla ${PDF_PAGE_LIMIT}).`+(document.querySelector('#pdfExportScope').value==='notebook'&&ignored?` ${ignored} normal sayfa dahil edilmeyecek.`:'');document.querySelector('#pdfExportStart').disabled=pdfExportBusy||!pages.length||pages.length>PDF_PAGE_LIMIT}
 pdfExportOpen.onclick=()=>{if(!canEdit()||drawing||pan||!page())return;closeTools();clearPdfDownload();document.querySelector('#pdfExportScope').value=page().pdf?'page':'notebook';describePdfExport();document.querySelector('#pdfExportStatus').textContent='Kapsamı seçin. Çıktı JSON yedeğinin yerine geçmez.';pdfExportDialog.showModal()};
 document.querySelector('#pdfExportScope').onchange=()=>{clearPdfDownload();describePdfExport();document.querySelector('#pdfExportStatus').textContent='Yeni kapsam için PDF hazırlayın.'};
 document.querySelector('#pdfExportClose').onclick=()=>pdfExportDialog.close();
@@ -27,7 +29,7 @@ function rasterPdfBuilder(){
  },finish(){object(1,'<< /Type /Catalog /Pages 2 0 R >>');object(2,`<< /Type /Pages /Count ${pageIds.length} /Kids [${pageIds.map(id=>id+' 0 R').join(' ')}] >>`);const start=size;add(`xref\n0 ${nextId}\n0000000000 65535 f \n`);for(let id=1;id<nextId;id++)add(String(offsets[id]).padStart(10,'0')+' 00000 n \n');add(`trailer\n<< /Size ${nextId} /Root 1 0 R >>\nstartxref\n${start}\n%%EOF\n`);return new Blob(chunks,{type:'application/pdf'})}};
 }
 document.querySelector('#pdfExportStart').onclick=async()=>{
- if(pdfExportBusy||!pdfExportDialog.open)return;const pages=pdfExportPages();if(!pages.length||pages.length>50)return;
+ if(pdfExportBusy||!pdfExportDialog.open)return;const pages=pdfExportPages();if(!pages.length||pages.length>PDF_PAGE_LIMIT)return;
  // Freeze only exported values; never switch the active page or write notebook data.
  const snapshot=pages.map(p=>({pdf:{...p.pdf},strokes:p.strokes.map(s=>({...s,points:s.points.map(p=>({...p}))}))}));
  const filename=(notebookTitle(activeNotebook)+'-notlu').replace(/[<>:"/\\|?*\x00-\x1f]/g,'_').slice(0,120)+'.pdf';
@@ -55,7 +57,7 @@ document.querySelector('#pdfExportStart').onclick=async()=>{
 // PDF.js renders locally. Device PDFs never leave the browser; PowerPoint conversion
 // below requires separate explicit consent before uploading the selected deck.
 const pdfDialog=document.createElement('dialog');pdfDialog.id='pdfDialog';pdfDialog.setAttribute('aria-labelledby','pdfTitle');
-pdfDialog.innerHTML='<div class="tools-heading"><h2 id="pdfTitle">PDF üzerine çalış</h2><button class="btn" id="pdfClose">× Kapat</button></div><div class="tools-content"><p class="recovery-note">PDF cihazda işlenir, sunucuya gönderilmez. İlk sürüm: en fazla 20 MB / 50 sayfa. Sayfalar 1000 piksel genişlikte görüntü olarak saklanır; özgün PDF dosyanızı ayrıca koruyun.</p><p class="recovery-note">Metin seçimi, bağlantılar ve form doldurma yoktur. Notlu PDF çıktısı için Araçlar → Notlu PDF indir kullanın. PDF zemini silinmez; kalem, fosforlu ve silgi yalnız eklediğiniz notlara uygulanır.</p><button class="btn" id="pdfChoose">Cihazdan PDF seç</button><input id="pdfFile" type="file" accept="application/pdf,.pdf" hidden><p id="pdfProgress" role="status">Bir PDF seçin. Hazır olunca yeni deftere ekleyin.</p><button class="btn primary" id="pdfApply" disabled>Yeni deftere ekle</button><p class="recovery-note">PDF görüntüleri ve yazılar JSON yedeğine dahildir. İçe aktarma mevcut sayfaların yerine geçmez.</p></div>';
+pdfDialog.innerHTML='<div class="tools-heading"><h2 id="pdfTitle">PDF üzerine çalış</h2><button class="btn" id="pdfClose">× Kapat</button></div><div class="tools-content"><p class="recovery-note">PDF cihazda işlenir, sunucuya gönderilmez. En fazla 20 MB / '+PDF_PAGE_LIMIT+' sayfa. Görsel yoğunluğuna göre cihazın güvenli görüntü bütçesi daha erken dolabilir. Sayfalar 1000 piksel genişlikte görüntü olarak saklanır; özgün PDF dosyanızı ayrıca koruyun.</p><p class="recovery-note">Metin seçimi, bağlantılar ve form doldurma yoktur. Notlu PDF çıktısı için Araçlar → Notlu PDF indir kullanın. PDF zemini silinmez; kalem, fosforlu ve silgi yalnız eklediğiniz notlara uygulanır.</p><button class="btn" id="pdfChoose">Cihazdan PDF seç</button><input id="pdfFile" type="file" accept="application/pdf,.pdf" hidden><p id="pdfProgress" role="status">Bir PDF seçin. Hazır olunca yeni deftere ekleyin.</p><button class="btn primary" id="pdfApply" disabled>Yeni deftere ekle</button><p class="recovery-note">PDF görüntüleri ve yazılar JSON yedeğine dahildir. İçe aktarma mevcut sayfaların yerine geçmez.</p></div>';
 document.body.append(pdfDialog);
 const pdfStyle=document.createElement('style');pdfStyle.textContent='#pdfDialog{width:min(500px,calc(100% - 24px));max-height:calc(100dvh - 24px);padding:0;border:1px solid #d5e2dc;border-radius:18px;background:#fffdf8;color:#17312d}#pdfDialog::backdrop{background:#173b3650}#pdfDialog .btn{min-height:44px}#pdfProgress{margin:0;line-height:1.5;overflow-wrap:anywhere}#pdfCanvas{position:absolute;inset:0;pointer-events:none}#pdfCanvas[hidden],#pdfNavigation[hidden],#pdfBackdropState[hidden]{display:none}#canvas{position:relative}#pdfBackdropState{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:20px;background:#fffdf8;pointer-events:none}.workspace.has-pdf{grid-template-rows:auto minmax(0,1fr)}#pdfNavigation{display:flex;align-items:center;gap:8px;padding:5px 12px;min-width:0}#pdfNavigation .btn{min-width:44px;min-height:44px;flex:none}#pdfPageLabel{flex:1;min-width:0;font-size:12px;overflow-wrap:anywhere}#pdfOpen{grid-column:1/-1}';document.head.append(pdfStyle);
 const pdfOpen=document.createElement('button');pdfOpen.id='pdfOpen';pdfOpen.className='btn';pdfOpen.textContent='PDF üzerine çalış';document.querySelector('.tool-actions').prepend(pdfOpen);
@@ -89,7 +91,7 @@ function pdfImageSize(src){
   return null;
 }
 function validPdfBackground(b){
-  if(!b||b.width!==1000||!Number.isSafeInteger(b.height)||b.height<100||b.height>3000||typeof b.name!=='string'||b.name.length>200||!Number.isSafeInteger(b.number)||!Number.isSafeInteger(b.total)||b.number<1||b.number>b.total||b.total>50||typeof b.image!=='string'||b.image.length>6*1024*1024)return false;
+  if(!b||b.width!==1000||!Number.isSafeInteger(b.height)||b.height<100||b.height>3000||typeof b.name!=='string'||b.name.length>200||!Number.isSafeInteger(b.number)||!Number.isSafeInteger(b.total)||b.number<1||b.number>b.total||b.total>PDF_PAGE_LIMIT||typeof b.image!=='string'||b.image.length>6*1024*1024)return false;
   try{const size=pdfImageSize(b.image);return !!size&&size.width===b.width&&size.height===b.height}catch{return false}
 }
 async function validatePdfImages(book){
@@ -165,17 +167,20 @@ async function importPdfFile(file,presentationName=null){
     task=pdfLibrary.getDocument({data,isEvalSupported:false,enableXfa:false,stopAtErrors:true,cMapUrl:'./vendor/pdfjs/cmaps/',cMapPacked:true,standardFontDataUrl:'./vendor/pdfjs/standard_fonts/',wasmUrl:'./vendor/pdfjs/wasm/'});pdfTask=task;
     timeout=setTimeout(()=>{if(request===pdfRequest){cancelPdf();pdfMessage('PDF hazırlığı zaman aşımına uğradı. Daha küçük bir dosya deneyin.')}},60000);
     const doc=await task.promise;if(request!==pdfRequest)return;
-    if(doc.numPages>50)throw new Error('Bu ilk sürüm en fazla 50 sayfa PDF kabul eder. Dosyayı bölerek deneyin.');
+    if(doc.numPages>PDF_PAGE_LIMIT)throw new Error(`Bu belgede ${doc.numPages} sayfa var. En fazla ${PDF_PAGE_LIMIT} sayfa kabul edilir. Dosyayı bölerek deneyin.`);
     const pages=[];let bytes=0;const existingImages=notebookImageBytes();
     for(let number=1;number<=doc.numPages;number++){
       if(request!==pdfRequest)return;pdfMessage(`PDF sayfası hazırlanıyor: ${number}/${doc.numPages}`);
       const source=await doc.getPage(number),base=source.getViewport({scale:1}),viewport=source.getViewport({scale:1000/base.width});
       if(!Number.isFinite(viewport.height)||viewport.height<100||viewport.height>3000)throw new Error('PDF sayfa oranı bu ilk sürümde desteklenmiyor.');
-      const surface=document.createElement('canvas');surface.width=1000;surface.height=Math.ceil(viewport.height);
-      await source.render({canvasContext:surface.getContext('2d'),viewport,background:'#ffffff'}).promise;
-      const image=pdfPageImage(surface);surface.width=surface.height=1;source.cleanup();bytes+=image.length;
+      const surface=document.createElement('canvas');surface.width=1000;surface.height=Math.ceil(viewport.height);let image;
+      try{await source.render({canvasContext:surface.getContext('2d'),viewport,background:'#ffffff'}).promise;if(request!==pdfRequest)return;image=pdfPageImage(surface)}
+      finally{surface.width=surface.height=1;source.cleanup()}
+      bytes+=image.length;
       if(image.length>6*1024*1024||bytes>PDF_IMAGE_LIMIT)throw new Error('PDF görüntüleri tablet test sınırını aşıyor. Daha az sayfalı dosya deneyin.');if(existingImages+bytes>NOTEBOOK_PDF_LIMIT)throw notebookLimitError(existingImages+bytes);
       pages.push({id:newPageId(),title:presentationName?`Sunum · Slayt ${number}`:`PDF · Sayfa ${number}`,strokes:[],viewY:0,pdf:{image,width:1000,height:Math.ceil(viewport.height),name:sourceName.slice(0,200),number,total:doc.numPages},updated:new Date().toISOString()});
+      // Give input/close/progress a turn between pages; keep only one live render canvas.
+      await new Promise(resolve=>setTimeout(resolve,0));
     }
     if(request!==pdfRequest)return;pdfPending={title:sourceName.replace(/\.(pdf|pptx?)$/i,'').trim().slice(0,65)||'Belge',pages,presentation:!!presentationName};pdfMessage(`${sourceName} · ${pages.length} ${presentationName?'slayt':'sayfa'} hazır. Yeni deftere ekleyin. Özgün dosyanızı ayrıca koruyun.`);document.querySelector('#pdfApply').disabled=false;
   }catch(error){if(request===pdfRequest){pdfPending=null;pdfMessage(error?.name==='PasswordException'?'Şifreli PDF bu ilk sürümde desteklenmiyor. Şifresiz bir kopya seçin.':`PDF eklenmedi. ${error?.message||'Dosya okunamadı.'}`)}}
@@ -198,13 +203,25 @@ document.querySelector('#pdfApply').onclick=async()=>{
   finally{pdfBusy=false;document.querySelector('#pdfClose').disabled=false;document.querySelector('#pdfChoose').disabled=false;document.querySelector('#pdfApply').disabled=!pdfPending;updatePresentationControls()}
 };
 
+// Never display raw server errors or an unbounded body in a notebook window.
+async function presentationErrorMessage(response){
+  const fallback=({429:'Sunucu meşgul. Biraz sonra yeniden deneyin.',413:'Sunum boyut sınırını aşıyor.',415:'Sunum türü veya içeriği desteklenmiyor.',422:'Sunum açılamadı. Dosya bozuk, şifreli ya da güvenlik nedeniyle reddedilmiş olabilir.',503:'Sunum hizmeti şu anda kullanılamıyor; yöneticinize bildirin.',504:'Dönüştürme zaman aşımına uğradı. Yeniden göndermeden önce yöneticinin hizmeti denetlemesi gerekiyor.'})[response.status]||'İşlem tamamlanamadı. Hesabınızı ve bağlantınızı denetleyin.';
+  if(response.status!==422||!(response.headers.get('content-type')||'').toLowerCase().startsWith('application/json')||!response.body){void response.body?.cancel().catch(()=>{});return fallback}
+  const reader=response.body.getReader();let size=0,text='';const decoder=new TextDecoder();
+  try{
+    for(;;){const {value,done}=await reader.read();if(done)break;size+=value.byteLength;if(size>4096){await reader.cancel();return fallback}text+=decoder.decode(value,{stream:true})}
+    text+=decoder.decode();const detail=JSON.parse(text)?.detail;
+    if(detail?.code==='presentation_slide_limit'&&detail.max_slides===PDF_PAGE_LIMIT&&Number.isSafeInteger(detail.actual_slides)&&detail.actual_slides>PDF_PAGE_LIMIT&&detail.actual_slides<=1000000)return `Bu sunumda ${detail.actual_slides} slayt var. En fazla ${PDF_PAGE_LIMIT} slayt kabul edilir. Sunumu bölerek deneyin.`;
+  }catch{/* Only the specific safe numeric contract is user-visible. */}finally{reader.releaseLock()}
+  return fallback;
+}
 // Adapted from b03bb10's opt-in import, integrated with v72's save/asset safeguards.
 // Closing/offline/account lock invalidates both the upload and any delayed response.
 (() => {
   'use strict';
   const base='./api/v1/bilge-defter/pdf-tools/',types={pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation'};
   const section=document.createElement('section');section.id='pdfPresentationSection';
-  section.innerHTML='<button class="btn" id="pdfPresentationChoose">PowerPoint seç (.pptx)</button><input id="pdfPresentationFile" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden><p class="recovery-note">Eski .ppt dosyalarını PowerPoint’ten PDF olarak dışa aktarıp Cihazdan PDF seç ile açın.</p><div id="pdfPresentationConsent" hidden><p class="recovery-note">Yalnız seçtiğiniz sunum, onayınızla Bilge Defter sunucusunda PDF’e çevrilir. Mevcut defteriniz gönderilmez. Dönüşüm internet ve onaylı hesap gerektirir. Slaytlar sabit görüntü olur; animasyon, video ve konuşmacı notları aktarılmaz. Yazı tipi ve yerleşim değişebilir; eklemeden önce slaytları kontrol edin. En fazla 20 MB / 50 slayt. Makro, gömülü nesne ve dış bağlantı içeren dosyalar güvenlik nedeniyle reddedilebilir.</p><label class="presentation-consent"><input id="pdfPresentationAgree" type="checkbox"> Seçtiğim sunumun sunucuda dönüştürülmesini onaylıyorum.</label><button class="btn primary" id="pdfPresentationSend" disabled>Sunumu gönder ve dönüştür</button></div>';
+  section.innerHTML='<button class="btn" id="pdfPresentationChoose">PowerPoint seç (.pptx)</button><input id="pdfPresentationFile" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden><p class="recovery-note">Eski .ppt dosyalarını PowerPoint’ten PDF olarak dışa aktarıp Cihazdan PDF seç ile açın.</p><div id="pdfPresentationConsent" hidden><p class="recovery-note">Yalnız seçtiğiniz sunum, onayınızla Bilge Defter sunucusunda PDF’e çevrilir. Mevcut defteriniz gönderilmez. Dönüşüm internet ve onaylı hesap gerektirir. Slaytlar sabit görüntü olur; animasyon, video ve konuşmacı notları aktarılmaz. Yazı tipi ve yerleşim değişebilir; eklemeden önce slaytları kontrol edin. En fazla 20 MB / '+PDF_PAGE_LIMIT+' slayt. Görsel yoğunluğu cihazın güvenli görüntü bütçesini aşabilir. Makro, gömülü nesne ve dış bağlantı içeren dosyalar güvenlik nedeniyle reddedilebilir.</p><label class="presentation-consent"><input id="pdfPresentationAgree" type="checkbox"> Seçtiğim sunumun sunucuda dönüştürülmesini onaylıyorum.</label><button class="btn primary" id="pdfPresentationSend" disabled>Sunumu gönder ve dönüştür</button></div>';
   document.querySelector('#pdfProgress').before(section);
   const preview=document.createElement('div');preview.id='presentationPreview';preview.hidden=true;
   preview.innerHTML='<p class="recovery-note">Dönüşüm önizlemesi: yerleşimi kontrol edin. Henüz deftere eklenmedi.</p><img id="presentationPreviewImage" alt="Dönüştürülen slayt önizlemesi"><div class="presentation-preview-controls"><button class="btn" id="presentationPreviewPrevious" aria-label="Önceki slayt önizlemesi">←</button><output id="presentationPreviewCount" aria-live="polite"></output><button class="btn" id="presentationPreviewNext" aria-label="Sonraki slayt önizlemesi">→</button></div>';
@@ -263,7 +280,7 @@ document.querySelector('#pdfApply').onclick=async()=>{
       pdfMessage('Sunum PDF’e dönüştürülüyor… Pencereyi kapatarak beklemeyi iptal edebilirsiniz.');
       const response=await window.BilgeAccount.fetch(base+'convert',{method:'POST',headers:{'Content-Type':media,'X-Bilge-Pdf-Consent':'1'},body:file,signal:abort.signal});
       if(!alive())return;
-      if(!response.ok)throw Error(({429:'Sunucu meşgul. Biraz sonra yeniden deneyin.',413:'Sunum boyut sınırını aşıyor.',415:'Sunum türü veya içeriği desteklenmiyor.',422:'Sunum açılamadı. Dosya bozuk, şifreli ya da güvenlik nedeniyle reddedilmiş olabilir.',503:'Sunum hizmeti şu anda kullanılamıyor; yöneticinize bildirin.',504:'Dönüştürme zaman aşımına uğradı. Yeniden göndermeden önce yöneticinin hizmeti denetlemesi gerekiyor.'})[response.status]||'İşlem tamamlanamadı. Hesabınızı ve bağlantınızı denetleyin.');
+      if(!response.ok)throw Error(await presentationErrorMessage(response));
       if((response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase()!=='application/pdf'||Number(response.headers.get('content-length')||0)>PDF_FILE_LIMIT||!response.body)throw Error('Sunucudan geçerli PDF alınamadı.');
       const reader=response.body.getReader(),chunks=[];let size=0;
       try{for(;;){const {value,done}=await reader.read();if(!alive()){await reader.cancel();return}if(done)break;size+=value.length;if(size>PDF_FILE_LIMIT)throw Error('Dönüşüm sonucu 20 MB sınırını aşıyor.');chunks.push(value)}}catch(e){await reader.cancel().catch(()=>{});throw e}finally{reader.releaseLock()}
@@ -274,7 +291,7 @@ document.querySelector('#pdfApply').onclick=async()=>{
       clearTimeout(timer);controller=null;busy=false;pdfBusy=false;selected=null;agree.checked=false;controls();
       await importPdfFile(new File([blob],file.name.replace(/\.pptx?$/i,'')+'.pdf',{type:'application/pdf'}),file.name);
     }catch(e){if(token===epoch&&pdfDialog.open)pdfMessage(e.name==='AbortError'?'Dönüştürme zaman aşımına uğradı veya iptal edildi. Notlar değişmedi.':`Sunum eklenmedi. ${e.message==='Failed to fetch'?'Bağlantı kurulamadı.':e.message||'İşlem tamamlanamadı.'}`)}
-    finally{clearTimeout(timer);if(token===epoch){controller=null;busy=false;pdfBusy=false;agree.checked=false;document.querySelector('#pdfChoose').disabled=false;controls()}}
+    finally{clearTimeout(timer);abort.abort();if(token===epoch){controller=null;busy=false;pdfBusy=false;agree.checked=false;document.querySelector('#pdfChoose').disabled=false;controls()}}
   };
   // Network loss does not imply an already-uploaded file was never sent.
   addEventListener('offline',()=>{if(selected||busy){cancelPdf();if(pdfDialog.open)pdfMessage('Bağlantı kesildi; aktarım tamamlanmadı. Notlar değişmedi. Sunucuya ulaşan işlem bir süre daha çalışabilir.')}});
