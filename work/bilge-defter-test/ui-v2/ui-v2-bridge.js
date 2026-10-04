@@ -179,6 +179,9 @@
       'pdf.open': () => {
         document.querySelector('#pdfOpen')?.click();
       },
+      'presentation.open': () => {
+        document.querySelector('#presentationOpen')?.click();
+      },
       'pdf.export': () => {
         document.querySelector('#pdfExportOpen')?.click();
       },

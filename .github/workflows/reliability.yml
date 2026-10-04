@@ -24,12 +24,18 @@ jobs:
       - run: npx playwright install --with-deps chromium webkit
       - run: python -m pip install -r server-candidate/v49/requirements.txt pytest
       - run: npm run test:reliability
+      - run: npm run build
+      - run: npm run test:presentations
       - run: python -m pytest server-candidate/v49/tests -q
+      - run: python -m pytest worker -q
+      - run: python -B work/test_deploy_v73.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: synthetic-reliability-evidence
-          path: outputs/reliability-1/
+          path: |
+            outputs/reliability-1/
+            outputs/presentations/
           retention-days: 7
 # No secrets, live accounts, deployment, self-hosted runner or paid API.
 # This supplements (does not replace) the historical release/device test matrix.

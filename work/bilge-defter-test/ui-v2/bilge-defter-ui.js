@@ -311,7 +311,7 @@
   };
   const icon = (name, cls='') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.paper}</svg>`;
   const GROUPS = {
-    insert:{title:'Ekle',sub:'SAYFANI ZENGİNLEŞTİR',note:'İşlem açık sayfaya uygulanır. Mevcut içerik kendi motorunda korunur.',actions:['insert.text','insert.image','insert.camera','pdf.open']},
+    insert:{title:'Ekle',sub:'SAYFANI ZENGİNLEŞTİR',note:'İşlem açık sayfaya uygulanır. Mevcut içerik kendi motorunda korunur.',actions:['insert.text','insert.image','insert.camera','pdf.open','presentation.open']},
     study:{title:'Çalışma',sub:'NOTTAN ÖĞRENMEYE',note:'Bu işlemler mevcut çalışma modüllerine bağlanır. Arayüz tek başına sözlük veya yazı tanıma motoru değildir.',actions:['study.planner','study.dictionary','study.recognize','study.webSearch','study.guide']},
     page:{title:'Sayfa seçenekleri',sub:'YALNIZCA AÇIK SAYFA',note:'Temizleme ve çöp kutusu işlemleri ayrı onay ister.',actions:['page.rename','page.paper','page.top','selection.edit','page.clear','page.trash']},
     file:{title:'Dosya ve yedek',sub:'KOPYAN SENDE KALSIN',note:'Tarayıcıdaki kayıt ve geri dönüş kopyası bağımsız yedek değildir. İndirdiğin dosyayı ayrı bir yerde sakla.',actions:['pdf.export','backup.export','backup.status','backup.import','backup.rollback']},
@@ -322,6 +322,7 @@
     'insert.image':{label:'Görsel ekle',desc:'Cihazından bir görsel seç.',icon:'image',page:true},
     'insert.camera':{label:'Fotoğraf çek',desc:'Kamera veya cihaz seçicisini aç.',icon:'camera',page:true},
     'pdf.open':{label:'PDF aç',desc:'Belgeyi mevcut PDF motoruyla aç.',icon:'pdf'},
+    'presentation.open':{label:'PowerPoint aç',desc:'PPTX sunumunu onayınla dönüştür; slaytlara not al.',icon:'pdf'},
     'study.library':{label:'Kütüphane',desc:'Kaynak kitapları bu pencerede aç; Deftere dön ile buraya dönersiniz. İnternet ve onaylı hesap gerekir.',icon:'book'},
     'study.planner':{label:'Takvim / çalışma planı',desc:'Derslerini ve tekrarlarını düzenle.',icon:'calendar'},
     'study.dictionary':{label:'Sözlük',desc:'Seçili metni veya girdiğin terimi incele.',icon:'dictionary',page:true},
