@@ -226,6 +226,22 @@ class Deploy73(unittest.TestCase):
             'Mounts': [{'Type': 'bind', 'Source': str(r.ROOT / 'socket'), 'Destination': r.SOCKET_DEST, 'RW': True}]}
         return proof
 
+    def test_visual_gate_rejects_title_only_chart_and_wrong_pdf(self):
+        names = {'native-chart.pptx': 1, 'lumen-integumentary-original.pptx': 30}
+        worker = {'conversions': {n: {'sha256': 'pdf-'+n} for n in names}}
+        proof = {'source': 'candidate', 'reviewed': True, 'files': {n: {
+            'sha256': 'pdf-'+n, 'pages': count, 'same_raster_pages': count} for n, count in names.items()}}
+        with patch.object(r, 'receipt', lambda: {'commit': 'candidate'}):
+            (r.ROOT / 'visual-proof.json').write_text(json.dumps(proof))
+            r.visual_acceptance(worker)
+            proof['files']['native-chart.pptx']['same_raster_pages'] = 0
+            (r.ROOT / 'visual-proof.json').write_text(json.dumps(proof))
+            with self.assertRaises(RuntimeError): r.visual_acceptance(worker)
+            proof['files']['native-chart.pptx']['same_raster_pages'] = 1
+            proof['files']['native-chart.pptx']['sha256'] = 'another-pdf'
+            (r.ROOT / 'visual-proof.json').write_text(json.dumps(proof))
+            with self.assertRaises(RuntimeError): r.visual_acceptance(worker)
+
     def test_worker_gate_accepts_exact_isolated_runtime(self):
         proof = self.worker_fixture()
         with patch.object(r, 'receipt', lambda: {'commit': 'candidate'}), patch.object(Path, 'is_socket', lambda self: True):

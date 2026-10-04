@@ -376,12 +376,23 @@ def runtime_contract(current, previous):
     need(current['Config']['Cmd'] == previous['Config']['Cmd'], 'API process command changed')
 
 
+def visual_acceptance(worker):
+    proof = json.loads((ROOT / 'visual-proof.json').read_text())
+    need(proof['source'] == receipt()['commit'], 'Visual proof source mismatch')
+    for name, pages in [('native-chart.pptx', 1), ('lumen-integumentary-original.pptx', 30)]:
+        result = proof['files'][name]
+        need(result['sha256'] == worker['conversions'][name]['sha256'], 'Visual PDF differs from worker output')
+        need(result['pages'] == pages and result['same_raster_pages'] == pages, 'Visual reference mismatch: ' + name)
+    need(proof.get('reviewed') is True, 'Visual review missing')
+
+
 def activate():
     old(); value = package(); unchanged(); worker = worker_ok()
     proof = json.loads((ROOT / 'stage-proof.json').read_text())
     images = json.loads((ROOT / 'images.json').read_text())
     need(proof['source'] == value['commit'] and proof['api_image'] == images['accounts'], 'Staged source/image changed')
     need(proof.get('api_tests_passed') is True and proof['proxy'].get('passed') is True and proof['worker'] == worker, 'Acceptance proof incomplete')
+    visual_acceptance(worker)
     rehearsal = json.loads((ROOT / 'rehearsal-proof.json').read_text())
     need(rehearsal['source'] == value['commit'] and rehearsal['accounts']['database'] == 'ok', 'Rollback rehearsal missing')
     need(json.loads((ROOT / 'offhost-backups.json').read_text()) == b.load('backup-receipt.json'), 'Independent backup verification missing')
