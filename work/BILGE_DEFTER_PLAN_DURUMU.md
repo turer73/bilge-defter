@@ -1,6 +1,14 @@
 # Bilge Defter — uygulama sırası ve kanıt durumu
 
-## Güncel öncelik — 27 Eylül 2026, güvenilir kullanım
+## Güncel durum — 4 Ekim 2026, v72 canlı, cihaz kabulü açık
+
+- Canlı web **v72**, hesap servisi **v68**; kaynak `8ef7550`, `repair/v57-stability`, `origin/master` `54835dd` ile birleşik (PR #10, #11). Kanıt `docs/RELEASE_V72.md`; v66–v71 notları `docs/RELEASE_V66.md` … `docs/RELEASE_V71.md`.
+- v69 iPad kayıt kararlılığı; v70–v71 PDF ve görselleri ayrı saklama (yerel görsel kapasitesi 96 MB, sunucu eşitleme sınırı hâlâ 5 MiB); v72 Codex inceleme düzeltmeleri (#2053–#2056, #2058 kapandı). Geri dönüş zinciri `docs/GERI_DONUS.md`; **v70'in altına inilmez**.
+- Yedek: günlük 03:10 hesap/yer imi arşivi (7 gün) + 04:30 restic harici disk kopyası; 4 Ekim geri yükleme ölçümü `docs/ISLETIM.md §7`. Sunucuda şifreli öğrenci defteri henüz yok (`bilge_defter_backups` 0).
+- Açık kabul (değişmedi): fiziksel iPad'de v72 ile 40 dakikalık ders (kalem, avuç teması, iki parmak kaydırma, arka plan/yeniden açma, görselli-PDF'li defterde JSON yedeği yükleme), sonra 3–5 öğrenci pilotu; `docs/ACCEPTANCE.md`.
+- Kullanıcı kararı sürüyor: yeni özellik yok; işletim ve belgeler toparlanır, pilot yapılır.
+
+## Önceki öncelik — 27 Eylül 2026, güvenilir kullanım
 
 - Kullanıcı kararı: yeni özellik yerine güvenilirlik ve kullanım iyileştirmesi.
 - Son denetlenen canlı web/hesap sürümü **v65**, kaynak `7077534`, `repair/v57-stability`. Kanıt `docs/RELEASE_V65.md`. Canlı durum tarihlidir; sonraki yayında tekrar kontrol edilir. Eski özel adres kapalı.
