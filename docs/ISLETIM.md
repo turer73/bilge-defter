@@ -1,24 +1,25 @@
 # İşletim kılavuzu (tek sayfa)
 
-28 Eylül 2026. Ders öncesi 08:00'de elinde olması gereken her şey. Ayrıntılar bağlantılı
+28 Eylül 2026; sürüm bilgileri 4 Ekim 2026'da v72'ye göre güncellendi. Ders öncesi 08:00'de elinde olması gereken her şey. Ayrıntılar bağlantılı
 belgelerde; bu sayfa "nereye bakayım, ne yapayım" için.
 
 ## 1. Ne, nerede
 
 | Bileşen | Adres / yer | Sürüm | Nasıl bakılır |
 |---|---|---|---|
-| Uygulama (öğrenci) | https://defter.bilgearena.com (Cloudflare Access, e-posta kodu) | web **v68** | `curl -s http://127.0.0.1:18790/release.json` (klipper) |
+| Uygulama (öğrenci) | https://defter.bilgearena.com (Cloudflare Access, e-posta kodu) | web **v72** | `curl -s http://127.0.0.1:18790/release.json` (klipper) |
 | Hesap servisi | konteyner `bilge-defter-accounts`, nginx üzerinden `/api/v1/bilge-defter/`; Docker sağlık kontrolü var | **v68** | `docker exec bilge-defter-accounts python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8080/health').read())"` |
 | Öğrenci verisi | `/opt/bilge-defter-classroom-v49/data/bilge-defter.sqlite` (üyeler, şifreli yedekler) | — | yalnız salt okunur bakılır; sahibi uid 10001 |
 | Sözlük | `/opt/bilge-defter-classroom-v57/dictionary` (salt okunur) | 146.532 madde | `…/dictionaries` uçları kimlik ister |
 | Kütüphane | konteyner `bilge-defter-library-v1`, `/library/` | v58 | `docker inspect` sağlık durumu |
 | Tünel | konteyner `bilge-defter-invited-cloudflared` | — | `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18789/ready` → 200 |
-| Kaynak | github.com/turer73/bilge-defter, `origin/master` (v68 birleştirilince canlıyla aynı) (yerel `master` bayat olabilir, `git fetch`); çalışma dalı `repair/v57-stability` | | |
+| Kaynak | github.com/turer73/bilge-defter, `origin/master` (v72 kaynağıyla aynı, PR #10/#11; yerel `master` bayat olabilir, `git fetch`); çalışma dalı `repair/v57-stability` | | |
 | Sunucu | klipper (Tailscale 100.84.251.49, `klipperos`, sudo) | | |
 
 Canlı sürüm bağı: `readlink -f /opt/bilge-defter-invited/current`. Sürüm dizinleri
-`/opt/bilge-defter-classroom-vNN`; şu an v49 (veri), v57 (sözlük), v58 (kütüphane), v64–v66
-v67 (geri dönüş zinciri), v63 (dosyalar duruyor, otomatik geri dönüş yolu yok), v68 (canlı). Başka
+`/opt/bilge-defter-classroom-vNN`; 4 Ekim 2026 ölçümü: v49 (veri), v57 (sözlük), v58 (kütüphane),
+v63 (dosyalar duruyor, otomatik geri dönüş yolu yok), v64–v71 (geri dönüş zinciri; **v70'in altına
+inilmez**, [GERI_DONUS](GERI_DONUS.md)), v72 (canlı). Başka
 dizin yok; klipper 28 Eylül'de referanssız 13 dizini arşivleyip sildi
 (`/backups/archive/bilge-defter-unref-20260928.tar.gz`, 110 MB; not #101593, arşiv 28 Eylül'de
 görüldü).
@@ -46,6 +47,7 @@ kip `notify`, otomatik yeniden başlatma yok. Kuma yalnız gösterge, uyarı ver
 | Eşitleme "bekliyor" | hesap servisi ve DB dokunması (sağlık denetimi 3) | DB kilidi → konteyneri yeniden başlat; veri dosyasına dokunma |
 | Yeni sürüm bozuk | [GERI_DONUS](GERI_DONUS.md) | önce web bir sürüm geri, sağlık denetimi, duyuru |
 | Veri kaybı şüphesi | **hiçbir şey silme**; [YEDEK_GERI_YUKLEME](YEDEK_GERI_YUKLEME.md) | önce mevcut dosyayı kenara al, sonra yedeği aç |
+| Durmuş ön izleme (`-preview-vNN`, loopback 18800) ya da geri dönüş (`-rollback-vNN`) konteyneri beklenmedik şekilde çalışıyor / `Exited (128)` "port is already allocated" | `docker ps -a --filter name=bilge-defter`; canlı etkilenmez (18790 canlıda) | Kaynak çoğu kez linux-ai-server `/dashboard` konteyner panelindeki başlat düğmesidir (`docker start <ad>` koşar, komut gövdesi denetim günlüğüne yazılmaz). Ön izlemeyi `docker stop` ile durdur; geri dönüş konteynerinin `Exited (128)` kaydı zararsızdır, `deploy-vNN.py rollback` kimliği doğrulayıp kendisi başlatır. 4 Ekim 2026 olayı: [RELEASE_V72](RELEASE_V72.md) |
 
 Günlükler: `docker logs --since 1h <konteyner>`; nginx erişim günlüğü web konteynerinde
 (`?q=` arama terimleri düşüyor, [INCELEME C](INCELEME_2026-09-28.md)). Yayın kayıtları
@@ -65,10 +67,11 @@ Günlükler: `docker logs --since 1h <konteyner>`; nginx erişim günlüğü web
    ([RELEASE_V67](RELEASE_V67.md)). Klipper artık restart öncesi not atıyor.
 
 Şablon: web + hesap servisi için `deploy-v68.py` (sağlık kontrolü, `rollback` ön kontrolü,
-silinmiş konteyneri kayıttan kurma, hesap servisi provası, imaj içi bayt karşılaştırması). v65–v67
-betiklerinin `rollback`'i canlı sürümü ön kontrol etmiyor ([GERI_DONUS](GERI_DONUS.md)). Sonraki yayın (v68) adayları: sunucuda önceki şifreli kopyayı
-saklama, web ve hesap konteynerine Docker sağlık kontrolü, hesap servisi için yeniden kurma
-yeteneği ve prova.
+silinmiş konteyneri kayıttan kurma, hesap servisi provası, imaj içi bayt karşılaştırması); yalnız
+web için en güncel örnek `deploy-v72.py` (`stage` 18800, `rehearse` 18806, `activate` sonunda ön
+izlemeyi durdurur). v65–v67 betiklerinin `rollback`'i canlı sürümü ön kontrol etmiyor
+([GERI_DONUS](GERI_DONUS.md)). v68 adayı olarak yazılan sunucuda önceki şifreli kopya, Docker
+sağlık kontrolü, hesap servisi yeniden kurma ve prova v68 ile geldi ([RELEASE_V68](RELEASE_V68.md)).
 
 ## 5. Öğrenci ekleme
 
@@ -107,14 +110,23 @@ ama dosyalar uid 1000'e okunur ([INCELEME C](INCELEME_2026-09-28.md)).
 ## 7. Yedek
 
 Her gün 03:10 hesap veritabanı ve kütüphane yer imleri `/backups/klipper-volumes/<tarih>/`;
-7 gün saklanır; aynı disk grubunda, sunucu dışı kopya yok. Geri yükleme adımları ve 28 Eylül
-tatbikatı: [YEDEK_GERI_YUKLEME](YEDEK_GERI_YUKLEME.md).
+7 gün saklanır; aynı disk grubunda. Her gün 04:30 `external-backup` (restic) `/backups` dahil
+ikinci fiziksel kopyayı klipper'a takılı harici USB diske alır (`cron_outcomes` satırı
+`external-backup | pass | snapshot … check=ok`); bu kopya sunucu dışı değildir, disk aynı odadadır.
+Geri yükleme adımları ve 28 Eylül tatbikatı: [YEDEK_GERI_YUKLEME](YEDEK_GERI_YUKLEME.md).
+4 Ekim 2026 ölçümü: günün hesap ve yer imi arşivleri geçici dizine açıldı, `integrity_check`
+ikisinde de `ok`, satır sayıları canlıyla birebir (üye 2, denetim 2, edge 1, şifreli yedek **0**,
+yer imi 1). `bilge_defter_backups` boş olduğu için sunucuda gerçek öğrenci defteri yoktur; görselli
+defterin geri yüklenmesi yalnız cihazdan alınan JSON yedeğiyle, uygulama içinde sınanabilir.
 
 ## 8. Kim, ne zaman
 
 - Sahip ve onay: kullanıcı (turer73). Her canlı yayın ve geri dönüş için ayrı, açık onay.
 - Klipper oturumu (Opus): sunucu işletimi, yedek, cron, devops ajanı; bilge-defter
   konteyner ve dizinlerine dokunmaz, yayın penceresinde servis yeniden başlatmadan önce not atar.
+- linux-ai-server `/dashboard` konteyner panelindeki başlat/durdur/yeniden başlat düğmeleri
+  bilge-defter konteynerlerinde kullanılmaz; durmuş `-preview`/`-rollback` konteynerleri yayın
+  betiğinin durumudur (4 Ekim 2026 olayı, [RELEASE_V72](RELEASE_V72.md)).
 - surer oturumu (Claude): kod, test, paket, yayın betikleri, klipper üzerindeki bilge-defter
   komutları.
 - Codex: bağımsız inceleme; kaynak değiştirmez.

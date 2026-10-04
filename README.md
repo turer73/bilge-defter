@@ -1,6 +1,21 @@
 # Bilge Defter
 
-## Güncel teslim: v52
+## Güncel durum: v72 (4 Ekim 2026)
+
+Canlı web **v72**, hesap servisi **v68** (https://defter.bilgearena.com, Cloudflare Access).
+Çalışma dalı `repair/v57-stability`; `origin/master` v72 kaynağıyla birleşik (PR #10, #11).
+Günlük işletim ve "nereye bakayım": [docs/ISLETIM.md](docs/ISLETIM.md). Sürüm notları
+`docs/RELEASE_V57.md` … [docs/RELEASE_V72.md](docs/RELEASE_V72.md); geri dönüş zinciri
+[docs/GERI_DONUS.md](docs/GERI_DONUS.md); yedek ve geri yükleme
+[docs/YEDEK_GERI_YUKLEME.md](docs/YEDEK_GERI_YUKLEME.md); plan ve kanıt durumu
+`work/BILGE_DEFTER_PLAN_DURUMU.md`.
+
+Yayın akışı `work/deploy-vNN.py` (`prepare` → `stage` → `rehearse` → onay → `activate`);
+`npm test` PowerShell'den çalıştırılır (Git Bash'te `tar` sorunu). Açık kabul: fiziksel iPad'de
+v72 ve 3–5 öğrenci pilotu ([docs/ACCEPTANCE.md](docs/ACCEPTANCE.md)). Aşağıdaki v52 bölümü
+ilk kaynak tesliminin tarihsel kaydıdır; komutları hâlâ geçerlidir.
+
+## v52 kaynak teslimi (tarihsel, 24 Eylül 2026)
 
 Tek UI kaynağı `work/bilge-defter-test/ui-v2/ui-v2-bridge.js` ile mevcut
 v52 çalışma ağacıdır. Eski `ui-v2` dalı tarihsel karşılaştırma içindir;

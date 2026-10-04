@@ -103,3 +103,32 @@ Geri dönüş (v72 ya da v71 canlıyken; web v71):
 ```sh
 sudo python3 -B /opt/bilge-defter-classroom-v72/deploy-v72.py rollback
 ```
+
+## 4 Ekim 2026 — yayın sonrası denetim ve ön izleme olayı
+
+Codex'in salt okunur denetimi (not #101812): canlı v72 manifesti `a602e524` yayınlanan paketle
+aynı; 238 HTTP dosya özeti, 235 çevrim dışı varlık, 14 yetkisiz istek reddi, 6 korumalı yol;
+sağlık betiği 15/15; genel adres 302 Access. GitHub `master` `54835dd` ve çalışma dalı aynı ağaç.
+
+**Ön izleme konteyneri beklenmedik şekilde çalışıyordu.** `activate` 2 Ekim 22:01'de
+`-preview-v72`'yi durdurmuştu; 4 Ekim 02:01:49'da yeniden başlamış (loopback 18800), 02:02:03'te
+`-rollback-v72` (v71 web, `unless-stopped`) de başlatılmaya çalışılmış ve 18790 canlıda olduğu için
+`Exited (128)` "port is already allocated" ile kalmış. İz (klipper journal + dockerd günlüğü): aynı
+saniyelerde surer makinesinden (Tailscale 100.96.68.104) linux-ai-server `/dashboard` açılmış ve
+`/api/v1/shell/exec` çağrıları gelmiş; dashboard'ın konteyner paneli `docker <eylem> <ad>` koşar.
+Yani kaynak dashboard'daki başlat düğmesidir, cron/devops ajanı/deploy betiği değil (o pencerede
+`cron_outcomes` yalnız `pass`, `remediation_log`'da bilge-defter kaydı yok). Komut gövdesi
+sunucuda hiçbir yere yazılmadığı için düğmeye kimin bastığı günlükten çıkmaz. Canlı trafik hiç
+etkilenmedi; her 5 dakikadaki sağlık denetimi aralıksız `pass`.
+
+Yapılan: `docker stop bilge-defter-invited-web-preview-v72` (4 Ekim 12:30, surer oturumu);
+sağlık 15/15. `-rollback-v72` dokunulmadı: kimliği `private/` anlık görüntüsüyle aynı
+(`6552f4a78f86`), `Exited (128)` kaydı `rollback` ön kontrolünü etkilemez (betik kimliği
+doğrulayıp `docker start` eder; o anda 18790 boşalmış olur). Kural: [ISLETIM §8](ISLETIM.md).
+
+**Gerçek verili geri yükleme sınırı.** Günün `/backups/klipper-volumes/2026-10-04/` arşivleri
+geçici dizine açıldı: `integrity_check` ok, satır sayıları canlıyla birebir (üye 2, denetim 2, edge 1,
+şifreli yedek 0, yer imi 1). `bilge_defter_backups` boş: hiçbir öğrenci sunucuya şifreli defter
+göndermemiş. Dolayısıyla "öğrencinin görselleri ve PDF'leriyle geri dönüş" sunucu yedeğinden
+sınanamaz; yalnız gerçek iPad'den alınan JSON yedeğinin uygulama içinde yüklenmesiyle sınanır ve
+bu, aşağıdaki iPad kabulünün parçasıdır.
