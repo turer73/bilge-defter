@@ -69,8 +69,8 @@ def workbook_parts():
     }
 
 
-def chart_parts(workbook=None, workbook_name=WORKBOOK_NAME):
-    with zipfile.ZipFile(io.BytesIO(deck())) as package:
+def chart_parts(workbook=None, workbook_name=WORKBOOK_NAME, slides=1):
+    with zipfile.ZipFile(io.BytesIO(deck(slides=slides))) as package:
         parts = {name: package.read(name) for name in package.namelist()}
     parts["[Content_Types].xml"] = parts["[Content_Types].xml"].decode().replace('</Types>',
         '<Default Extension="xlsx" ContentType="' + SHEET_TYPE + '"/>'
@@ -103,6 +103,28 @@ def test_native_chart_workbook_is_accepted_and_forwarded(setup, absolute):
     response = client.post(PATH, headers=headers, content=archive(parts))
     assert response.status_code == 200 and response.content == PDF
     assert len(state["calls"]) == 1
+
+
+@pytest.mark.parametrize("slides,expected", [(100, 200), (101, 422)])
+def test_slide_limit_applies_after_valid_chart_workbook_checks(setup, slides, expected):
+    client, headers, state = setup
+    response = client.post(PATH, headers=headers, content=archive(chart_parts(slides=slides)))
+    assert response.status_code == expected
+    assert bool(state["calls"]) is (expected == 200)
+    if expected == 422:
+        assert response.json() == {"detail": {"code": "presentation_slide_limit",
+                                             "max_slides": 100, "actual_slides": 101}}
+
+
+def test_unsafe_embedded_workbook_does_not_get_slide_limit_error(setup):
+    client, headers, state = setup
+    nested = workbook_parts()
+    nested["xl/vbaProject.bin"] = b"private macro data"
+    response = client.post(PATH, headers=headers,
+                           content=archive(chart_parts(archive(nested), slides=101)))
+    assert response.status_code == 415
+    assert isinstance(response.json()["detail"], str)
+    assert not state["calls"]
 
 
 def test_percent_encoded_names_are_a_conservative_pilot_limit():
