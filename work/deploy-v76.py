@@ -178,6 +178,11 @@ def protected():
             continue
         # A compact digest proves config/mount/identity equality without exposing secrets.
         contract = {k: container.get(k) for k in ('Id', 'Image', 'Config', 'HostConfig', 'Mounts')}
+        # Docker inspect does not promise Mounts list order. Preserve every
+        # record/field (including duplicates), canonicalizing only that order.
+        need(isinstance(contract['Mounts'], list), 'Unexpected Docker mount representation')
+        contract['Mounts'] = sorted(contract['Mounts'], key=lambda mount:
+            (mount.get('Destination', ''), json.dumps(mount, sort_keys=True)))
         result.append([container['Name'], container['Id'], container['State']['Status'], container['State']['StartedAt'],
                        container['State'].get('Health', {}).get('Status'),
                        hashlib.sha256(json.dumps(contract, sort_keys=True).encode()).hexdigest()])

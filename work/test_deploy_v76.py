@@ -547,6 +547,54 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(calls, [])
         self.assertEqual(state[d.WEB]['Id'], 'f' * 64)
 
+    def protected_for(self, container):
+        def run(*args, **kwargs):
+            return container['Id'] if args == ('docker', 'ps', '-aq') else '4321'
+        with patch.object(d, 'inspect', return_value=container), patch.object(d, 'run', side_effect=run):
+            return d.protected()
+
+    def protected_container(self):
+        container = self.web()
+        container.update(Id='2' * 64, Name='/bilge-defter-library-v1')
+        container['Mounts'][0]['Propagation'] = 'rprivate'
+        container['Mounts'][1]['Mode'] = 'ro'
+        return container
+
+    def test_mount_reordering_has_identical_runtime_fingerprint(self):
+        container = self.protected_container()
+        first = self.protected_for(container)
+        original = copy.deepcopy(container['Mounts'])
+        container['Mounts'].reverse()
+        self.assertEqual(self.protected_for(container), first)
+        self.assertEqual(container['Mounts'], list(reversed(original)), 'Fingerprint must not mutate inspect input')
+
+    def test_mount_source_change_changes_runtime_fingerprint(self):
+        container = self.protected_container()
+        first = self.protected_for(container)
+        container['Mounts'][0]['Source'] = '/different/source'
+        self.assertNotEqual(self.protected_for(container), first)
+
+    def test_mount_rw_change_changes_runtime_fingerprint(self):
+        container = self.protected_container()
+        first = self.protected_for(container)
+        container['Mounts'][0]['RW'] = True
+        self.assertNotEqual(self.protected_for(container), first)
+
+    def test_duplicate_mount_is_not_collapsed_by_fingerprint(self):
+        container = self.protected_container()
+        first = self.protected_for(container)
+        container['Mounts'].append(copy.deepcopy(container['Mounts'][0]))
+        self.assertNotEqual(self.protected_for(container), first)
+        repeated = self.protected_for(container)
+        container['Mounts'].reverse()
+        self.assertEqual(self.protected_for(container), repeated)
+
+    def test_other_mount_fields_remain_in_fingerprint(self):
+        container = self.protected_container()
+        first = self.protected_for(container)
+        container['Mounts'][0]['Propagation'] = 'rshared'
+        self.assertNotEqual(self.protected_for(container), first)
+
 
 def read(path):
     return json.loads(path.read_text())
