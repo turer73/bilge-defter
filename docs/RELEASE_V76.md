@@ -17,6 +17,11 @@ Canlı sonuç yalnız aynı kaynak commit'i ve receipt'e bağlı `live-proof.jso
 - Paket öğrenci sunumu, çizimi, özel tarayıcı deposu veya özel anahtar içermez.
   Öğrencinin PPTX dosyası yeni istemci okuyucusunda işlenir; eski sunucu PDF
   dönüştürme yolu bu yayın nedeniyle yeniden yapılandırılmaz.
+- Web konteynerinin canlı v75'te ölçülen capability düzeni korunur: `CapDrop=ALL`
+  ve yalnız `CAP_CHOWN`, `CAP_SETGID`, `CAP_SETUID`. Araç ek/eksik/tekrarlı
+  capability'yi reddeder; yeni web aynı üçünü alır. Bu bir yetki genişletmesi
+  değildir. Salt okunur kök, `no-new-privileges`, mevcut ağ ve iki salt okunur
+  bind mount zorunlulukları değişmez.
 
 Ürün davranışı ve pilot sınırları için [DIRECT_PPTX_PILOT.md](DIRECT_PPTX_PILOT.md).
 Pilotun tarayıcı testleri, gerçek iPad kalem/avuç/bellek ve font sadakati kabulünün

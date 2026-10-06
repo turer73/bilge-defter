@@ -103,7 +103,7 @@ class ReleaseTests(unittest.TestCase):
                            for name, dest in [('ui', '/usr/share/nginx/html'), ('classroom-nginx.conf', '/etc/nginx/conf.d/default.conf')]],
                 'HostConfig': {'ReadonlyRootfs': True, 'Privileged': False, 'RestartPolicy': {'Name': 'unless-stopped'},
                                'Memory': 256 * 1024**2, 'PidsLimit': 64, 'NanoCpus': 500000000,
-                               'CapDrop': ['ALL'], 'CapAdd': [], 'SecurityOpt': ['no-new-privileges:true'],
+                               'CapDrop': ['ALL'], 'CapAdd': ['CAP_CHOWN', 'CAP_SETGID', 'CAP_SETUID'], 'SecurityOpt': ['no-new-privileges:true'],
                                'Tmpfs': {'/tmp': 'rw,size=32m'}, 'LogConfig': {'Type': 'none'},
                                'PortBindings': {'80/tcp': [{'HostIp': '127.0.0.1', 'HostPort': '18790'}]}},
                 'NetworkSettings': {'Networks': {'bilge-defter-classroom': {}}}}
@@ -212,6 +212,9 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(self.saved_env, 'PATH=/usr/bin\nSECRET=never-print\n')
         self.assertNotIn('SECRET=never-print', args)
         self.assertEqual(args[args.index('--restart') + 1], 'no')
+        self.assertEqual([args[i + 1] for i, value in enumerate(args) if value == '--cap-add'],
+                         ['CAP_CHOWN', 'CAP_SETGID', 'CAP_SETUID'])
+        self.assertEqual([args[i + 1] for i, value in enumerate(args) if value == '--cap-drop'], ['ALL'])
         self.assertTrue(all('bilge-defter-accounts' not in c for c in calls))
         self.assertFalse((self.root / 'private' / (d.PREVIEW + '.env')).exists())
 
@@ -227,6 +230,27 @@ class ReleaseTests(unittest.TestCase):
     def test_public_binding_rejected(self):
         web = self.web(); web['HostConfig']['PortBindings']['80/tcp'][0]['HostIp'] = '0.0.0.0'
         with self.assertRaisesRegex(RuntimeError, 'port drift'):
+            d.web_contract(web, self.prior)
+
+    def test_measured_web_capabilities_exactly_accepted(self):
+        web = self.web()
+        d.web_contract(web, self.prior)
+        web['HostConfig']['CapAdd'].reverse()
+        d.web_contract(web, self.prior)
+
+    def test_extra_web_capability_rejected(self):
+        web = self.web(); web['HostConfig']['CapAdd'].append('CAP_SYS_ADMIN')
+        with self.assertRaisesRegex(RuntimeError, 'capability baseline changed'):
+            d.web_contract(web, self.prior)
+
+    def test_missing_web_capability_rejected(self):
+        web = self.web(); web['HostConfig']['CapAdd'].remove('CAP_CHOWN')
+        with self.assertRaisesRegex(RuntimeError, 'capability baseline changed'):
+            d.web_contract(web, self.prior)
+
+    def test_duplicate_web_capability_rejected(self):
+        web = self.web(); web['HostConfig']['CapAdd'].append('CAP_CHOWN')
+        with self.assertRaisesRegex(RuntimeError, 'capability baseline changed'):
             d.web_contract(web, self.prior)
 
     def test_stage_failure_does_not_stop_production(self):

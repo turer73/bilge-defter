@@ -31,6 +31,7 @@ LIVE_PORT = 18790
 PRIOR_UI = '52fc08547724935d63718d0b092e39221171565facd8d77d748e68cfa30a0c8f'
 PRIOR_NGINX = '644511c8b1da01f7afb3d08483babab22192070c210936d1108eb0b12fc42ed1'
 WEB_IMAGE = 'sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236'
+WEB_CAP_ADD = frozenset({'CAP_CHOWN', 'CAP_SETGID', 'CAP_SETUID'})
 PPTX_FILES = {'host.js', 'host.css', 'model.js', 'store.js', 'renderer-bridge.js', 'renderer-frame.html', 'NOTICES.txt'}
 PAYLOAD = {'source-receipt.json', 'classroom-nginx.conf', 'deploy-v76.py', 'verify-publication-v76.py'}
 
@@ -204,7 +205,11 @@ def web_contract(container, source):
     h = container['HostConfig']
     need(set(container['NetworkSettings']['Networks']) == {'bilge-defter-classroom'} and
          h['ReadonlyRootfs'] and not h['Privileged'] and not h.get('Devices') and not h.get('DeviceRequests') and
-         not h.get('CapAdd') and not h.get('Binds') and not h.get('VolumesFrom'), 'Unexpected web host privilege/network contract')
+         not h.get('Binds') and not h.get('VolumesFrom'), 'Unexpected web host privilege/network contract')
+    # Measured live v75 nginx baseline: drop ALL, then retain exactly these
+    # three entrypoint capabilities. Neither broaden nor silently remove them.
+    caps = h.get('CapAdd') or []
+    need(len(caps) == len(WEB_CAP_ADD) and set(caps) == WEB_CAP_ADD, 'Web added capability baseline changed')
     need(h.get('PortBindings') == {'80/tcp': [{'HostIp': '127.0.0.1', 'HostPort': str(LIVE_PORT)}]}, 'Live web port drift')
     need('ALL' in (h.get('CapDrop') or []) and any(v.startswith('no-new-privileges') for v in h.get('SecurityOpt') or []),
          'Web privilege guard missing')
@@ -388,6 +393,8 @@ def clone_web(name, port):
         args += ['-w', config['WorkingDir']]
     for cap in host.get('CapDrop') or []:
         args += ['--cap-drop', cap]
+    for cap in host.get('CapAdd') or []:
+        args += ['--cap-add', cap]
     for option in host.get('SecurityOpt') or []:
         args += ['--security-opt', option]
     for dest, options in (host.get('Tmpfs') or {}).items():
