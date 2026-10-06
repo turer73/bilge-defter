@@ -2,7 +2,8 @@
 const fs=require('fs'),path=require('path'),assert=require('node:assert/strict'),{execFileSync}=require('child_process'),{chromium,webkit}=require('playwright');
 const root=path.resolve(process.env.BILGE_TEST_ROOT||path.join(__dirname,'bilge-defter-invited-v55')),dev=process.env.BILGE_TEST_ROOT?root:path.join(__dirname,'bilge-defter-test'),lib=path.join(__dirname,'library-pilot'),origin='http://127.0.0.1:49358',out=path.join(__dirname,'../outputs/library-quote');
 const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222222222',token='33333333-3333-4333-8333-333333333333',key='bilge-library-quote:'+token;
-const python='C:/Users/sevdi/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe';
+const bundledPython=path.join(process.env.USERPROFILE||'', '.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
+const python=process.env.PYTHON||(process.platform==='win32'?(fs.existsSync(bundledPython)?bundledPython:'python'):'python3');
 const html=execFileSync(python,['-c',`from textview import render_text; print(render_text({'id':'test-book','title':'Anatomy Example','authors':'Example Author','publisher':'Example Publisher','license':'CC BY','url':'https://example.org/book','license_url':'https://example.org/license','page_data':[{'text':'Heart and circulation.\\nKalp ve dolaşım.','label':'iv'}]},1,'${A}'))`],{cwd:lib,encoding:'utf8',env:{...process.env,PYTHONIOENCODING:'utf-8'}});
 fs.mkdirSync(out,{recursive:true});
 (async()=>{const results=[];
