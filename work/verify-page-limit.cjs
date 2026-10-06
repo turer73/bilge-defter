@@ -8,6 +8,9 @@ const zlib = require('node:zlib');
 const crypto = require('node:crypto');
 const {chromium, webkit} = require('playwright');
 const {fixture, slidePdfBytes, memory, stored, settled, servers, root} = require('./verify-presentations.cjs');
+// The candidate evolves; the saved-data compatibility reader below remains the real v74.
+const currentVersion = JSON.parse(fs.readFileSync(path.join(root, 'release.json'), 'utf8')).version;
+assert.match(currentVersion, /^v\d+$/);
 const output = path.resolve(process.env.BILGE_PAGE_LIMIT_OUTPUT || path.join(__dirname, '../outputs/page-limit'));
 const rollbackRoot = path.resolve(process.env.BILGE_TEST_ROLLBACK_ROOT || path.join(__dirname, 'bilge-defter-invited-v74'));
 const realPdf = process.env.BILGE_REAL_PDF ? path.resolve(process.env.BILGE_REAL_PDF) : null;
@@ -251,7 +254,7 @@ async function run(browser, engine) {
 
       f.switchRoot(root); await f.page.reload();
       await f.page.waitForFunction(() => ready && pdfBackgroundReady() && canEdit(), null, {timeout: 30000});
-      assert.equal(await f.page.evaluate(() => APP_VERSION), 'v75');
+      assert.equal(await f.page.evaluate(() => APP_VERSION), currentVersion);
       assert.deepEqual(await f.page.evaluate(() => state.pages), v74Backup.pages);
       await f.page.evaluate(() => document.querySelector('#pdfExportOpen').click());
       await f.page.locator('#pdfExportScope').selectOption('notebook');
@@ -267,7 +270,7 @@ async function run(browser, engine) {
       assert.ok(inspected.probes[0].color[2] > 240 && inspected.probes[1].color[0] > 240, 'first blue and last red page bodies survive export');
       assert.equal(await memory(f.page), beforeExport, 'PDF export must not modify the notebook');
       measurements.push({engine, case: '100-roundtrip', elapsedMs: Date.now() - began, imageDataUrlBytes: pending.bytes, exportedPdfBytes: exported.length});
-      pass('v75 reopens after v74; all 100 exported PDF page dictionaries open and first/last page pixels/order survive');
+      pass(currentVersion + ' reopens after v74; all 100 exported PDF page dictionaries open and first/last page pixels/order survive');
       await f.finish({changed: true});
     } catch (error) { await f.context.close(); throw error; }
   }
