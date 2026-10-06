@@ -70,6 +70,7 @@
   }
   async function logout(){
     if(started&&!locked){
+      if(window.BilgePptx&&!await window.BilgePptx.prepareToLeave()){alert('Sunum notları kaydedilemedi veya sunum hazırlanıyor. İşlemin bitmesini bekleyin; gerekirse sunum yedeği alın.');return}
       if(typeof mediaPending!=='undefined'&&(mediaPending||mediaGesture||plannerDirty||drawing||importing)){alert('Önce açık düzenlemeyi bitirin.');return}
       if(typeof flushSave==='function'&&!await flushSave()){alert('Kayıt tamamlanamadı. Önce JSON yedeği alın.');return}
     }

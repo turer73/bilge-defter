@@ -311,10 +311,10 @@
   };
   const icon = (name, cls='') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.paper}</svg>`;
   const GROUPS = {
-    insert:{title:'Ekle',sub:'SAYFANI ZENGİNLEŞTİR',note:'İşlem açık sayfaya uygulanır. Mevcut içerik kendi motorunda korunur.',actions:['insert.text','insert.image','insert.camera','pdf.open','presentation.open']},
+    insert:{title:'Ekle',sub:'SAYFANI ZENGİNLEŞTİR',note:'Metin ve görsel açık sayfaya eklenir. Doğrudan PowerPoint sunumu seçili deftere bağlanır; sunum ve not yedeği ayrıdır.',actions:['insert.text','insert.image','insert.camera','pdf.open','presentation.native','presentation.library','presentation.open']},
     study:{title:'Çalışma',sub:'NOTTAN ÖĞRENMEYE',note:'Bu işlemler mevcut çalışma modüllerine bağlanır. Arayüz tek başına sözlük veya yazı tanıma motoru değildir.',actions:['study.planner','study.dictionary','study.recognize','study.webSearch','study.guide']},
     page:{title:'Sayfa seçenekleri',sub:'YALNIZCA AÇIK SAYFA',note:'Temizleme ve çöp kutusu işlemleri ayrı onay ister.',actions:['page.rename','page.paper','page.top','selection.edit','page.clear','page.trash']},
-    file:{title:'Dosya ve yedek',sub:'KOPYAN SENDE KALSIN',note:'Tarayıcıdaki kayıt ve geri dönüş kopyası bağımsız yedek değildir. İndirdiğin dosyayı ayrı bir yerde sakla.',actions:['pdf.export','backup.export','backup.status','backup.import','backup.rollback']},
+    file:{title:'Dosya ve yedek',sub:'KOPYAN SENDE KALSIN',note:'Bu yedek normal defter sayfalarını içerir. Doğrudan PowerPoint sunumları için Sunumlar ekranından ayrıca sunum ve not yedeği al. İndirdiğin dosyaları ayrı yerde sakla.',actions:['pdf.export','backup.export','backup.status','backup.import','backup.rollback']},
   };
   // UI komutları dışındaki bütün komutlar uygulamanın verdiği callback'e gider.
   const ACTIONS = {
@@ -322,7 +322,9 @@
     'insert.image':{label:'Görsel ekle',desc:'Cihazından bir görsel seç.',icon:'image',page:true},
     'insert.camera':{label:'Fotoğraf çek',desc:'Kamera veya cihaz seçicisini aç.',icon:'camera',page:true},
     'pdf.open':{label:'PDF aç',desc:'Belgeyi mevcut PDF motoruyla aç.',icon:'pdf'},
-    'presentation.open':{label:'PowerPoint aç',desc:'PPTX sunumunu onayınla dönüştür; slaytlara not al.',icon:'pdf'},
+    'presentation.native':{label:'PowerPoint ekle',desc:'PPTX’i bu cihazda aç; seçili deftere bağla ve slaytlara not al. PDF’e çevrilmez.',icon:'pdf'},
+    'presentation.library':{label:'Bu defterin sunumları',desc:'Seçili deftere eklediğin sunumları ve üzerlerindeki notları aç.',icon:'book'},
+    'presentation.open':{label:'PowerPoint → PDF',desc:'Alternatif: onayınla sunucuda PDF’e dönüştürüp normal defter sayfaları oluştur.',icon:'pdf'},
     'study.library':{label:'Kütüphane',desc:'Kaynak kitapları bu pencerede aç; Deftere dön ile buraya dönersiniz. İnternet ve onaylı hesap gerekir.',icon:'book'},
     'study.planner':{label:'Takvim / çalışma planı',desc:'Derslerini ve tekrarlarını düzenle.',icon:'calendar'},
     'study.dictionary':{label:'Sözlük',desc:'Seçili metni veya girdiğin terimi incele.',icon:'dictionary',page:true},
@@ -910,6 +912,7 @@ dialog.panel[data-pointer-focus=true] #bdx-panel-title:focus{outline:none}
         <label class="field-label" for="bdx-book-select">Defter / ders</label><select id="bdx-book-select"></select>
         <div class="two-buttons"><button class="button subtle" data-command="notebook.create">+ Yeni defter</button><button class="button subtle" data-command="notebook.rename">Defteri düzenle</button></div>
         <button class="button primary full" data-command="page.create">+ Yeni sayfa</button>
+        <button class="button subtle full" data-command="presentation.library">Bu defterin sunumları</button>
         <label class="field-label" for="bdx-page-search">Sayfa ara</label><input id="bdx-page-search" class="input" type="search" placeholder="Sayfa başlığı…" maxlength="100" autocomplete="off">
         <div class="library-stats"><span>BU DEFTERDE</span><span id="bdx-page-count"></span></div>
         <div class="page-list"></div><div class="section-line"></div>

@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v75</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v76</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -163,7 +163,7 @@ let DB='bilge-defter-test-v1'; const STORE='state'; let db,state,activeId,tool='
 let storedJSON=null,editRevision=0,savedRevision=0,savePromise=null,saveFailed=false,saveConflict=false,importing=false,allowLeave=false,failureMessage='',failureCode='';
 // v69: a short local log of save failures and lifecycle events, kept in localStorage because
 // IndexedDB may be what is failing. No note content: names, sizes, durations, visibility only.
-const APP_VERSION='v75',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
+const APP_VERSION='v76',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
 let lastSaveBytes=null,failStreak=0,failSince=0,saveRetrying=false,retryTimer=null,retryWhenVisible=false,hiddenAt=0,lastShownAt=0;
 function diag(ev,extra={}){try{const list=JSON.parse(localStorage.getItem(DIAG_KEY)||'[]');list.push({t:new Date().toISOString(),ev,vis:document.visibilityState,...extra});while(list.length>80)list.shift();localStorage.setItem(DIAG_KEY,JSON.stringify(list))}catch{}}
 function errorInfo(e){return {name:String(e?.name||'Error').slice(0,40),msg:String(e?.message||'').slice(0,160)}}
@@ -173,7 +173,7 @@ function lifeWrite(clean){try{localStorage.setItem(LIFE_KEY,JSON.stringify({sess
 // Deadlines count visible time only: iPadOS suspends hidden pages, and a deadline that passed
 // while suspended says nothing about the save worker.
 function visibleTimeout(fn,ms){let start=performance.now(),id;const arm=()=>{id=setTimeout(()=>{if(document.visibilityState!=='visible'||lastShownAt>start){start=performance.now();arm();return}fn()},ms)};arm();return {clear:()=>clearTimeout(id)}}
-function canEdit(){return ready&&!window.BilgeAccount?.locked&&!saveConflict&&!importing&&!backupDialog.open&&!pdfBusy&&!pdfDialog.open&&!pdfExportDialog.open&&!mediaBusy&&!mediaPlacement&&!mediaSelecting&&!plannerDialog.open}
+function canEdit(){return ready&&!window.BilgeAccount?.locked&&!window.BilgePptx?.active&&!saveConflict&&!importing&&!backupDialog.open&&!pdfBusy&&!pdfDialog.open&&!pdfExportDialog.open&&!mediaBusy&&!mediaPlacement&&!mediaSelecting&&!plannerDialog.open}
 // Immediate undo is session-only; an independent pre-clear copy also persists in Trash.
 const clearedPages=new Map();
 // Each tool retains its own width during this open session.
@@ -801,11 +801,17 @@ document.querySelector('#notebookForm').onsubmit=e=>{
   else{const id=newPageId();state.notebooks??=[];state.notebooks.push({id,title});activeNotebook=id;state.activeNotebook=id;activeId=null}
   renderPages();drawAll();scheduleSave();notebookDialog.close();
 };
-document.querySelector('#deleteNotebook').onclick=()=>{
+document.querySelector('#deleteNotebook').onclick=async()=>{
   if(!canEdit()||drawing||pan||!editingNotebook||editingNotebook===GENERAL||notebookPages(editingNotebook).length)return;
-  if(!confirm(`“${notebookTitle(editingNotebook)}” boş defteri silinsin mi?`))return;
-  state.notebooks=state.notebooks.filter(n=>n.id!==editingNotebook);activeNotebook=GENERAL;state.activeNotebook=GENERAL;activeId=notebookPages()[0]?.id??null;
-  renderPages();drawAll();scheduleSave();notebookDialog.close();
+  const target=editingNotebook,source=state,button=document.querySelector('#deleteNotebook');if(button.disabled)return;button.disabled=true;
+  try{
+    if(window.BilgePptx&&await window.BilgePptx.hasNotebookPresentations(target)){alert('Bu deftere bağlı sunumlar var. Sunumları erişilemez bırakmamak için defter silinmedi.');return}
+    if(!canEdit()||drawing||pan||state!==source||editingNotebook!==target||activeNotebook!==target||!notebookDialog.open||notebookPages(target).length)return;
+    if(!confirm(`“${notebookTitle(target)}” boş defteri silinsin mi?`))return;
+    state.notebooks=state.notebooks.filter(n=>n.id!==target);activeNotebook=GENERAL;state.activeNotebook=GENERAL;activeId=notebookPages()[0]?.id??null;
+    renderPages();drawAll();scheduleSave();notebookDialog.close();
+  }catch{alert('Deftere bağlı sunumlar denetlenemedi. Güvenlik için defter silinmedi; yeniden deneyin.')}
+  finally{button.disabled=!!editingNotebook&&notebookPages(editingNotebook).length>0}
 };
 const pageDialog=document.querySelector('#pageDialog'),pageName=document.querySelector('#pageName');let editingPageId=null;
 function openPageActions(id){
@@ -1048,6 +1054,7 @@ new ResizeObserver(resize).observe(canvas.parentElement);init().catch(()=>showSt
 <script src="sync-workspace.js"></script>
 <script src="ocr-workspace.js"></script>
 <script src="ui-workspace.js"></script>
+<script src="pptx-workspace.js"></script>
 <script src="button-theme.js"></script>
 <script src="button-theme-workspace.js"></script>
 <script src="ui-v2/bilge-defter-ui.js"></script>

@@ -1,0 +1,26 @@
+{
+  "package": "@aiden0z/pptx-renderer",
+  "version": "1.3.0",
+  "sourceSha256": "46b61afa1435de0c194f93324c9467ca392c891c6e07517727c8ffb5e51c376b",
+  "derivation": "hash-pinned browser ESM; exact final export block replaced by private frozen runtime in IIFE; sole optional PDF import.meta.resolve replaced by undefined for classic syntax; LF normalization; no other runtime edits",
+  "runtimeSha256": "cfd391e3135214e445e3842f4b3333887824cead63c29f00bfed6dd69d572fcd",
+  "runtimeIntegrity": "sha256-z9OR4xNSFORF44QvSzMziHgkzq1jwp8Av+1t1p1XL80=",
+  "frameSha256": "b866a44a03ebd88f415e19c4e811121ec1ad8b676bf5fe97c1046c5b110d2ae8",
+  "frameIntegrity": "sha256-uGakSgPr2I9BXhnE6BESHsGti2dr9f6XwQRsWxENKug=",
+  "frameHtmlSha256": "88f0fa99bf19e1170f944f73bd1fb656db860b213a7c2641527346abe918ddb6",
+  "csp": "default-src 'none'; script-src 'sha256-z9OR4xNSFORF44QvSzMziHgkzq1jwp8Av+1t1p1XL80=' 'sha256-uGakSgPr2I9BXhnE6BESHsGti2dr9f6XwQRsWxENKug='; style-src 'unsafe-inline'; connect-src 'none'; img-src data: blob:; font-src data: blob:; media-src 'none'; frame-src 'none'; object-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'",
+  "requiredHeaders": {
+    "frame": {
+      "Content-Type": "text/html; charset=utf-8",
+      "Content-Security-Policy": "default-src 'none'; script-src 'sha256-z9OR4xNSFORF44QvSzMziHgkzq1jwp8Av+1t1p1XL80=' 'sha256-uGakSgPr2I9BXhnE6BESHsGti2dr9f6XwQRsWxENKug='; style-src 'unsafe-inline'; connect-src 'none'; img-src data: blob:; font-src data: blob:; media-src 'none'; frame-src 'none'; object-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'",
+      "X-Content-Type-Options": "nosniff"
+    }
+  },
+  "source": "https://www.npmjs.com/package/@aiden0z/pptx-renderer/v/1.3.0",
+  "noticeFiles": [
+    "vendor/LICENSE",
+    "vendor/THIRD_PARTY_NOTICES.md",
+    "vendor/licenses/mtx-decompressor-MPL-2.0.txt",
+    "vendor/licenses/ECMA-text-copyright-notice.txt"
+  ]
+}
