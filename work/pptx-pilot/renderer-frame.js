@@ -16,9 +16,26 @@
   const keys=(value,allowed)=>record(value)&&Object.keys(value).every(key=>allowed.includes(key));
   const textDecoder=new TextDecoder('utf-8',{fatal:true});
   let port=null,viewer=null,handle=null,meta=null,busy=false,lastId=0,nodeErrors=0,blocked=false,closed=false;
-  const urls=new Set(),createURL=URL.createObjectURL.bind(URL),revokeURL=URL.revokeObjectURL.bind(URL);
-  URL.createObjectURL=value=>{const url=createURL(value);urls.add(url);return url;};
+  const urls=new Map(),createURL=URL.createObjectURL.bind(URL),revokeURL=URL.revokeObjectURL.bind(URL);
+  URL.createObjectURL=value=>{const url=createURL(value);urls.set(url,value);return url;};
   URL.revokeObjectURL=url=>{urls.delete(url);revokeURL(url);};
+  // FontFace instances are not serializable into an SVG image. Retain only
+  // bounded sources, inside the sandbox, so a snapshot can embed the exact
+  // registered font instead of silently changing its metrics.
+  const NativeFontFace=globalThis.FontFace;let fontSources=new WeakMap();
+  if(NativeFontFace)globalThis.FontFace=class extends NativeFontFace{
+    constructor(family,source,descriptors){
+      super(family,source,descriptors);
+      let blob=null;
+      if(source instanceof ArrayBuffer||ArrayBuffer.isView(source)){
+        const size=source.byteLength;
+        // The pinned runtime bounds live faces to eight. A weak association
+        // neither retains disposed fonts nor drops a face awaiting fonts.add().
+        if(size>0&&size<=8*MiB)blob=new Blob([source],{type:'font/ttf'});
+      }
+      fontSources.set(this,blob);
+    }
+  };
   document.addEventListener('securitypolicyviolation',()=>{blocked=true;});
   // Inert plus a capturing guard: content never supplies navigation, input or
   // media controls. The only interactive surface is the host's ink canvas.
@@ -26,8 +43,9 @@
   function clear(){
     try{handle?.dispose();}catch{}handle=null;
     try{viewer?.destroy();}catch{}viewer=null;meta=null;stage.replaceChildren();
-    for(const url of urls)try{revokeURL(url);}catch{}urls.clear();
+    for(const url of urls.keys())try{revokeURL(url);}catch{}urls.clear();
     try{document.fonts.clear();}catch{}
+    fontSources=new WeakMap();
     nodeErrors=0;blocked=false;
   }
   function shutdown(){closed=true;clear();try{port?.close();}catch{}port=null;window.removeEventListener('message',connect);}
@@ -179,12 +197,193 @@
     if(stage.querySelectorAll('*').length>30000||images.reduce((sum,image)=>sum+image.naturalWidth*image.naturalHeight,0)>64*1024*1024)fail('LIMIT');
     return {index,width:1000,height:1000*meta.height/meta.width,warnings:meta.warnings};
   }
+  // A serialized foreignObject image must use a data URL. A blob URL taints
+  // canvas in Chromium and WebKit even inside this opaque sandbox. Its nested
+  // resources must also be inlined: otherwise export can succeed with missing
+  // pictures. No fetch or new browsing/storage privilege is needed here.
+  async function snapshot(index){
+    const slide=await show(index),height=Math.ceil(slide.height);
+    const MAX_NODES=6000,MAX_SERIALIZED=16*MiB,MAX_RESOURCES=16*MiB,MAX_RESOURCE=8*MiB,MAX_IMAGE=6*MiB;
+    const XHTML='http://www.w3.org/1999/xhtml',SVG='http://www.w3.org/2000/svg';
+    if(height<100||height>3000||1000*height>3000000)fail('LIMIT');
+    const source=handle?.element;if(!source||!stage.contains(source))fail('RENDER');
+    const count=source.querySelectorAll('*').length+1;if(count>MAX_NODES)fail('LIMIT');
+    let chars=0,resourceBytes=0,nodeCount=0,decodedPixels=0;const resources=new Map(),pictureProbes=[],ids=new Set([source,...source.querySelectorAll('[id]')].map(node=>node.id).filter(Boolean));
+    const charge=value=>{chars+=value.length;if(chars>MAX_SERIALIZED)fail('LIMIT');return value;};
+    const readBlob=blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Object.assign(Error('Unreadable raster resource'),{code:'RENDER'}));reader.readAsDataURL(blob);});
+    const checkSvg=text=>{
+      if(text.length>MAX_XML)fail('LIMIT');const xml=parseXml(text);
+      if(xml.documentElement.localName!=='svg'||xml.querySelectorAll('*').length>MAX_NODES)fail('UNSUPPORTED');
+      for(const element of [xml.documentElement,...xml.querySelectorAll('*')]){
+        if(['script','foreignObject','iframe','object','embed','animate','set','animateTransform'].includes(element.localName))fail('UNSUPPORTED');
+        for(const attr of element.attributes){
+          if(/^on/i.test(attr.name)||/href$/i.test(attr.localName)&&!/^#[A-Za-z_][\w:.-]*$/.test(attr.value)||/url\(/i.test(attr.value.replace(/url\(\s*["']?#[A-Za-z_][\w:.-]*["']?\s*\)/gi,'')))fail('UNSUPPORTED');
+        }
+        if(element.localName==='style'&&/@import|url\(/i.test(element.textContent||''))fail('UNSUPPORTED');
+      }
+    };
+    const resource=async(url,kind='image')=>{
+      if(typeof url!=='string'||!url||url.length>MAX_SERIALIZED)fail('UNSUPPORTED');
+      const cacheKey=kind+':'+url;if(resources.has(cacheKey))return resources.get(cacheKey);
+      let data,mime,bytes,svgText=null;
+      if(url.startsWith('blob:')){
+        const blob=urls.get(url);if(!(blob instanceof Blob))fail('UNSUPPORTED');if(blob.size>MAX_RESOURCE||blob.size<1)fail('LIMIT');
+        bytes=blob.size;mime=blob.type.toLowerCase();if(mime==='image/svg+xml')svgText=await blob.text();
+        if(kind==='image'&&!/^image\/(?:png|jpeg|gif|webp|bmp|svg\+xml)$/.test(mime))fail('UNSUPPORTED');
+        if(resourceBytes+bytes>MAX_RESOURCES)fail('LIMIT');data=await readBlob(blob);
+      }else{
+        const match=/^data:(image\/(?:png|jpeg|gif|webp|bmp|svg\+xml));(base64),([A-Za-z0-9+/]+={0,2})$/.exec(url);
+        if(!match||match[3].length%4)fail('UNSUPPORTED');mime=match[1];bytes=match[3].length*3/4;
+        if(bytes>MAX_RESOURCE||resourceBytes+bytes>MAX_RESOURCES)fail('LIMIT');
+        let raw;try{raw=atob(match[3]);}catch{fail('UNSUPPORTED');}
+        if(mime==='image/svg+xml')svgText=textDecoder.decode(Uint8Array.from(raw,c=>c.charCodeAt(0)));
+        data=url;
+      }
+      if(svgText!==null)checkSvg(svgText);
+      resourceBytes+=bytes;
+      if(kind==='image'){
+        if(pictureProbes.length>=128)fail('LIMIT');
+        const image=new Image(),probe=document.createElement('canvas');image.src=data;
+        try{
+          await image.decode();const pixels=image.naturalWidth*image.naturalHeight;
+          if(!image.complete||!image.naturalWidth||!image.naturalHeight)fail('RENDER');
+          if(image.naturalWidth>8192||image.naturalHeight>8192||pixels>16*MiB||(decodedPixels+=pixels)>64*MiB)fail('LIMIT');
+          probe.width=probe.height=16;const context=probe.getContext('2d',{willReadFrequently:true});
+          let chosen=null;
+          for(const background of [0,255]){
+            context.fillStyle=background?'#fff':'#000';context.fillRect(0,0,16,16);context.drawImage(image,0,0,16,16);
+            const expected=context.getImageData(0,0,16,16).data;let difference=0;
+            for(let offset=0;offset<expected.length;offset+=4)for(let channel=0;channel<3;channel++)difference+=Math.abs(expected[offset+channel]-background);
+            if(!chosen||difference>chosen.difference)chosen={data,expected,background,difference};
+          }
+          // A fixed-color backing would mistake a matching solid-color image
+          // for a still-empty slot. Pick the higher-contrast backing per image.
+          pictureProbes.push(chosen);
+        }finally{probe.width=probe.height=1;image.removeAttribute('src');}
+      }
+      resources.set(cacheKey,data);return data;
+    };
+    const localRef=value=>{
+      const text=value.startsWith('#')?value:value.startsWith(location.href.split('#')[0]+'#')?value.slice(location.href.split('#')[0].length):null;
+      if(!text||!ids.has(text.slice(1))||!/^#[A-Za-z_][\w:.-]*$/.test(text))fail('UNSUPPORTED');return text;
+    };
+    const inlineCss=async value=>{
+      if(/@import|expression\(|-moz-binding|image-set\(/i.test(value))fail('UNSUPPORTED');
+      const matches=[...value.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]*))\s*\)/gi)];
+      if(matches.length>32)fail('LIMIT');let result='',cursor=0;
+      for(const match of matches){const url=match[1]??match[2]??match[3];if(/\\|[\u0000-\u001f]/.test(url))fail('UNSUPPORTED');
+        // Every CSS URL must be a checked fragment, not merely the first URL
+        // in a multi-layer value. Image bytes belong only in native SVG href.
+        const replacement=localRef(url);
+        result+=value.slice(cursor,match.index)+'url("'+replacement+'")';cursor=match.index+match[0].length;
+      }
+      result+=value.slice(cursor);if(/url\(/i.test(value)&&!matches.length)fail('UNSUPPORTED');return result;
+    };
+    const clone=async(node,depth=0)=>{
+      if(++nodeCount>MAX_NODES||depth>100)fail('LIMIT');
+      if(node.nodeType===Node.TEXT_NODE)return document.createTextNode(charge(node.textContent||''));
+      if(node.nodeType!==Node.ELEMENT_NODE)return null;
+      const tag=node.localName;
+      if(![XHTML,SVG].includes(node.namespaceURI)||['script','iframe','object','embed','link','meta','base','style','video','audio','source','track','input','textarea','select','button','foreignObject','animate','animateTransform','set'].includes(tag))fail('UNSUPPORTED');
+      const computed=getComputedStyle(node);
+      for(const pseudo of ['::before','::after']){const content=getComputedStyle(node,pseudo).content;if(content&&!['none','normal','""'].includes(content))fail('UNSUPPORTED');}
+      let copy;
+      if(tag==='canvas'||tag==='img'){
+        if(tag==='canvas'&&(node.width*node.height>16*MiB||node.width<1||node.height<1))fail('LIMIT');
+        // foreignObject HTML images may paint AFTER the outer SVG's decode,
+        // independently even for identical data URLs. Native SVG image nodes
+        // participate in the SVG image-resource lifecycle instead. Preserve
+        // their exact local CSS content box; the existing parent transforms,
+        // clipping, opacity and borders remain on this outer replacement.
+        if(computed.objectFit!=='fill'||computed.objectPosition!=='50% 50%')fail('UNSUPPORTED');
+        const width=Number.parseFloat(computed.width),height=Number.parseFloat(computed.height);
+        if(!/^\d+(?:\.\d+)?px$/.test(computed.width)||!/^\d+(?:\.\d+)?px$/.test(computed.height)||width<=0||height<=0||width>16384||height>16384)fail('UNSUPPORTED');
+        copy=document.createElementNS(SVG,'svg');if(node.id)copy.setAttribute('id',node.id);copy.setAttribute('width',String(width));copy.setAttribute('height',String(height));
+        const image=document.createElementNS(SVG,'image');image.setAttribute('width',String(width));image.setAttribute('height',String(height));image.setAttribute('preserveAspectRatio','none');
+        image.setAttribute('href',charge(await resource(tag==='canvas'?node.toDataURL('image/png'):node.currentSrc||node.getAttribute('src')||'')));copy.appendChild(image);
+      }else{
+        copy=node.cloneNode(false);
+        for(const attr of [...copy.attributes]){
+          if(/^on/i.test(attr.name))fail('UNSUPPORTED');
+          if(['style','class','src','srcset','sizes','href','xlink:href'].includes(attr.name))copy.removeAttribute(attr.name);
+          else if(/url\(/i.test(attr.value))copy.setAttribute(attr.name,charge(await inlineCss(attr.value)));
+          else charge(attr.value);
+        }
+        if(node.namespaceURI===SVG&&['image','use'].includes(tag)){
+          const href=node.getAttribute('href')||node.getAttributeNS('http://www.w3.org/1999/xlink','href')||'';
+          copy.setAttribute('href',charge(tag==='use'?localRef(href):await resource(href)));
+        }
+      }
+      for(const property of computed){
+        const original=computed.getPropertyValue(property);
+        // CSS image resources use the same late foreignObject paint path as
+        // HTML img. Until explicitly mapped to SVG, do not silently omit them.
+        if(/url\(/i.test(original)&&!/^url\(\s*["']?(?:#|about:srcdoc#)/i.test(original))fail('UNSUPPORTED');
+        const value=await inlineCss(original);if(value)copy.style.setProperty(property,charge(value),computed.getPropertyPriority(property));
+      }
+      if(tag!=='canvas'&&tag!=='img')for(const child of node.childNodes){const item=await clone(child,depth+1);if(item)copy.appendChild(item);}
+      return copy;
+    };
+    const copy=await clone(source);if(closed)fail('RENDER');
+    copy.style.setProperty('margin','0');copy.style.setProperty('width','1000px');copy.style.setProperty('height',height+'px');
+    const probeColumns=62,probeHeight=pictureProbes.length?Math.ceil(pictureProbes.length/probeColumns)*16:0,renderHeight=height+probeHeight;
+    const root=document.createElementNS(SVG,'svg');root.setAttribute('xmlns',SVG);root.setAttribute('width','1000');root.setAttribute('height',String(renderHeight));
+    const fonts=document.createElementNS(SVG,'style');let fontCss='';
+    if(document.fonts.size>8)fail('LIMIT');
+    for(const face of document.fonts){
+      const blob=fontSources.get(face);if(!blob||face.status!=='loaded'||blob.size>MAX_RESOURCE||resourceBytes+blob.size>MAX_RESOURCES)fail('LIMIT');
+      resourceBytes+=blob.size;const data=await readBlob(blob);const css=document.createElement('span').style;
+      for(const [property,value]of [['font-family',face.family],['font-weight',face.weight],['font-style',face.style],['font-stretch',face.stretch],['unicode-range',face.unicodeRange]])css.setProperty(property,value);
+      fontCss+=charge('@font-face{'+css.cssText+'src:url("'+data+'");}');
+    }
+    fonts.textContent=fontCss;root.appendChild(fonts);
+    const foreign=document.createElementNS(SVG,'foreignObject');foreign.setAttribute('width','1000');foreign.setAttribute('height',String(height));foreign.appendChild(copy);root.appendChild(foreign);
+    // Additional bounded resource-readiness check, NOT proof that another
+    // foreignObject HTML image instance painted. Native SVG image replacements
+    // above are essential; same-URL HTML copies alone did not fix WebKit. The
+    // probe strip stays outside the returned slide and is never persisted.
+    // A time limit is a failure, never permission to return a partial slide.
+    if(probeHeight){
+      const probeForeign=document.createElementNS(SVG,'foreignObject');probeForeign.setAttribute('y',String(height));probeForeign.setAttribute('width','1000');probeForeign.setAttribute('height',String(probeHeight));
+      const strip=document.createElement('div');strip.style.cssText='position:relative;width:1000px;height:'+probeHeight+'px;';
+      pictureProbes.forEach((probe,index)=>{const box=document.createElement('div'),image=document.createElement('img');box.style.cssText='position:absolute;width:16px;height:16px;left:'+(index%probeColumns*16)+'px;top:'+Math.floor(index/probeColumns)*16+'px;background:'+(probe.background?'#fff':'#000')+';';image.setAttribute('src',probe.data);image.style.cssText='display:block;margin:0;padding:0;border:0;width:16px;height:16px;';box.appendChild(image);strip.appendChild(box);});
+      probeForeign.appendChild(strip);root.appendChild(probeForeign);
+    }
+    const text=new XMLSerializer().serializeToString(root);if(text.length>MAX_SERIALIZED)fail('LIMIT');
+    const image=new Image();image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(text);
+    const canvas=document.createElement('canvas');canvas.width=1000;canvas.height=renderHeight;
+    try{
+      await image.decode();if(closed||blocked||nodeErrors||image.naturalWidth!==1000||image.naturalHeight!==renderHeight)fail('RENDER');
+      const context=canvas.getContext('2d',{willReadFrequently:true}),deadline=performance.now()+3000;
+      const paint=()=>{context.fillStyle='#fff';context.fillRect(0,0,1000,renderHeight);context.drawImage(image,0,0);};
+      while(true){
+        paint();let ready=true;
+        for(let index=0;index<pictureProbes.length;index++){
+          const expected=pictureProbes[index].expected,actual=context.getImageData(index%probeColumns*16,height+Math.floor(index/probeColumns)*16,16,16).data;
+          let error=0,expectedDifference=0,actualDifference=0;
+          for(let offset=0;offset<actual.length;offset+=4)for(let channel=0;channel<3;channel++){
+            const background=pictureProbes[index].background;error+=Math.abs(expected[offset+channel]-actual[offset+channel]);expectedDifference+=Math.abs(expected[offset+channel]-background);actualDifference+=Math.abs(actual[offset+channel]-background);
+          }
+          if(error/(16*16*3)>18||actualDifference<expectedDifference*.8){ready=false;break;}
+        }
+        if(ready)break;
+        if(closed||blocked||nodeErrors)fail('RENDER');if(performance.now()>=deadline)fail('TIMEOUT');
+        await new Promise(resolve=>setTimeout(resolve,25));
+      }
+      // Copy only the real slide. Canvas resize clears the transient probe row.
+      if(probeHeight){const cropped=context.getImageData(0,0,1000,height);canvas.height=height;context.putImageData(cropped,0,0);}
+      let output=canvas.toDataURL('image/png');
+      if(output.length>512*1024){const jpeg=canvas.toDataURL('image/jpeg',.88);if(jpeg.length<output.length*.8)output=jpeg;}
+      if(output.length>MAX_IMAGE)fail('LIMIT');
+      return {index,width:1000,height,image:output,warnings:slide.warnings};
+    }finally{canvas.width=canvas.height=1;image.removeAttribute('src');}
+  }
   async function command(event){
     if(closed)return;const data=event.data;
-    if(busy||!keys(data,['v','id','command','bytes','index'])||data.v!==1||!Number.isSafeInteger(data.id)||data.id<=lastId||data.id>0x7fffffff||!['load','show'].includes(data.command)){shutdown();return;}
+    if(busy||!keys(data,['v','id','command','bytes','index'])||data.v!==1||!Number.isSafeInteger(data.id)||data.id<=lastId||data.id>0x7fffffff||!['load','show','snapshot'].includes(data.command)){shutdown();return;}
     if(data.command==='load'?!keys(data,['v','id','command','bytes'])||!(data.bytes instanceof ArrayBuffer):!keys(data,['v','id','command','index'])||!Number.isSafeInteger(data.index)){shutdown();return;}
     lastId=data.id;busy=true;
-    try{const value=await (data.command==='load'?load(data.bytes):show(data.index));if(!closed)port.postMessage({v:1,id:data.id,ok:true,value});}
+    try{const value=await (data.command==='load'?load(data.bytes):data.command==='snapshot'?snapshot(data.index):show(data.index));if(!closed)port.postMessage({v:1,id:data.id,ok:true,value});}
     catch(cause){const code=CODES.has(cause?.code)?cause.code:/limit|bytes|size/i.test(cause?.message||'')?'LIMIT':data.command==='load'?'UNSUPPORTED':'RENDER';clear();if(!closed)port.postMessage({v:1,id:data.id,ok:false,code});}
     finally{busy=false;}
   }

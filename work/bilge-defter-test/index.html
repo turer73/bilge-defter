@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v76</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v77</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -163,7 +163,7 @@ let DB='bilge-defter-test-v1'; const STORE='state'; let db,state,activeId,tool='
 let storedJSON=null,editRevision=0,savedRevision=0,savePromise=null,saveFailed=false,saveConflict=false,importing=false,allowLeave=false,failureMessage='',failureCode='';
 // v69: a short local log of save failures and lifecycle events, kept in localStorage because
 // IndexedDB may be what is failing. No note content: names, sizes, durations, visibility only.
-const APP_VERSION='v76',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
+const APP_VERSION='v77',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
 let lastSaveBytes=null,failStreak=0,failSince=0,saveRetrying=false,retryTimer=null,retryWhenVisible=false,hiddenAt=0,lastShownAt=0;
 function diag(ev,extra={}){try{const list=JSON.parse(localStorage.getItem(DIAG_KEY)||'[]');list.push({t:new Date().toISOString(),ev,vis:document.visibilityState,...extra});while(list.length>80)list.shift();localStorage.setItem(DIAG_KEY,JSON.stringify(list))}catch{}}
 function errorInfo(e){return {name:String(e?.name||'Error').slice(0,40),msg:String(e?.message||'').slice(0,160)}}
@@ -280,20 +280,33 @@ function workerPut(w,json,preservePrevious){return new Promise((ok,no)=>{
   saveWaiters.set(id,{ok:()=>{timer.clear();saveMarker=marker;ok()},no:e=>{timer.clear();no(e)}});
   try{w.postMessage({type:'put',id,db:DB,store:STORE,json,preservePrevious,marker})}catch(e){saveWaiters.delete(id);timer.clear();no(e)}
 })}
-async function dbPutWorker(json,preservePrevious){
+async function dbPutWorker(json,preservePrevious,guard=()=>true){
+  let retryMarker=null;
   for(let attempt=0;;attempt++){
+    const check=()=>{if(!guard())throw Object.assign(new Error(attempt?'Kayıt işlemcisinin son yanıtı alınamadı. Defteri yeniden açıp sunumun eklenip eklenmediğini kontrol edin; hemen tekrar eklemeyin.':'Hesap veya defter değişti; kayıt gönderilmedi.'),{name:attempt?'ImportCommitUnknown':'ImportStale'})};
+    check();
     if(!saveWorker)await startSaveWorker({type:'adopt',accept:[saveMarker,pendingMarker].filter(Boolean)},15000);
-    try{return await workerPut(saveWorker,json,preservePrevious)}catch(e){if(e?.name!=='SaveWorkerLost'||attempt)throw e}
+    // A lost reply is not a failed transaction. Adoption of the exact submitted
+    // marker proves this write committed; repeating it would replace the true
+    // before-import copy with the newly imported notebook.
+    if(retryMarker&&saveMarker?.writer===retryMarker.writer&&saveMarker.seq===retryMarker.seq&&saveMarker.length===retryMarker.length)return;
+    check();
+    const write=workerPut(saveWorker,json,preservePrevious);retryMarker=pendingMarker;
+    try{return await write}catch(e){if(e?.name!=='SaveWorkerLost'||attempt)throw e}
   }
 }
-function dbPut(snapshot,{preservePrevious=false,json,cached=false}={}){
+function dbPut(snapshot,{preservePrevious=false,json,cached=false,guard=()=>true}={}){
+  const scope=DB,check=()=>{if(DB!==scope||!guard())throw Object.assign(new Error('Hesap veya defter değişti; kayıt gönderilmedi.'),{name:'ImportStale'})};
+  try{check()}catch(error){return Promise.reject(error)}
   if(!(cached?validStateCached(snapshot):validState(snapshot)))return Promise.reject(Object.assign(new Error('Geçersiz kayıt engellendi. Son sağlam kayıt korundu.'),{name:'InvalidNotebook'}));
-  if(saveWorker||workerLost)return dbPutWorker(json??storedText(snapshot),preservePrevious);
+  if(saveWorker||workerLost)return dbPutWorker(json??storedText(snapshot),preservePrevious,()=>DB===scope&&guard());
   const nextJSON=json??storedText(snapshot),payload=JSON.parse(nextJSON),expected=storedJSON,marker={writer:saveWriter,seq:++saveSeq,length:nextJSON.length};
   return withDB(d=>new Promise((ok,no)=>{
+    try{check();if(d.name!==scope)throw Object.assign(new Error('Kayıt hesabı değişti.'),{name:'ImportStale'})}catch(error){no(error);return}
     let conflict;const tx=d.transaction(STORE,'readwrite'),store=tx.objectStore(STORE),read=store.get('app');
     tx.oncomplete=()=>{storedJSON=nextJSON;saveMarker=marker;ok()};tx.onabort=()=>no(conflict||tx.error||new Error('Kayıt işlemi iptal edildi'));tx.onerror=()=>{};
     read.onsuccess=()=>{
+      try{check()}catch(error){conflict=error;tx.abort();return}
       const actual=read.result===undefined?null:latin1JSON(JSON.stringify(read.result));
       if(actual===nextJSON){store.put(marker,'app-writer');return}
       if(actual!==expected){conflict=new Error('Başka bir sekme kayıtlı defteri değiştirdi');conflict.name='NotebookConflict';tx.abort();return}
@@ -485,6 +498,9 @@ function gcAssets(maxAgeMs=7*864e5){
 function armAssetRetry(){if(!ASSET_WRITE||assetRetryTimer)return;assetRetryTimer=setTimeout(()=>{assetRetryTimer=null;if(document.visibilityState!=='visible'){assetRetryWhenVisible=true;return}void ensureAssets()},Math.max(0,assetRetryAt-Date.now())+50)}
 function scheduleAssetSweep(){if(!ASSET_WRITE||assetTimer)return;if(assetSweep){assetAgain=true;return}assetTimer=setTimeout(()=>{assetTimer=null;void ensureAssets()},2000)}
 function ensureAssets(){
+  // Keep import preparation stable and never enqueue an old-state save behind
+  // the atomic append. An already running sweep is drained by the importer.
+  if(importing||window.BilgePptx?.active){scheduleAssetSweep();return assetSweep||Promise.resolve(0)}
   if(!ASSET_WRITE||!ready||saveConflict)return Promise.resolve(0);if(Date.now()<assetRetryAt){armAssetRetry();return Promise.resolve(0)}if(assetSweep){assetAgain=true;return assetSweep}
   assetSweep=(async()=>{
     const current=inlineImages(state);let added=0;
@@ -537,6 +553,7 @@ function pageCacheStale(){
 }
 function verifyPageCache(){
   pageVerifyTimer=null;if(!ready||saveConflict)return;
+  if(importing||window.BilgePptx?.active){schedulePageVerify();return}
   if(document.visibilityState!=='visible'||drawing||pan||isDirty()||savePromise||performance.now()-lastPageVerify<30000){schedulePageVerify();return}
   if(pageCacheStale()){markChanged();saveFullNext=true;void flushSave(true)}
 }

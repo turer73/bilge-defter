@@ -134,7 +134,7 @@ function drawPdfBackground(){
 function updatePdfNavigation(){
   updatePdfZoom();
   const bg=page()?.pdf;pdfNavigation.hidden=!bg;document.querySelector('.workspace').classList.toggle('has-pdf',!!bg);if(!bg)return;
-  const pages=notebookPages(),index=pages.findIndex(p=>p.id===activeId);document.querySelector('#pdfPageLabel').textContent=`${bg.name} · PDF ${bg.number}/${bg.total}`;
+  const pages=notebookPages(),index=pages.findIndex(p=>p.id===activeId),kind=/\.pptx$/i.test(bg.name)?'Slayt':'PDF';document.querySelector('#pdfPageLabel').textContent=`${bg.name} · ${kind} ${bg.number}/${bg.total}`;
   document.querySelector('#pdfPrevious').disabled=index<=0||!pages[index-1]?.pdf;document.querySelector('#pdfNext').disabled=index>=pages.length-1||!pages[index+1]?.pdf;
 }
 function navigatePdf(delta){if(!canEdit()||drawing||pan)return;const pages=notebookPages(),index=pages.findIndex(p=>p.id===activeId),target=pages[index+delta];if(!target?.pdf)return;activeId=target.id;renderPages();drawAll();scheduleSave()}
@@ -202,6 +202,115 @@ document.querySelector('#pdfApply').onclick=async()=>{
   }catch(error){pdfMessage(`PDF eklenmedi; mevcut notlar korundu. ${error?.name==='NotebookConflict'?'Başka sekmede değişiklik var. Pencereyi kapatıp kayıtlı defteri yeniden açın.':error?.message||'Kaydı tekrar deneyin.'}`);if(error?.name==='NotebookConflict'){saveError(error);pdfDialog.close()}}
   finally{pdfBusy=false;document.querySelector('#pdfClose').disabled=false;document.querySelector('#pdfChoose').disabled=false;document.querySelector('#pdfApply').disabled=!pdfPending;updatePresentationControls()}
 };
+
+// Local PPTX snapshots use the existing raster page contract, not a second ink or
+// storage engine. Keep the original PDF importer stable; the new entry point has
+// an explicit account/revision lease and does not mutate the book before commit.
+window.BilgeRasterImport=(()=>{
+  const leases=new WeakMap();let epoch=0,busy=false;
+  addEventListener('bilge-account-locked',()=>{epoch++});
+  function capture({guard=()=>true}={}){
+    const account=window.BilgeAccount,identity=account?.identity;
+    if(!ready||!state||isDirty()||assetSweep||savePromise||saveConflict||saveFailed||!account?.required||account.locked||
+      identity?.type!=='access'||identity.status!=='approved'||typeof identity.id!=='string'||
+      DB!=='bilge-defter-account-'+identity.id||!notebooks().some(n=>n.id===activeNotebook)||
+      typeof guard!=='function'||!guard())return null;
+    const lease=Object.freeze({scope:DB,notebook:Object.freeze({id:activeNotebook,title:notebookTitle(activeNotebook)})});
+    leases.set(lease,{account,id:identity.id,db:DB,book:state,revision:editRevision,epoch,guard});return lease;
+  }
+  function isCurrent(lease){
+    const c=leases.get(lease),a=window.BilgeAccount;
+    try{return !!c&&ready&&!saveConflict&&!saveFailed&&c.epoch===epoch&&c.account===a&&a.required===true&&!a.locked&&
+      a.identity?.type==='access'&&a.identity.status==='approved'&&a.identity.id===c.id&&
+      DB===c.db&&state===c.book&&editRevision===c.revision&&activeNotebook===lease.notebook.id&&
+      notebooks().some(n=>n.id===lease.notebook.id)&&c.guard()===true}catch{return false}
+  }
+  const stale=()=>Object.assign(new Error('Hesap, defter veya kayıt değişti. Sunum eklenmedi; pencereyi yeniden açın.'),{name:'ImportStale'});
+  function check(lease){if(!isCurrent(lease))throw stale()}
+  async function commit(candidate,lease){
+    check(lease);
+    if(busy||importing||pdfBusy||pdfExportBusy||drawing||pan||mediaBusy||mediaPlacement||mediaSelecting||
+      backupDialog.open||pdfDialog.open||pdfExportDialog.open||plannerDialog.open)throw Error('Önce açık işlemi tamamlayın.');
+    if(!candidate||typeof candidate.name!=='string'||!candidate.name.trim()||candidate.name.length>200||
+      typeof candidate.newNotebook!=='boolean'||!Array.isArray(candidate.pages)||candidate.pages.length<1||
+      candidate.pages.length>PDF_PAGE_LIMIT)throw Error('Sunum en fazla 100 geçerli slayt içermeli.');
+    const name=candidate.name.trim(),count=candidate.pages.length,createNotebook=candidate.newNotebook;
+    // Clone only the accepted primitive shape before any await. A caller cannot
+    // substitute mutable image/note objects while validation is suspended.
+    let bytes=0,pointCount=0,strokeCount=0;
+    const added=candidate.pages.map((p,i)=>{
+      if(!p||p.number!==i+1||p.total!==count)throw Error('Slayt sırası doğrulanamadı.');
+      const pdf={image:p.image,width:p.width,height:p.height,name,number:i+1,total:count};
+      if(!validPdfBackground(pdf))throw Error('Slayt görüntüsü veya boyutu desteklenmiyor.');
+      bytes+=pdf.image.length;if(bytes>PDF_IMAGE_LIMIT)throw Error('Sunum görüntüleri 24 MB aktarım sınırını aşıyor. Sunumu bölerek deneyin.');
+      if(p.strokes!==undefined&&!Array.isArray(p.strokes))throw Error('Sunum notları doğrulanamadı.');
+      const strokes=(p.strokes||[]).map(s=>{
+        if(++strokeCount>500000||s?.tool!=='pen'||typeof s.color!=='string'||!/^#[0-9a-f]{6}$/i.test(s.color)||
+          !Number.isFinite(s.width)||s.width<=0||s.width>100||!Array.isArray(s.points)||!s.points.length||s.points.length>5000)
+          throw Error('Sunum notları güvenli aktarım sınırını aşıyor.');
+        return {tool:'pen',color:s.color,width:s.width,points:s.points.map(pt=>{
+          if(++pointCount>1000000||!Number.isFinite(pt?.x)||!Number.isFinite(pt?.y)||pt.x<0||pt.x>1000||
+            pt.y<0||pt.y>pdf.height||(pt.p!==undefined&&(!Number.isFinite(pt.p)||pt.p<0||pt.p>1)))throw Error('Sunum kalem noktaları doğrulanamadı.');
+          return {x:pt.x,y:pt.y,...(pt.p===undefined?{}:{p:pt.p})};
+        })};
+      });
+      return {id:newPageId(),title:`Sunum · Slayt ${i+1}`,strokes,viewY:0,pdf,updated:new Date().toISOString()};
+    });
+    // Include notes too: a tiny image must not smuggle an unbounded ink payload.
+    if(JSON.stringify(added.map(p=>p.strokes)).length>16*1024*1024)throw Error('Sunum notları 16 MB aktarım sınırını aşıyor.');
+    busy=true;importing=true;let persisted=false;
+    try{
+      renderSaveStatus();
+      if(assetSweep)await assetSweep;
+      if(!await flushSave())throw Error('Mevcut notlar kaydedilemedi; sunum eklenmedi.');check(lease);
+      for(const p of added){
+        const im=await exportImage(p.pdf.image);
+        try{check(lease);if(im.naturalWidth!==p.pdf.width||im.naturalHeight!==p.pdf.height)throw Error('Slayt görüntüsünün gerçek boyutu farklı.')}finally{im.src=''}
+      }
+      const current=notebookImageBytes();
+      if(current+bytes>NOTEBOOK_PDF_LIMIT)throw Error('Bu hesaptaki toplam görseller 96 MB sınırını aşıyor. Mevcut notlar değiştirilmedi.');
+      const estimate=await navigator.storage?.estimate?.().catch(()=>null);check(lease);
+      if(estimate&&Number.isFinite(estimate.quota)&&Number.isFinite(estimate.usage)&&estimate.quota-estimate.usage<2*(current+bytes))
+        throw Error('Cihazda sunumu güvenle kaydetmek için yeterli boş alan yok. Mevcut notlar korundu.');
+      let id=lease.notebook.id,newBooks=state.notebooks;
+      if(createNotebook){
+        id=newPageId();const base=name.replace(/\.(pptx|bdpptx)$/i,'').trim().slice(0,65)||'Sunum';
+        const titles=new Set(notebooks().map(n=>n.title.toLocaleLowerCase('tr-TR')));let title=base,n=2;
+        while(titles.has(title.toLocaleLowerCase('tr-TR')))title=`${base} (${n++})`;
+        newBooks=[...(state.notebooks||[]),{id,title}];
+      }
+      const pages=added.map(p=>({...p,notebookId:id}));
+      const next={...state,version:Math.max(2,state.version),...(newBooks?{notebooks:newBooks}:{}),
+        pages:[...state.pages,...pages],active:pages[0].id,activeNotebook:id};
+      if(!validState(next))throw Error('Sunum kayıt yapısı doğrulanamadı.');
+      check(lease);
+      try{await dbPut(next,{preservePrevious:true,guard:()=>isCurrent(lease)})}catch(error){
+        // Match ordinary save recovery if another tab collected an old asset.
+        if(error?.name!=='MissingAsset')throw error;
+        check(lease);for(const ref of String(error.message).split(','))storedAssets.delete(ref);assetEpoch++;
+        await dbPut(next,{preservePrevious:true,guard:()=>isCurrent(lease)});
+      }
+      persisted=true;
+      // An already submitted IDB transaction cannot be recalled. Never install
+      // its result into a different/locked UI, or invite a duplicate retry.
+      if(!isCurrent(lease))throw Object.assign(new Error('Sunum önceki hesabın defterine kaydedildi. Hesabı yeniden açıp kontrol edin; tekrar eklemeyin.'),{name:'ImportCommitted'});
+      leases.delete(lease);state=next;activeId=next.active;activeNotebook=id;editRevision++;savedRevision=editRevision;
+      saveFailed=false;failureMessage='';failureCode='';scheduleAssetSweep();
+      if(typeof window.markSyncDirty==='function')window.markSyncDirty();
+      renderPages();resize();drawAll();renderSaveStatus();void refreshRecovery();
+      document.querySelector('#inputState').textContent=`${count} slayt deftere eklendi · normal kalem araçlarıyla yazın`;
+      return {ok:true,count,notebookId:id};
+    }catch(error){
+      if(persisted)throw Object.assign(new Error('Sunum kaydedildi ancak ekran yenilenemedi. Defteri yeniden açıp kontrol edin; tekrar eklemeyin.'),{name:'ImportCommitted'});
+      if(error?.name==='NotebookConflict')saveError(error);
+      if(error?.name==='SaveWorkerLost')throw Object.assign(new Error('Kayıt işlemcisinden kesin sonuç alınamadı. Defteri yeniden açıp sunumun eklenip eklenmediğini kontrol edin; hemen tekrar eklemeyin.'),{name:'ImportCommitUnknown'});
+      throw error;
+    }
+    finally{busy=false;importing=false;try{renderSaveStatus()}catch{/* Persisted outcome must not be hidden by a failed UI repaint. */}}
+  }
+  async function settle(){if(assetSweep)await assetSweep;return flushSave()}
+  return Object.freeze({capture,isCurrent,commit,settle,revoke:lease=>leases.delete(lease),get busy(){return busy}});
+})();
 
 // Never display raw server errors or an unbounded body in a notebook window.
 async function presentationErrorMessage(response){

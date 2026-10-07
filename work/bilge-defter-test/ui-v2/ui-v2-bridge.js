@@ -182,7 +182,7 @@
       'presentation.open': () => {
         document.querySelector('#presentationOpen')?.click();
       },
-      'presentation.native': () => window.BilgePptx.open(),
+      'presentation.native': () => window.BilgePptx.importToNotebook(),
       'presentation.library': () => window.BilgePptx.open(),
       'pdf.export': () => {
         document.querySelector('#pdfExportOpen')?.click();
