@@ -5,14 +5,14 @@
   "derivation": "hash-pinned browser ESM; exact final export block replaced by private frozen runtime in IIFE; sole optional PDF import.meta.resolve replaced by undefined for classic syntax; LF normalization; no other runtime edits",
   "runtimeSha256": "cfd391e3135214e445e3842f4b3333887824cead63c29f00bfed6dd69d572fcd",
   "runtimeIntegrity": "sha256-z9OR4xNSFORF44QvSzMziHgkzq1jwp8Av+1t1p1XL80=",
-  "frameSha256": "b866a44a03ebd88f415e19c4e811121ec1ad8b676bf5fe97c1046c5b110d2ae8",
-  "frameIntegrity": "sha256-uGakSgPr2I9BXhnE6BESHsGti2dr9f6XwQRsWxENKug=",
-  "frameHtmlSha256": "88f0fa99bf19e1170f944f73bd1fb656db860b213a7c2641527346abe918ddb6",
-  "csp": "default-src 'none'; script-src 'sha256-z9OR4xNSFORF44QvSzMziHgkzq1jwp8Av+1t1p1XL80=' 'sha256-uGakSgPr2I9BXhnE6BESHsGti2dr9f6XwQRsWxENKug='; style-src 'unsafe-inline'; connect-src 'none'; img-src data: blob:; font-src data: blob:; media-src 'none'; frame-src 'none'; object-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'",
+  "frameSha256": "55ca3b99a37b6419f714951bb15424581a50708daed97b6e5d626826e5eaa35f",
+  "frameIntegrity": "sha256-Vco7maN7ZBn3FJUbsVQkWBpQcI2u2XtuXWJoJuXqo18=",
+  "frameHtmlSha256": "97579fbec1a3c9b4f475ea739cf08418e554bbb508b71ab7ca63696e5562d18f",
+  "csp": "default-src 'none'; script-src 'sha256-z9OR4xNSFORF44QvSzMziHgkzq1jwp8Av+1t1p1XL80=' 'sha256-Vco7maN7ZBn3FJUbsVQkWBpQcI2u2XtuXWJoJuXqo18='; style-src 'unsafe-inline'; connect-src 'none'; img-src data: blob:; font-src data: blob:; media-src 'none'; frame-src 'none'; object-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'",
   "requiredHeaders": {
     "frame": {
       "Content-Type": "text/html; charset=utf-8",
-      "Content-Security-Policy": "default-src 'none'; script-src 'sha256-z9OR4xNSFORF44QvSzMziHgkzq1jwp8Av+1t1p1XL80=' 'sha256-uGakSgPr2I9BXhnE6BESHsGti2dr9f6XwQRsWxENKug='; style-src 'unsafe-inline'; connect-src 'none'; img-src data: blob:; font-src data: blob:; media-src 'none'; frame-src 'none'; object-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'",
+      "Content-Security-Policy": "default-src 'none'; script-src 'sha256-z9OR4xNSFORF44QvSzMziHgkzq1jwp8Av+1t1p1XL80=' 'sha256-Vco7maN7ZBn3FJUbsVQkWBpQcI2u2XtuXWJoJuXqo18='; style-src 'unsafe-inline'; connect-src 'none'; img-src data: blob:; font-src data: blob:; media-src 'none'; frame-src 'none'; object-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'",
       "X-Content-Type-Options": "nosniff"
     }
   },

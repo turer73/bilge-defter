@@ -172,6 +172,7 @@ async function fixture(browser, options = {}) {
     if (options.actualUI) {
       const ui = page.locator('bilge-defter-ui');
       await ui.locator('button[data-panel="insert"]').click();
+      await ui.locator('#pptxOtherOptions > summary').click();
       await ui.locator('button[data-command="presentation.open"]').click();
     } else await page.evaluate(() => document.querySelector('#presentationOpen').click());
     await page.locator('#pdfDialog[open]').waitFor();

@@ -1,5 +1,12 @@
 # Geri dönüş zinciri
 
+> **7 Ekim 2026 — v77 yayın adayı:** uygulanacak dar geri dönüş yalnız **v76 web**:
+> `sudo python3 -B /opt/bilge-defter-classroom-v77/deploy-v77.py rollback`.
+> Bu satır aktivasyon kanıtı değildir; kaynak/receipt'e bağlı canlı sonucu
+> [RELEASE_V77](RELEASE_V77.md) ile birlikte kontrol edin. API, kütüphane,
+> dönüştürücü, DB ve minimum-reader değiştirilmez. Aşağıdaki v72 ve önceki
+> kayıtlar tarihsel envanterdir, güncel yayını temsil etmez.
+
 > **2 Ekim 2026 (v72, son yayın):** canlı web **v72**, hesap servisi **v68**. İlk adım
 > `sudo python3 -B /opt/bilge-defter-classroom-v72/deploy-v72.py rollback` → web v71.
 > v71 web konteyneri kayıtlı yapılandırmadan, mevcut v71 dosyalarını bağlayarak ayrı loopback

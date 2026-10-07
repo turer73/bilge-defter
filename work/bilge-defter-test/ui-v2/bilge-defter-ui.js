@@ -311,10 +311,10 @@
   };
   const icon = (name, cls='') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.paper}</svg>`;
   const GROUPS = {
-    insert:{title:'Ekle',sub:'SAYFANI ZENGİNLEŞTİR',note:'Metin ve görsel açık sayfaya eklenir. Doğrudan PowerPoint sunumu seçili deftere bağlanır; sunum ve not yedeği ayrıdır.',actions:['insert.text','insert.image','insert.camera','pdf.open','presentation.native','presentation.library','presentation.open']},
+    insert:{title:'Ekle',sub:'SAYFANI ZENGİNLEŞTİR',note:'Mevcut sayfalar ve notlar korunur.',actions:['insert.text','insert.image','insert.camera','pdf.open','presentation.native'],secondaryActions:['presentation.library','presentation.open']},
     study:{title:'Çalışma',sub:'NOTTAN ÖĞRENMEYE',note:'Bu işlemler mevcut çalışma modüllerine bağlanır. Arayüz tek başına sözlük veya yazı tanıma motoru değildir.',actions:['study.planner','study.dictionary','study.recognize','study.webSearch','study.guide']},
     page:{title:'Sayfa seçenekleri',sub:'YALNIZCA AÇIK SAYFA',note:'Temizleme ve çöp kutusu işlemleri ayrı onay ister.',actions:['page.rename','page.paper','page.top','selection.edit','page.clear','page.trash']},
-    file:{title:'Dosya ve yedek',sub:'KOPYAN SENDE KALSIN',note:'Bu yedek normal defter sayfalarını içerir. Doğrudan PowerPoint sunumları için Sunumlar ekranından ayrıca sunum ve not yedeği al. İndirdiğin dosyaları ayrı yerde sakla.',actions:['pdf.export','backup.export','backup.status','backup.import','backup.rollback']},
+    file:{title:'Dosya ve yedek',sub:'KOPYAN SENDE KALSIN',note:'Bu yedek normal defter sayfalarını ve deftere aktarılan sunum sayfalarını içerir; özgün PPTX dosyasını ayrıca sakla. Eski ayrı sunumlar için Önceki sunumlar ekranından sunum ve not yedeği al.',actions:['pdf.export','backup.export','backup.status','backup.import','backup.rollback']},
   };
   // UI komutları dışındaki bütün komutlar uygulamanın verdiği callback'e gider.
   const ACTIONS = {
@@ -322,9 +322,9 @@
     'insert.image':{label:'Görsel ekle',desc:'Cihazından bir görsel seç.',icon:'image',page:true},
     'insert.camera':{label:'Fotoğraf çek',desc:'Kamera veya cihaz seçicisini aç.',icon:'camera',page:true},
     'pdf.open':{label:'PDF aç',desc:'Belgeyi mevcut PDF motoruyla aç.',icon:'pdf'},
-    'presentation.native':{label:'PowerPoint ekle',desc:'PPTX’i bu cihazda aç; seçili deftere bağla ve slaytlara not al. PDF’e çevrilmez.',icon:'pdf'},
-    'presentation.library':{label:'Bu defterin sunumları',desc:'Seçili deftere eklediğin sunumları ve üzerlerindeki notları aç.',icon:'book'},
-    'presentation.open':{label:'PowerPoint → PDF',desc:'Alternatif: onayınla sunucuda PDF’e dönüştürüp normal defter sayfaları oluştur.',icon:'pdf'},
+    'presentation.native':{label:'PowerPoint ekle',desc:'Slaytları defter sayfalarına ekle, üzerine yaz.',icon:'pdf'},
+    'presentation.library':{label:'Önceki sunumlar',desc:'Daha önce ayrı kaydettiğin sunumları ve notlarını aç.',icon:'book'},
+    'presentation.open':{label:'Sunucuda PDF’e dönüştür',desc:'Alternatif yöntem: dosyayı onayınla sunucuya gönderir.',icon:'pdf'},
     'study.library':{label:'Kütüphane',desc:'Kaynak kitapları bu pencerede aç; Deftere dön ile buraya dönersiniz. İnternet ve onaylı hesap gerekir.',icon:'book'},
     'study.planner':{label:'Takvim / çalışma planı',desc:'Derslerini ve tekrarlarını düzenle.',icon:'calendar'},
     'study.dictionary':{label:'Sözlük',desc:'Seçili metni veya girdiğin terimi incele.',icon:'dictionary',page:true},
@@ -420,6 +420,10 @@
 `;
   // The shared toolbar needs room for both navigation and themed writing tools.
   const TABLET_STYLES = `
+.other-options{margin-top:14px;padding:0 12px;border:1px solid var(--bd-line);border-radius:12px;min-width:0}
+.other-options>summary{min-height:44px;padding:11px 0;line-height:22px;font-size:12px;font-weight:600;cursor:pointer}
+.other-options>summary:focus-visible{outline:3px solid #005ea5;outline-offset:2px}
+.other-options[open]{padding-bottom:12px}.other-options .action-list{margin-top:4px}
 .brand .brand-wordmark{width:164px;height:46px;object-fit:contain;background:#fffef9;border-radius:9px;padding:0 7px}
 .brand .brand-appmark{display:none;width:44px;height:44px;object-fit:contain}
 .onboard-logo img{width:100%;height:100%;object-fit:contain}
@@ -868,7 +872,12 @@ dialog.panel[data-pointer-focus=true] #bdx-panel-title:focus{outline:none}
       const available=this.available(id);b.disabled=!available;b.querySelector('small').textContent=available?a.desc:this.unavailableReason(id);return b;
     }
     _openGroup(group){
-      const g=GROUPS[group],body=el('div'),list=el('div','action-list');g.actions.forEach(id=>list.append(this._action(id)));body.append(list,el('p','helper'+(group==='file'?' warning':''),g.note));
+      const g=GROUPS[group],body=el('div'),list=el('div','action-list');g.actions.forEach(id=>list.append(this._action(id)));body.append(list);
+      if(g.secondaryActions){
+        const options=el('details','other-options'),secondary=el('div','action-list');options.id='pptxOtherOptions';
+        g.secondaryActions.forEach(id=>secondary.append(this._action(id)));options.append(el('summary',null,'Diğer sunum seçenekleri'),secondary);body.append(options);
+      }
+      body.append(el('p','helper'+(group==='file'?' warning':''),g.note));
       this._open('group',g.title,g.sub,body);this._group=group;
       this.$$('[data-panel]').filter(x=>x.tagName==='BUTTON').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.panel===group)));
     }
@@ -912,7 +921,7 @@ dialog.panel[data-pointer-focus=true] #bdx-panel-title:focus{outline:none}
         <label class="field-label" for="bdx-book-select">Defter / ders</label><select id="bdx-book-select"></select>
         <div class="two-buttons"><button class="button subtle" data-command="notebook.create">+ Yeni defter</button><button class="button subtle" data-command="notebook.rename">Defteri düzenle</button></div>
         <button class="button primary full" data-command="page.create">+ Yeni sayfa</button>
-        <button class="button subtle full" data-command="presentation.library">Bu defterin sunumları</button>
+        <button class="button subtle full" data-command="presentation.library">Önceki sunumlar</button>
         <label class="field-label" for="bdx-page-search">Sayfa ara</label><input id="bdx-page-search" class="input" type="search" placeholder="Sayfa başlığı…" maxlength="100" autocomplete="off">
         <div class="library-stats"><span>BU DEFTERDE</span><span id="bdx-page-count"></span></div>
         <div class="page-list"></div><div class="section-line"></div>
