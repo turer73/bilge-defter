@@ -131,6 +131,12 @@ dahil değildir. Dosya ayrıca saklanmalıdır.
 - Native sunum, hesap yarışı, yedek ve çevrimdışı entegrasyon: **44/44**,
   Chromium + WebKit, sentetik veri, kaynak sapması sıfır.
   Kanıt: `outputs/pptx-v77-release/integration-all-synthetic.json`.
+- İlk CI (`37661132835`) tarihsel testleri geçti; eski sunucu dönüşümü
+  fixture'ı kapalı "Diğer seçenekler" bölümünü açmadığı için zaman aşımına
+  uğradı. Fixture gerçek menü tıklamasıyla düzeltildi; assertions ve timeoutlar
+  korunarak yerelde **64/64** geçti. Uygulama baytları değişmedi. İlk paket
+  `superseded-bf68f4e` altında saklandı; yeni kaynak commit'i için CI tekrar
+  geçmeden aktivasyon yapılmaz.
 - Bu sayılar sunucu aktivasyonu, gerçek hesapla giriş veya fiziksel iPad testi
   yapıldığı anlamına gelmez. Canlı bölüm, gerçek kaynak/receipt bağlı sonuç
   oluştuktan sonra eklenir.
