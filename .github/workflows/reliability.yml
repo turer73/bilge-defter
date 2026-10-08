@@ -36,6 +36,11 @@ jobs:
       - name: Diagnostic only - scratch lifetime in the original failed scenario
         if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
         run: node work/diagnose-ink-lifetime.cjs
+      - name: Diagnostic only - original-case prior history contrasts
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        run: |
+          node --test work/test-ink-history.cjs
+          node work/diagnose-ink-history.cjs
       - name: Diagnostic only - standalone Canvas2D reduction
         if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
         run: |
@@ -134,6 +139,7 @@ jobs:
             outputs/media-close-candidate/**/probe.log
             outputs/media-close-candidate/**/probe/
             outputs/ink-mini-diagnostic/
+            outputs/ink-history-diagnostic/
             outputs/marker-icons/
             outputs/theme-logo/
             outputs/pptx-v78-release/notebook-compat/
