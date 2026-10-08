@@ -325,3 +325,46 @@ Windows hedef kontrolü iki motorda **2/2**, kayıt sayısı motor başına 762 
 taşan kayıt 0'dır (`outputs/slide-flow/dpr-2-stroke-transfer-trace/`). Bu yerel
 geçiş Linux'ta düzeldiği anlamına gelmez. Linux'ta aynı özgün kalite kapısıyla
 izlerin alınması ve nedenin ayrıştırılması beklenmektedir.
+
+### İkinci Linux izi ve kontrollü raster deneyi
+
+`37740558999` koşusu da özgün kalite kapısında kaldı. 872 ayrıntılı kayıtta
+taşma yoktur. Üç çizginin hatalı ana-tuval üretimi, bağımsız referansı ve soğuk
+üretimi arasında 17 haneli dönüşüm, clip, çizim durumu veya fiziksel boyut farkı
+bulunmadı. Hatalı parçalar yeni oluşturulmuştur; iki yöndeki kopyalar tam sayılı
+1:1'dir. Actual PNG SHA-256 `376d696a66256c58dc03e773255358209ea677604a01581ceec873e7204df518`,
+referans `6a66a92e5daa29f303a294ea043fe58c09e939759103d3db987c66512edb2e8c`.
+Soğuk çizim yine 0 fark verdi. Bu iz, tarayıcının raster materyalizasyonu/readback
+hipotezini ayırmak için yeterlidir; kesin motor nedeni veya bir uygulama çözümü
+kanıtı değildir.
+
+Sonraki **yalnız test** deneyi, özgün başarısız ölçüm/PNG ve soğuk tanı kaydedildikten
+sonra çalışır. Üretim uygulaması hâlâ `64ce1a24…`'dır. 16 sınırlı varyant:
+
+- Gerçek ana tuval, geçmişli detached varsayılan ve geçmişli detached
+  `willReadFrequently:true`; her biri tüm girdi/gerçekte çağrılan girdi sırasıyla,
+  kopya öncesi 1 piksel readback var/yok karşılaştırılır.
+- Yeni, boyut geçmişi olmayan detached ve DOM'a bağlı test tuvali; ikisi de
+  readback olmadan tüm/çağrılmış girdi sırasıyla karşılaştırılır.
+- Ana tuval daha önce özgün ölçümde okunmuştur; çıktıda `priorReadback:true`
+  yazılır. Onun "no-read" varyantı ilk kez okunan bir yüzey sayılmaz.
+
+Her kaynak aynı tam viewport boyutunda, aynı gerçek `drawStroke` (başlangıç
+dairesi ve çizgi dahil), dönüşüm/clip ile çizilip 512 fiziksel piksellik tam
+sayılı parçalardan ayrı hedefe kopyalanır. Referans yeniden bütün girdiden
+çizilir; deney kaynak resmi olarak referansı kullanmaz. Not içeriği değişmezliği,
+tam görüntü ölçümleri ve 10 sorunlu piksel ayrı kaydedilir. Ek tuval/readback'ler
+özgün ölçüme karışmaz; kaynak boyutları/bağlamı `finally` ile geri alınır ve
+geçici yüzeyler bırakılır. Özgün assertion ve eşikler değişmemiştir.
+
+Üç çizgi ayrıntısına ek olarak sentetik `drawStroke` çağrı sırası, en çok 200 grup
+ve 12000 çağrıyla sınırlandırıldı; taşma sayıları raporlanır. Ayrıntılı iz yine
+4000 kayıt sınırındadır ve müdahaleli deney başlamadan kapatılır.
+
+Yerel kontrol komutu:
+`node work/verify-slide-flow.cjs --dpr=2 --case="warm ink" --diagnose-ink --tag=controlled-raster-final`.
+`--diagnose-ink` yalnız ek tanı dalını zorlar, özgün metrikleri veya başarılı/
+başarısız sonucunu değiştirmez. Windows iki motorda 2/2 geçti; 16 varyantın
+tamamı 0 alfa/kanal farkı ve değişmeyen not içeriği verdi. Her motorda 612 ayrıntı,
+17 grup/4242 çağrı ve 0 taşma var. Bu Windows sonucu Linux kök nedenini çözmez;
+Linux'ta özgün başarısızlığın yanında aynı deney çıktısı alınmalıdır.

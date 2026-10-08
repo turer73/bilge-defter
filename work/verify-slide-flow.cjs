@@ -4,7 +4,7 @@
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const {chromium,webkit}=require('playwright');
 const repo=path.resolve(__dirname,'..'),root=path.resolve(process.env.BILGE_TEST_ROOT||path.join(__dirname,'bilge-defter-test'));
-const dpr=Number(process.argv.find(x=>x.startsWith('--dpr='))?.slice(6)||1),tag=process.argv.find(x=>x.startsWith('--tag='))?.slice(6)||'';
+const dpr=Number(process.argv.find(x=>x.startsWith('--dpr='))?.slice(6)||1),tag=process.argv.find(x=>x.startsWith('--tag='))?.slice(6)||'',diagnoseInk=process.argv.includes('--diagnose-ink');
 assert.ok([1,2].includes(dpr),'DPR must be 1 or 2');assert.match(tag,/^[a-z0-9-]*$/,'Output tag is a simple local filename');
 const out=path.join(repo,'outputs/slide-flow',`dpr-${dpr}${tag?'-'+tag:''}`),engineFilter=process.argv.find(x=>x.startsWith('--engine='))?.slice(9),caseFilter=process.argv.find(x=>x.startsWith('--case='))?.slice(7);
 assert.ok(!engineFilter||['chromium','webkit'].includes(engineFilter));
@@ -12,7 +12,7 @@ const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),files=new Map()
 function snapshot(dir,prefix=''){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())snapshot(p,prefix+e.name+'/');else files.set('/'+prefix+e.name,fs.readFileSync(p));}}
 snapshot(root);
 const hashes=new Map([...files].map(([name,bytes])=>[name,sha(bytes)]));
-const report={startedAt:new Date().toISOString(),root,dpr,runnerSha256:sha(fs.readFileSync(__filename)),source:Object.fromEntries(hashes),results:[],boundaries:[
+const report={startedAt:new Date().toISOString(),root,dpr,diagnoseInk,runnerSha256:sha(fs.readFileSync(__filename)),source:Object.fromEntries(hashes),results:[],boundaries:[
   'Synthetic approved account, deterministic colored page.pdf PNGs and existing raster import helper; no real PPTX decoding in this suite.',
   'Pointer/touch/pinch events are browser automation, not physical iPad/Pencil/palm acceptance.',
   'Decoded background cache and canvas dimensions are measured, not operating-system memory pressure.',
@@ -63,7 +63,7 @@ async function check(browser,engine,name,fn){
   finally{if(f)await f.finish();}
 }
 function traceInkFixture(){
-  const limit=4000,entries=[],ids=new WeakMap(),paths=new WeakMap(),selected=new WeakMap(),proto=CanvasRenderingContext2D.prototype,native={};let serial=0,dropped=0,current=null;
+  const limit=4000,entries=[],ids=new WeakMap(),paths=new WeakMap(),selected=new WeakMap(),allStrokes=new WeakMap(),callGroups=[],proto=CanvasRenderingContext2D.prototype,native={};let serial=0,dropped=0,current=null,callCount=0,droppedCalls=0;
   const id=c=>{if(!ids.has(c))ids.set(c,c===canvas?'main':c===pdfCanvas?'background':'canvas-'+(++serial));return ids.get(c);};
   const matrix=c=>{const t=c.getTransform();return[t.a,t.b,t.c,t.d,t.e,t.f];};
   const path=c=>{if(!paths.has(c))paths.set(c,{rects:[],clip:[],stack:[]});return paths.get(c);};
@@ -71,7 +71,8 @@ function traceInkFixture(){
   const add=entry=>{if(entries.length<limit)entries.push({phase:window.__inkTracePhase||'setup',...entry});else dropped++;};
   // These three exact fixture geometries cover the differing Linux pixels.
   // No real notes or images are included, and no pixel reads are introduced.
-  for(const [pageIndex,p]of notebookPages().entries())for(const index of [16,27,63]){const s=p.strokes[index];if(s)selected.set(s,{pageIndex,pageId:p.id,index,tool:s.tool,width:s.width,color:s.color,points:s.points});}
+  for(const [pageIndex,p]of notebookPages().entries())for(const [index,s]of p.strokes.entries()){allStrokes.set(s,[pageIndex,index]);if([16,27,63].includes(index))selected.set(s,{pageIndex,pageId:p.id,index,tool:s.tool,width:s.width,color:s.color,points:s.points});}
+  window.__inkCallGroups=callGroups;window.__captureInkCalls=true;
   for(const name of ['drawImage','stroke','fill','beginPath','rect','clip','save','restore'])native[name]=proto[name];
   proto.beginPath=function(...args){path(this).rects=[];return native.beginPath.apply(this,args);};
   proto.rect=function(...args){path(this).rects.push({rect:args,transform:matrix(this)});return native.rect.apply(this,args);};
@@ -81,8 +82,62 @@ function traceInkFixture(){
   for(const name of ['stroke','fill'])proto[name]=function(...args){if(current?.target===this)add({op:name,stroke:current.stroke,state:state(this)});return native[name].apply(this,args);};
   proto.drawImage=function(source,...args){if(source===canvas||this===ctx&&source instanceof HTMLCanvasElement)add({op:'drawImage',source:{id:id(source),width:source.width,height:source.height},target:state(this),coordinates:args});return native.drawImage.call(this,source,...args);};
   const original=drawStroke;
-  drawStroke=function(stroke,target=ctx,...args){const info=selected.get(stroke),before=current;current=info?{stroke:info,target}:null;try{return original(stroke,target,...args);}finally{current=before;}};
-  window.__finishInkTrace=()=>{drawStroke=original;for(const name of Object.keys(native))proto[name]=native[name];return{limit,dropped,entries,provenance:'Fixture-only wrappers; exact application bytes unchanged. No added pixel reads. Three known synthetic stroke indices (16,27,63), clip rectangles and main-canvas transfers only.'};};
+  drawStroke=function(stroke,target=ctx,...args){
+    if(window.__captureInkCalls){
+      let identity=allStrokes.get(stroke);if(!identity){for(const [pageIndex,p]of notebookPages().entries()){const index=p.strokes.indexOf(stroke);if(index>=0){identity=[pageIndex,index];allStrokes.set(stroke,identity);break;}}}
+      if(callCount<12000&&callGroups.length<200){const phase=window.__inkTracePhase||'setup',canvasId=id(target.canvas),transform=matrix(target).map(n=>n.toPrecision(17));let group=callGroups.at(-1);if(!group||group.phase!==phase||group.canvas!==canvasId||JSON.stringify(group.transform)!==JSON.stringify(transform)){group={phase,canvas:canvasId,transform,calls:[]};callGroups.push(group)}group.calls.push(identity||[-1,-1]);callCount++;}else droppedCalls++;
+    }
+    const info=selected.get(stroke),before=current;current=info?{stroke:info,target}:null;try{return original(stroke,target,...args);}finally{current=before;}
+  };
+  window.__finishInkTrace=()=>{drawStroke=original;for(const name of Object.keys(native))proto[name]=native[name];return{limit,dropped,entries,callGroups,callCount,droppedCalls,provenance:'Fixture-only wrappers; exact application bytes unchanged. No added pixel reads in the trace. Three known synthetic stroke indices (16,27,63), clip rectangles and main-canvas transfers; bounded synthetic call-order groups.'};};
+}
+function controlledInkRaster(){
+  // This deliberately interventionist experiment runs only AFTER preserving the
+  // original result. Its pixel reads and temporary canvas resizes are not part
+  // of the application or the acceptance oracle.
+  const width=canvas.width,height=canvas.height,base=ctx.getTransform(),s=BilgeSlideFlow.snapshot(),scale=BilgeSlideFlow.scale(),d=base.a,rows=s.rows.filter(row=>s.visible.includes(row.id));
+  const inkBefore=JSON.stringify(state.pages.map(p=>p.strokes)),phase=window.__inkTracePhase,groups=window.__inkCallGroups||[],points=[[810,149],[813,153],[813,154],[816,158],[816,159],[576,1048],[939,1066],[942,1071],[945,1076],[948,1081]],variants=[];
+  window.__captureInkCalls=false;
+  const observed=rows.map(row=>{const pageIndex=notebookPages().findIndex(p=>p.id===row.id),group=groups.filter(g=>g.canvas==='main'&&g.phase==='after media close sync'&&g.calls.some(c=>c[0]===pageIndex)).at(-1);return{pageIndex,indices:group?group.calls.filter(c=>c[0]===pageIndex).map(c=>c[1]):null};});
+  const clear=target=>{target.setTransform(1,0,0,1,0,0);target.clearRect(0,0,target.canvas.width,target.canvas.height);};
+  function paintRow(target,row,pixelScale,input){
+    target.save();target.setTransform(pixelScale,0,0,pixelScale,-s.x*pixelScale,(row.top-s.scroll)*pixelScale);target.beginPath();target.rect(0,0,1000,row.height);target.clip();
+    const p=state.pages.find(p=>p.id===row.id),pageIndex=notebookPages().findIndex(p=>p.id===row.id),indices=observed.find(o=>o.pageIndex===pageIndex)?.indices;
+    if(input==='observed'&&!indices)throw Error('Missing observed synthetic call order');
+    for(const stroke of input==='observed'?indices.map(i=>p.strokes[i]):p.strokes){if(!stroke)throw Error('Invalid observed synthetic stroke');drawStroke(stroke,target,mediaImages)}target.restore();
+  }
+  const reference=document.createElement('canvas');reference.width=width;reference.height=height;const referenceContext=reference.getContext('2d');
+  for(const row of rows)paintRow(referenceContext,row,d*scale,'full');
+  const wanted=referenceContext.getImageData(0,0,width,height).data;
+  try{
+    for(const kind of ['main-default','detached-default','detached-read-frequently','detached-fresh','attached-fresh'])for(const readback of [false,true])for(const input of ['full','observed']){
+      if(kind.endsWith('fresh')&&readback)continue;
+      const source=kind==='main-default'?canvas:document.createElement('canvas'),target=source===canvas?ctx:source.getContext('2d',kind==='detached-read-frequently'?{willReadFrequently:true}:undefined),destination=document.createElement('canvas');destination.width=width;destination.height=height;const output=destination.getContext('2d'),tiles=[];
+      if(kind==='attached-fresh'){const r=canvas.getBoundingClientRect();source.style.cssText=`position:fixed;left:-20000px;top:0;width:${r.width}px;height:${r.height}px;pointer-events:none`;source.setAttribute('aria-hidden','true');document.body.append(source);}
+      window.__inkTracePhase=`control: ${kind}/${readback?'readback':'no-read'}/${input}`;
+      try{
+        // Reproduce the measured physical-size history without changing CSS,
+        // notebook geometry, stored notes or application code.
+        if(!kind.endsWith('fresh'))for(const [w,h]of [[width,height],[width+584,height+164]]){source.width=w;source.height=h;clear(target);for(const row of rows)paintRow(target,row,d*scale*w/width,input);}
+        source.width=width;source.height=height;
+        for(const row of rows){
+          clear(target);paintRow(target,row,d*scale,input);
+          if(readback)target.getImageData(0,0,1,1);
+          const px=d*scale,phaseX=((-s.x*px)%1+1)%1,phaseY=(((row.top-s.scroll)*px)%1+1)%1,edge=Math.min(512,Math.max(1,Math.floor(512*px)))/px;
+          const left=Math.max(0,s.x),right=Math.min(1000,s.x+width/px),top=Math.max(0,s.scroll-row.top),end=Math.min(row.height,s.scroll+height/px-row.top);
+          for(let iy=Math.floor(top/edge);iy<Math.ceil(end/edge);iy++)for(let ix=Math.floor(left/edge);ix<Math.ceil(right/edge);ix++){
+            const x=ix*edge,y=iy*edge,w=Math.min(edge,1000-x),h=Math.min(edge,row.height-y),bw=x+w>=1000-1e-7?Math.ceil(w*px+phaseX):Math.round(w*px),bh=y+h>=row.height-1e-7?Math.ceil(h*px+phaseY):Math.round(h*px),bx=Math.round((x-s.x)*px-phaseX),by=Math.round((row.top-s.scroll+y)*px-phaseY),dx=Math.max(0,bx),dy=Math.max(0,by),dw=Math.min(width,bx+bw)-dx,dh=Math.min(height,by+bh)-dy;
+            if(dw<=0||dh<=0)continue;const tile=document.createElement('canvas');tile.width=bw;tile.height=bh;const cropX=dx-bx,cropY=dy-by;tile.getContext('2d').drawImage(source,dx,dy,dw,dh,cropX,cropY,dw,dh);tiles.push({tile,cropX,cropY,dx,dy,dw,dh});
+          }
+        }
+        for(const t of tiles)output.drawImage(t.tile,t.cropX,t.cropY,t.dw,t.dh,t.dx,t.dy,t.dw,t.dh);
+        const actual=output.getImageData(0,0,width,height).data;let alphaMax=0,whiteMax=0,unequal=0,foreground=0,whiteSum=0,over16=0;
+        for(let i=0;i<actual.length;i+=4){if(actual[i+3]||wanted[i+3])foreground++;alphaMax=Math.max(alphaMax,Math.abs(actual[i+3]-wanted[i+3]));let max=0;for(let c=0;c<4;c++)if(actual[i+c]!==wanted[i+c])unequal++;for(let c=0;c<3;c++){const diff=Math.abs(actual[i+c]*actual[i+3]/255+255-actual[i+3]-(wanted[i+c]*wanted[i+3]/255+255-wanted[i+3]));whiteSum+=diff;max=Math.max(max,diff)}whiteMax=Math.max(whiteMax,max);if(max>16)over16++;}
+        variants.push({kind,readback,input,priorReadback:source===canvas,resizeHistory:!kind.endsWith('fresh'),alphaMax,whiteMax,unequal,foreground,whiteMean:foreground?whiteSum/(3*foreground):0,outlierFraction:foreground?over16/foreground:0,contextAttributes:target.getContextAttributes?.()||null,tiles:tiles.length,affected:points.filter(([x,y])=>x<width&&y<height).map(([x,y])=>{const i=(y*width+x)*4;return{x,y,actual:Array.from(actual.slice(i,i+4)),reference:Array.from(wanted.slice(i,i+4))};})});
+      }finally{for(const {tile}of tiles)tile.width=tile.height=1;destination.width=destination.height=1;if(source!==canvas){source.width=source.height=1;source.remove();}}
+    }
+  }finally{canvas.width=width;canvas.height=height;ctx.setTransform(base.a,base.b,base.c,base.d,base.e,base.f);window.__inkTracePhase=phase;reference.width=reference.height=1;}
+  return{purpose:'Controlled intervention AFTER preserved original result; neither acceptance assertion nor a production fix.',width,height,transform:[d*scale,0,0,d*scale],observed,inkUnchanged:inkBefore===JSON.stringify(state.pages.map(p=>p.strokes)),variants};
 }
 async function run(browser,engine){
   await check(browser,engine,'dense repeated caps retain full replay quality at device scale',async({p})=>{
@@ -239,11 +294,19 @@ async function run(browser,engine){
     const region=()=>p.evaluate(()=>{const r=canvas.getBoundingClientRect(),d=canvas.width/r.width,data=ctx.getImageData(Math.round(156*d),Math.round(249*d),Math.round(8*d),Math.round(8*d)).data;let alpha=0;for(let i=3;i<data.length;i+=4)alpha+=data[i];return alpha;});
     await audit('initial');assert.equal(await region(),0,'New-pen probe region starts empty');await stroke(p,'pen',[[130,240],[190,265]]);await audit('pen');assert.ok(await region()>500,'New pen appears in its exact small region');await stroke(p,'eraser',[[140,245],[180,260]]);await audit('eraser');assert.equal(await region(),0,'Eraser clears the same exact small region');
     await p.evaluate(()=>{window.__recordInkSurface('before media open');document.querySelector('#mediaEdit').click();window.__recordInkSurface('after media open sync');});await paint(p);let g=await geometry(p);await pointer(p,'pointerdown',330*g.scale,330*g.scale);await pointer(p,'pointermove',370*g.scale,355*g.scale);await pointer(p,'pointerup',370*g.scale,355*g.scale);assert.ok(await p.evaluate(()=>page().strokes.find(s=>s.tool==='text').points[0].x>300),'Media move actually occurred');await p.evaluate(()=>{window.__recordInkSurface('before undo');document.querySelector('#layoutUndo').click();window.__recordInkSurface('after undo sync');});assert.equal(await p.evaluate(()=>page().strokes.find(s=>s.tool==='text').points[0].x),300);await p.evaluate(()=>{window.__recordInkSurface('before media close');cancelMediaMode();window.__recordInkSurface('after media close sync');});const undo=await audit('media undo');
-    if(undo.alphaMax>32||undo.compositedMax>32||undo.compositedMeanForeground>1||undo.compositedOver16/undo.foregroundPixels>.002){
+    const undoFailed=undo.alphaMax>32||undo.compositedMax>32||undo.compositedMeanForeground>1||undo.compositedOver16/undo.foregroundPixels>.002;
+    if(undoFailed){
       // Preserve the failed warm image/check above. Only fixture page revisions
       // change here; the notes, view and thresholds remain unchanged. Do not
       // substitute this independent cold result for the original assertion.
       try{await p.evaluate(()=>{window.__recordInkSurface('before diagnostic invalidation');for(const item of BilgeSlideFlow.visiblePages())touchPage(item);drawAll();window.__recordInkSurface('after diagnostic invalidation');});diagnostic.coldAfterMediaUndoFailure=await audit('media undo cold diagnostic',true);diagnostic.inkUnchanged=undo.inkSha256===diagnostic.coldAfterMediaUndoFailure.inkSha256;}catch(e){diagnostic.error=String(e.stack||e);}
+    }
+    if(undoFailed||diagnoseInk){
+      // End observation before the intentionally interventionist experiment.
+      // --diagnose-ink only exercises this extra branch locally; it does not
+      // change the original metric or the assertions below.
+      diagnostic.operations=await p.evaluate(()=>window.__finishInkTrace?.());
+      try{diagnostic.controlledRaster=await p.evaluate(controlledInkRaster);}catch(e){diagnostic.controlledError=String(e.stack||e);}
     }
     await p.evaluate(()=>setViewZoom(1.5));await paint(p);await audit('zoom');await save(p);
     // Parent's independent visual review accepted a narrowly bounded raster
@@ -252,7 +315,7 @@ async function run(browser,engine){
     // a full-canvas denominator because the union of inked pixels is used.
     for(const result of checks){assert.ok(result.foregroundPixels>0);assert.ok(result.alphaMax<=32,result.label+': alpha deviation');assert.ok(result.compositedMax<=32,result.label+': composite maximum');assert.ok(result.compositedMeanForeground<=1,result.label+': foreground average');assert.ok(result.compositedOver16/result.foregroundPixels<=.002,result.label+': foreground outlier fraction');}
     return{checks,screenshot:await screenshot(p,engine,'ink-cache')};
-    }finally{try{diagnostic.trace=await p.evaluate(()=>window.__inkSurfaceTrace||[]);diagnostic.operations=await p.evaluate(()=>window.__finishInkTrace?.());}catch(e){diagnostic.traceError=String(e.message||e);}fs.writeFileSync(path.join(out,`${engine}-ink-parity.json`),JSON.stringify(checks,null,2));fs.writeFileSync(path.join(out,`${engine}-ink-surface-diagnostic.json`),JSON.stringify(diagnostic,null,2));}
+    }finally{try{diagnostic.trace=await p.evaluate(()=>window.__inkSurfaceTrace||[]);if(!diagnostic.operations)diagnostic.operations=await p.evaluate(()=>window.__finishInkTrace?.());}catch(e){diagnostic.traceError=String(e.message||e);}fs.writeFileSync(path.join(out,`${engine}-ink-parity.json`),JSON.stringify(checks,null,2));fs.writeFileSync(path.join(out,`${engine}-ink-surface-diagnostic.json`),JSON.stringify(diagnostic,null,2));}
   });
 }
 (async()=>{fs.mkdirSync(out,{recursive:true});for(const [name,type]of Object.entries({chromium,webkit})){if(engineFilter&&name!==engineFilter)continue;const browser=await type.launch({headless:true});try{await run(browser,name);}finally{await browser.close();}}report.completedAt=new Date().toISOString();report.passed=report.results.filter(x=>x.passed).length;report.failed=report.results.length-report.passed;report.drift=[...hashes].filter(([name,digest])=>!fs.existsSync(path.join(root,name))||sha(fs.readFileSync(path.join(root,name)))!==digest).map(([name])=>name);const filename=path.join(out,`report${engineFilter?'-'+engineFilter:''}${caseFilter?'-'+caseFilter.replace(/[^a-z0-9]+/gi,'-'):''}.json`);fs.writeFileSync(filename,JSON.stringify(report,null,2));console.log(JSON.stringify({passed:report.passed,failed:report.failed,drift:report.drift,report:filename}));if(report.failed||report.drift.length)process.exitCode=1;})().catch(e=>{console.error(e);process.exitCode=1;});

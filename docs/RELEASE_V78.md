@@ -247,6 +247,16 @@ canlı v77'yi veya başka servisi durdurmaz.
 
 ### Henüz kapanmamış kapılar
 
+Linux koşuları `37738959813` (`94d81ec`) ve `37740558999` (`bab29c4`)
+aynı özgün medya geri alma kontrolünde **51/52** kaldı. Boyut anahtarı
+düzeltmesi tek başına yeterli değildir. Son izde 872 kayıt, 0 taşma;
+etkilenen üç çizginin dönüşüm/clip/çizim durumu ve parça kopya koordinatları
+referans ve soğuk tekrar ile aynıydı. Raster farkının kesin nedeni henüz
+kanıtlanmadı; hata #2300 açıktır, PR #19 birleşmedi, canlı v77 korunmuştur.
+Yeni kontrollü test sonuçları özgün başarısızlığı veya kabul eşiklerini
+değiştiremez. Yereldeki `94d81ec` payload'ı son aday sayılmaz; nihai temiz
+kaynak commit'i için yeniden paket ve ayrı yayın kanıtları gerekir.
+
 - Yerel Retina/DPR2 ve hedefli kontroller son adayda geçti; ancak kaynak
   yeniden değişirse ilgili testler tekrar çalıştırılır. Tek kaynak commit'ine
   bağlı paket/receipt, PR ve gerçek CI sonucu ayrıca gerekir.
