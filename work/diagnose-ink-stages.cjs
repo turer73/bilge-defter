@@ -6,15 +6,17 @@ const repo=path.resolve(__dirname,'..'),release=path.join(repo,'work/bilge-defte
 const SOURCE_SHA='3b3fcdedfd40ba4656b7c8dca2ece1eeb605f54229326b3d91b03351cb11007e';
 const MANIFEST_SHA='6f172d47680d93b9d39e316a1f1512ee0e0c2e4645b95af9aab33890b34890f9';
 const RUNNER_SHA='f2cb459827c1d725d6df1f22c6ff12047a02d415a7d26b8eb65f3eaa769de8d0';
+const replayRequested=process.argv.includes('--replay');
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const stamp=new Date().toISOString().replace(/[-:.TZ]/g,''),out=path.join(repo,'outputs/ink-stage-diagnostic',stamp);
-const report={diagnosticOnly:true,releaseEligible:false,startedAt:new Date().toISOString(),baselineSourceSha256:SOURCE_SHA,baselineManifestSha256:MANIFEST_SHA,canonicalRunnerSha256:RUNNER_SHA,status:'inconclusive',limits:{retainedScratchPixels:100000000,trackedSurfaces:1024,copyRecords:4000},boundaries:[
+const report={diagnosticOnly:true,releaseEligible:false,replayRequested,startedAt:new Date().toISOString(),baselineSourceSha256:SOURCE_SHA,baselineManifestSha256:MANIFEST_SHA,canonicalRunnerSha256:RUNNER_SHA,status:'inconclusive',limits:{retainedScratchPixels:100000000,trackedSurfaces:1024,copyRecords:4000,replayCalls:12000,replayPoints:50000},boundaries:[
   'The original mandatory acceptance outcome and thresholds are retained; diagnostic completion is not release success.',
   'Only ignored fixture copies change. The hold package deliberately retains an invalid publishing manifest.',
   'Hot-path additions record metadata and object references only: no new drawing, readback or canvas allocation.',
   'Stage readbacks occur after original audit arrays and PNGs are preserved, before cold invalidation. Readback-time equality does not prove copy-time backend behavior.',
   'Only four last-visible-row coordinates are supported. The first-row five pixels are unavailable because scratch is cleared and reused per row.',
   'Scratch retention is the existing bounded lifetime intervention, up to 100M pixels (400 MB raw RGBA) plus ordinary browser/tile memory; browser-context closure releases it.',
+  'Opt-in replay repeats only the captured last-row calls on the same scratch after readbacks. It is not a one-frame fix, timing/instance separation or CPU/GPU proof. Main/tile invariance covers mutation tokens and four samples, not whole bitmap equality.',
   'Synthetic account and notes only; no external model, network service, private presentation, production data or deployment.'
 ]};
 
@@ -35,7 +37,64 @@ function stageRules(){
   const originalFailed=m=>m.alphaMax>32||m.compositedMax>32||m.compositedMeanForeground>1||m.compositedOver16/m.foregroundPixels>.002;
   const sampleFailed=p=>Math.abs(p.actual[3]-p.reference[3])>32||p.actual.slice(0,3).some((v,i)=>Math.abs(v*p.actual[3]/255+255-p.actual[3]-(p.reference[i]*p.reference[3]/255+255-p.reference[3]))>32);
   const hasFailure=samples=>samples.some(sampleFailed);
-  return{covers,rectangles,mapPoint,sameToken,single,matchesRow,originalFailed,hasFailure};
+  const sameMetadata=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  function replayGeometry(transform,clip,depth,height){return depth===1&&Array.isArray(transform)&&transform.length===6&&transform.every(Number.isFinite)&&transform[0]>0&&transform[0]===transform[3]&&transform[1]===0&&transform[2]===0&&clip.length===1&&clip[0].arguments.length===0&&clip[0].rects.length===1&&sameMetadata(clip[0].rects[0].rect,[0,0,1000,height])&&sameMetadata(clip[0].rects[0].transform,transform);}
+  const supportedStroke=s=>['pen','marker'].includes(s.tool)&&Number.isFinite(s.width)&&s.width>0&&typeof s.color==='string'&&Array.isArray(s.points)&&s.points.length===2&&s.points.every(p=>[p.x,p.y,p.p].every(Number.isFinite)&&p.p>=0&&p.p<=1);
+  return{covers,rectangles,mapPoint,sameToken,single,matchesRow,originalFailed,hasFailure,sameMetadata,replayGeometry,supportedStroke};
+}
+
+// Installed only in --replay runner copies. No hooks or captures from this
+// function are added to the default stage experiment's hot path.
+function installInkReplayObserver(matrix,pathState,renderer,stage,rules){
+  const records=new WeakMap(),fields=['globalAlpha','globalCompositeOperation','lineWidth','lineCap','lineJoin','miterLimit','lineDashOffset','fillStyle','strokeStyle','filter','shadowColor','shadowBlur','shadowOffsetX','shadowOffsetY','imageSmoothingEnabled','imageSmoothingQuality'];
+  let calls=0,points=0,overflow=false,running=false,attempted=false;
+  const drawingState=c=>({values:Object.fromEntries(fields.map(k=>[k,c[k]])),dash:c.getLineDash()});
+  const clone=x=>JSON.parse(JSON.stringify(x));
+  function begin(stroke,target,pair){
+    if(running)return null;const start=stage.token(target.canvas),page=pair&&notebookPages()[pair[0]];
+    let record=records.get(target.canvas);
+    if(!record||record.generation!==start.generation){record={canvas:target.canvas,context:target,generation:start.generation,calls:[],start,last:null,invalid:null};records.set(target.canvas,record);}
+    if(++calls>12000||(points+=stroke.points?.length||0)>50000||record.calls.length>=1000){overflow=true;return null;}
+    if(!pair||!page||page.strokes[pair[1]]!==stroke||!rules.supportedStroke(stroke)){record.invalid='Unsupported or unknown synthetic stroke';return null;}
+    if(record.last&&!rules.sameToken(record.last,start))record.invalid='Mutation between observed stroke calls';
+    if(!record.calls.length&&start.lastKind!=='full clear')record.invalid='Observed generation did not begin immediately after full clear';
+    const p=pathState(target),entry={stroke,points:stroke.points,pointRefs:stroke.points.slice(),payload:JSON.stringify(stroke),pair:pair.slice(),page,transform:matrix(target),clip:clone(p.clip),depth:p.stack.length,state:drawingState(target),start};
+    if(record.calls.length){const previous=record.calls[record.calls.length-1];if(pair[0]!==previous.pair[0]||pair[1]<=previous.pair[1]||!rules.sameMetadata(entry.transform,previous.transform)||!rules.sameMetadata(entry.clip,previous.clip)||entry.depth!==previous.depth||!rules.sameMetadata(entry.state,previous.state))record.invalid='Observed order or input context changed';}
+    record.calls.push(entry);return{record,entry,target};
+  }
+  function end(ticket){if(!ticket)return;ticket.entry.end=stage.token(ticket.target.canvas);ticket.record.last=ticket.entry.end;}
+  function run({plans,audit,stageSamples,last}){
+    const result={status:'inconclusive',performed:false,scope:'Same held scratch; four last-row samples after original audit and stage readbacks.',limits:{calls,points,overflow}};
+    const reject=reason=>({...result,reason});
+    let saved=false,target=null,restoreTransform=null;
+    try{
+      if(attempted)return reject('Same-scratch replay was already requested');attempted=true;
+      const scratch=plans[0].scratch,record=records.get(scratch);if(overflow)return reject('Replay metadata limit exceeded');
+      if(!record||record.invalid||!record.calls.length)return reject(record?.invalid||'No observed replay sequence');
+      if(record.canvas!==scratch||record.context.canvas!==scratch||!rules.sameToken(stage.token(scratch),record.last)||!rules.sameToken(record.last,plans[0].input.sourceToken))return reject('Replay generation or final write drift');
+      target=record.context;const outside=pathState(target);if(outside.clip.length||outside.stack.length)return reject('Scratch has an unknown active clip or save stack');
+      const first=record.calls[0],expected=audit.surface.rowTransforms.find(r=>r.id===last.id)?.transform;
+      if(!rules.sameMetadata(first.transform,expected)||!rules.replayGeometry(first.transform,first.clip,first.depth,last.height))return reject('Replay transform or row clip mismatch');
+      for(const entry of record.calls){if(entry.page!==state.pages.find(p=>p.id===last.id)||entry.page.strokes[entry.pair[1]]!==entry.stroke||entry.stroke.points!==entry.points||entry.pointRefs.some((p,i)=>entry.points[i]!==p)||JSON.stringify(entry.stroke)!==entry.payload||!rules.replayGeometry(entry.transform,entry.clip,entry.depth,last.height))return reject('Replay source object, points, payload or geometry drift');}
+      const visibleInk=JSON.stringify(audit.visible.map(row=>({id:row.id,strokes:state.pages.find(p=>p.id===row.id).strokes}))),mainToken=stage.token(canvas),tileTokens=plans.map(p=>stage.token(p.tile)),currentState=drawingState(target),currentTransform=matrix(target);
+      restoreTransform=currentTransform;
+      result.provenance={scratch:stage.token(scratch),row:last.id,phase:plans[0].input.phase,observedOrder:record.calls.map(e=>e.pair),transform:first.transform,transformPrecision17:first.transform.map(n=>n.toPrecision(17)),clip:first.clip,inputState:first.state,renderer:'Pinned original drawStroke function; captured ordered subset only.'};
+      // Synchronous, one replay, no new context/canvas, hint, resize, frame or wait.
+      running=true;target.setTransform(1,0,0,1,0,0);target.clearRect(0,0,scratch.width,scratch.height);target.save();saved=true;
+      for(const [key,value]of Object.entries(first.state.values))if(value!==undefined)target[key]=value;target.setLineDash(first.state.dash);
+      target.setTransform(...first.transform);target.beginPath();target.rect(...first.clip[0].rects[0].rect);target.clip();
+      for(const entry of record.calls)renderer(entry.stroke,target);
+      target.restore();saved=false;target.setTransform(...currentTransform);running=false;
+      result.performed=true;result.samples=plans.map((p,i)=>{const replay=Array.from(target.getImageData(p.sx,p.sy,1,1).data),main=Array.from(ctx.getImageData(p.sample.x,p.sample.y,1,1).data),tile=Array.from(p.tile.getContext('2d').getImageData(p.tx,p.ty,1,1).data);return{x:p.sample.x,y:p.sample.y,oldScratch:stageSamples[i].scratch,replay,reference:p.sample.reference,main,tile,changed:!rules.sameMetadata(replay,stageSamples[i].scratch),matchesReference:rules.sameMetadata(replay,p.sample.reference)};});
+      result.mainAndTileTokensUnchanged=rules.sameToken(stage.token(canvas),mainToken)&&plans.every((p,i)=>rules.sameToken(stage.token(p.tile),tileTokens[i]));
+      result.mainAndTileSamplesUnchanged=result.samples.every((p,i)=>rules.sameMetadata(p.main,stageSamples[i].mainReadback)&&rules.sameMetadata(p.tile,stageSamples[i].tile));
+      result.visibleInkUnchanged=visibleInk===JSON.stringify(audit.visible.map(row=>({id:row.id,strokes:state.pages.find(p=>p.id===row.id).strokes})));
+      result.contextRestored=rules.sameMetadata(drawingState(target),currentState)&&rules.sameMetadata(matrix(target),currentTransform)&&pathState(target).clip.length===0&&pathState(target).stack.length===0;
+      if(!result.mainAndTileTokensUnchanged||!result.mainAndTileSamplesUnchanged||!result.visibleInkUnchanged||!result.contextRestored)return reject('Unrelated state changed during replay');
+      result.status=result.samples.some(p=>p.changed)?'replay-changed':'replay-unchanged';result.reason='Repeated rendering after readbacks only; not a one-frame fix, time/instance separation or backend proof.';return result;
+    }catch(error){return reject(String(error.stack||error));}finally{if(saved)target.restore();if(restoreTransform)target.setTransform(...restoreTransform);running=false;}
+  }
+  return{begin,end,run};
 }
 
 // This function is inserted into the existing trace's browser closure. It is
@@ -43,7 +102,7 @@ function stageRules(){
 function installInkStageObserver(identity,matrix,rules){
   const surfaces=new WeakMap(),copies=[],proto=CanvasRenderingContext2D.prototype,canvasProto=HTMLCanvasElement.prototype;
   const originals={},descriptors={},points=[[939,1066],[942,1071],[945,1076],[948,1081]],unavailable=[[810,149],[813,153],[813,154],[816,158],[816,159]];
-  let serial=0,tracked=0,overflow=false,originalAudit=null,finished=false,observerError=null;
+  let serial=0,tracked=0,overflow=false,originalAudit=null,finished=false,observerError=null,replay=null,replayResult=null;
   const phase=()=>window.__inkTracePhase||'setup';
   function state(c){
     let s=surfaces.get(c);if(!s){if(++tracked>1024)overflow=true;s={id:identity(c),generation:0,revision:0,width:c.width,height:c.height,rows:new Map(),nonCopy:false,lastWrite:0};surfaces.set(c,s)}return s;
@@ -130,12 +189,14 @@ function installInkStageObserver(identity,matrix,rules){
       result.readbackPerformed=true;
       if(!same(canvas,audit.main)||plans.some(p=>!same(p.scratch,p.input.sourceToken)||!same(p.tile,p.input.targetToken)))return reject('Surface mutation detected during post-audit reads');
       if(result.samples.some(p=>p.differences.mainVsOriginalAudit))return reject('Post-audit main pixels changed; original discrepancy cannot be localized from these reads');
-      result.status='localized-readback';result.reason='Only surviving last-row readback stages are compared; no engine/backend cause is inferred.';return result;
+      result.status='localized-readback';result.reason='Only surviving last-row readback stages are compared; no engine/backend cause is inferred.';
+      if(replay)replayResult=replay.run({plans,audit,stageSamples:result.samples,last});return result;
     }catch(error){return reject(String(error.stack||error));}
   }
   function finish(){if(finished)return;finished=true;for(const [name,fn]of Object.entries(originals))proto[name]=fn;for(const [name,descriptor]of Object.entries(descriptors))if(descriptor)Object.defineProperty(canvasProto,name,descriptor);}
   window.__captureInkStageAudit=captureAudit;window.__readInkStages=readStages;
-  return{noteStroke,finish};
+  window.__readInkReplayResult=()=>replayResult||{status:'inconclusive',performed:false,reason:'Validated original failure and stage readbacks were unavailable.'};
+  return{noteStroke,finish,token,setReplay(value){replay=value;}};
 }
 
 function replaceOnce(text,before,after,label){assert.equal(text.split(before).length-1,1,'Unique pinned runner hook: '+label);return text.replace(before,()=>after);}
@@ -153,6 +214,9 @@ function selfTest(){
   check('generation, dimensions and writes reject drift',()=>{assert.ok(r.sameToken(t,{...t}));for(const k of ['generation','revision','width','height','lastWrite'])assert.equal(r.sameToken(t,{...t,[k]:t[k]+1}),false);assert.equal(r.sameToken(t,{...t,id:'other'}),false);});
   check('wrong/multiple row rejects',()=>{assert.ok(r.matchesRow([{id:'last'}],'last'));assert.equal(r.matchesRow([{id:'first'}],'last'),false);assert.equal(r.matchesRow([{id:'first'},{id:'last'}],'last'),false);});
   check('unchanged and benign samples stay inconclusive without mutation',()=>{const samples=[{actual:[0,0,0,0],reference:[0,0,0,0]}],before=JSON.stringify(samples);assert.equal(r.hasFailure(samples),false);assert.equal(JSON.stringify(samples),before);assert.equal(r.hasFailure([{actual:[22,60,56,64],reference:[24,60,56,64]}]),false);assert.equal(r.hasFailure([{actual:[0,0,0,0],reference:[24,60,56,64]}]),true);assert.equal(r.originalFailed({alphaMax:0,compositedMax:0,compositedMeanForeground:0,compositedOver16:0,foregroundPixels:10}),false);assert.equal(r.originalFailed({alphaMax:64}),true);});
+  const transform=[1.676,0,0,1.676,0,983.812],clip=[{rects:[{rect:[0,0,1000,563],transform}],arguments:[]}];
+  check('replay clip/transform/stack mismatch rejects',()=>{assert.ok(r.replayGeometry(transform,clip,1,563));assert.equal(r.replayGeometry(transform,clip,2,563),false);assert.equal(r.replayGeometry(transform,clip,1,564),false);assert.equal(r.replayGeometry([1.676,0,0,1.676,0,983.8120000001],clip,1,563),false);assert.equal(r.replayGeometry(transform,[...clip,...clip],1,563),false);});
+  check('replay media and changed source payload reject',()=>{const stroke={tool:'pen',width:3,color:'#173b36',points:[{x:1,y:2,p:.5},{x:2,y:3,p:.5}]};assert.ok(r.supportedStroke(stroke));assert.equal(r.supportedStroke({...stroke,tool:'text'}),false);assert.equal(r.sameMetadata(stroke,{...stroke,width:4}),false);});
   console.log(JSON.stringify({diagnosticOnly:true,releaseEligible:false,selfTest:true,passed:tests.length,tests}));
 }
 if(process.argv.includes('--self-test')){selfTest();return;}
@@ -168,15 +232,20 @@ try{
   let copied=replaceOnce(originalRunner,"const repo=path.resolve(__dirname,'..'),root=", "const repo=path.resolve(process.env.BILGE_DIAGNOSTIC_REPO),root=",'copied runner repository');
   copied=replaceOnce(copied,'  window.__inkCallGroups=callGroups;window.__captureInkCalls=true;',`  const stages=(${installInkStageObserver.toString()})(id,matrix,(${stageRules.toString()})());\n  window.__inkCallGroups=callGroups;window.__captureInkCalls=true;`,'metadata observer');
   copied=replaceOnce(copied,'    const info=selected.get(stroke),before=current;','    stages.noteStroke(stroke,target,allStrokes.get(stroke));\n    const info=selected.get(stroke),before=current;','synthetic row identity');
+  if(replayRequested){
+    copied=replaceOnce(copied,'  const original=drawStroke;\n  drawStroke=function(stroke,target=ctx,...args){',`  const original=drawStroke;\n  const replay=(${installInkReplayObserver.toString()})(matrix,path,original,stages,(${stageRules.toString()})());stages.setReplay(replay);\n  drawStroke=function(stroke,target=ctx,...args){`,'opt-in replay observer');
+    copied=replaceOnce(copied,'    const info=selected.get(stroke),before=current;current=info?{stroke:info,target}:null;try{return original(stroke,target,...args);}finally{current=before;}', '    const replayTicket=replay.begin(stroke,target,allStrokes.get(stroke));\n    const info=selected.get(stroke),before=current;current=info?{stroke:info,target}:null;try{return original(stroke,target,...args);}finally{replay.end(replayTicket);current=before;}','opt-in ordered replay capture');
+  }
   copied=replaceOnce(copied,'for(const name of Object.keys(native))proto[name]=native[name];return{limit,dropped,entries,callGroups,callCount,droppedCalls,provenance:', 'for(const name of Object.keys(native))proto[name]=native[name];stages.finish();return{limit,dropped,entries,callGroups,callCount,droppedCalls,provenance:','restore observers');
   copied=replaceOnce(copied,'      const visibleInk=JSON.stringify(s.visible.map',"      const stageAudit=label==='media undo'?window.__captureInkStageAudit(a,b,s,surface,{alphaMax,compositedMax,compositedMeanForeground:compositedSum/(3*foregroundPixels),compositedOver16,foregroundPixels}):undefined;\n      const visibleInk=JSON.stringify(s.visible.map",'existing audit readback samples');
   copied=replaceOnce(copied,'reference.width=reference.height=1;return{warmCalls,unequal,','reference.width=reference.height=1;return{stageAudit,warmCalls,unequal,','attach original samples');
   copied=replaceOnce(copied,"const undo=await audit('media undo');","const undo=await audit('media undo');\n    diagnostic.stages=await p.evaluate(()=>window.__readInkStages());",'post-audit pre-cold localization');
+  if(replayRequested)copied=replaceOnce(copied,'diagnostic.stages=await p.evaluate(()=>window.__readInkStages());','const stageAndReplay=await p.evaluate(()=>{const stages=window.__readInkStages();return{stages,replay:window.__readInkReplayResult()};});diagnostic.stages=stageAndReplay.stages;diagnostic.replay=stageAndReplay.replay;','separate replay evidence');
   const runnerCopy=path.join(out,'runner.cjs');fs.writeFileSync(runnerCopy,copied);
-  const fixture={diagnosticOnly:true,releaseEligible:false,packageRoot,runnerCopy,canonicalRunnerSha256:RUNNER_SHA,copiedRunnerSha256:sha(copied),baselineSourceSha256:SOURCE_SHA,heldSourceSha256:sha(heldSource),manifestSha256:MANIFEST_SHA,manifestMatchesSource:false,sourceDifference:'Only the existing bounded scratch-hold intervention.',runnerDifferences:['Repository path for ignored copy','Metadata-only mutation/copy references and row identities','Samples from existing audit arrays','Post-PNG/pre-cold stage reads','Observer restoration'],limits:report.limits};
+  const fixture={diagnosticOnly:true,releaseEligible:false,replayRequested,packageRoot,runnerCopy,canonicalRunnerSha256:RUNNER_SHA,copiedRunnerSha256:sha(copied),baselineSourceSha256:SOURCE_SHA,heldSourceSha256:sha(heldSource),manifestSha256:MANIFEST_SHA,manifestMatchesSource:false,sourceDifference:'Only the existing bounded scratch-hold intervention.',runnerDifferences:['Repository path for ignored copy','Metadata-only mutation/copy references and row identities','Samples from existing audit arrays','Post-PNG/pre-cold stage reads','Observer restoration',...(replayRequested?['Opt-in bounded ordered stroke metadata and post-stage same-scratch replay']:[])],limits:report.limits};
   fs.writeFileSync(path.join(out,'fixture.json'),JSON.stringify(fixture,null,2));report.fixture=fixture;
   const syntax=cp.spawnSync(process.execPath,['--check',runnerCopy],{encoding:'utf8'});assert.equal(syntax.status,0,syntax.stderr||'Copied runner syntax');
-  const tag='stages-'+stamp,args=[runnerCopy,'--engine=webkit','--dpr=2','--case=warm ink',`--tag=${tag}`];
+  const tag='stages-'+(replayRequested?'replay-':'')+stamp,args=[runnerCopy,'--engine=webkit','--dpr=2','--case=warm ink',`--tag=${tag}`];
   const child=cp.spawnSync(process.execPath,args,{cwd:repo,env:{...process.env,BILGE_TEST_ROOT:packageRoot,BILGE_DIAGNOSTIC_REPO:repo},encoding:'utf8',timeout:180000,maxBuffer:8*1024*1024});
   fs.writeFileSync(path.join(out,'runner.log'),(child.stdout||'')+(child.stderr||''));
   const evidence=path.join(repo,'outputs/slide-flow','dpr-2-'+tag),summaryFile=path.join(evidence,'report-webkit-warm-ink.json'),parityFile=path.join(evidence,'webkit-ink-parity.json'),diagnosticFile=path.join(evidence,'webkit-ink-surface-diagnostic.json');
@@ -184,10 +253,11 @@ try{
   report.originalOutcome={exitCode:child.status,signal:child.signal,error:child.error?String(child.error):null,passed:summary?.passed,failed:summary?.failed,drift:summary?.drift,originalMediaUndo:parity?.find(x=>x.label==='media undo')};
   report.evidence={summaryFile,parityFile,diagnosticFile,summarySha256:summary?sha(fs.readFileSync(summaryFile)):null,diagnosticSha256:diagnostic?sha(fs.readFileSync(diagnosticFile)):null};
   report.stages=diagnostic?.stages;
+  if(replayRequested)report.replay=diagnostic?.replay;
   assert.ok(summary&&[0,1].includes(child.status),'Original target runner completed');assert.equal(summary.passed+summary.failed,1,'Exactly one original case');assert.deepEqual(summary.drift,[],'Hold package unchanged during experiment');assert.equal(summary.source['/pdf-workspace.js'],fixture.heldSourceSha256,'Served exact held source');
   assert.ok(report.originalOutcome.originalMediaUndo&&Number.isFinite(report.originalOutcome.originalMediaUndo.alphaMax),'Original audit reached');assert.ok(report.stages,'Post-audit localization reached');
   assert.equal(sha(fs.readFileSync(canonical)),RUNNER_SHA,'Canonical runner unchanged');assert.equal(sha(fs.readFileSync(path.join(release,'SHA256SUMS'))),MANIFEST_SHA,'Canonical manifest unchanged');
   for(const asset of assets)assert.equal(sha(fs.readFileSync(asset.absolute)),asset.hash,'Original release asset unchanged '+asset.name);
-  report.status=report.stages.status;
+  report.status=replayRequested?(report.replay?.status||'inconclusive'):report.stages.status;
 }catch(error){report.error=String(error.stack||error);process.exitCode=1;}
 finally{report.completedAt=new Date().toISOString();const filename=path.join(out,'results.json');fs.writeFileSync(filename,JSON.stringify(report,null,2));console.log(JSON.stringify({diagnosticOnly:true,releaseEligible:false,status:report.status,report:filename,error:report.error||null}));}

@@ -66,3 +66,47 @@ dizinindedir. `releaseEligible` her durumda `false` kalır.
   hata tekrarlanmadığı için tanı `inconclusive` döndü ve ek piksel okumadı.
 - Bu, Linux hatasının düzeldiğini göstermez. Linux CI sonucu bu belgenin
   commit edildiği anda henüz yoktur; CI artifact'i ayrıca incelenmelidir.
+
+## İkinci dar deney: aynı scratch üzerinde tek tekrar
+
+İlk deney sonradan Linux CI `37828731899` ile tamamlandı: zorunlu test 53/54,
+tanıdaki dört noktada scratch/karo/main `[0,0,0,0]`, referans `[24,60,56,64]`.
+Zorunlu ve stage koşularının tam actual PNG'leri aynıydı. Bu ölçüm okuma
+anındaki ayrımı scratch–referans arasına daralttı; motor nedenini kanıtlamadı.
+Sonuç notu #102353; kaynak commit `ff38a9a`.
+
+Kullanıcının sonraki “devam” isteğiyle açılan CLAIM #102355 yalnız
+`node work/diagnose-ink-stages.cjs --replay` deneyini kapsar:
+
+1. Özgün denetim, PNG'ler ve stage karşılaştırması önce korunur. Son satırın
+   dört noktasında desteklenen hata ve nesne/kopya zinciri doğrulanmazsa
+   yeniden çizim yapılmaz.
+2. Aynı korunmuş scratch temizlenip gözlenen son-satır çizim çağrılarıyla
+   **bir kez** yeniden doldurulur. Çağrı sırası ve çizgi içeriği, gerçek
+   dönüşüm değerleri ve kırpma durumu doğrulanır. Sayfanın bütün çizgileri
+   yerine, ilk rasterde gerçekten çağrılan çizgiler kullanılır.
+3. Yeni canvas, bitmap boyut ataması, özel context seçeneği, rAF veya bekleme
+   eklenmez. İşlem stage okumasıyla aynı tarayıcı değerlendirmesinde yürür.
+4. Yeniden çizilen dört scratch pikseli önceki scratch ve özgün referansla
+   karşılaştırılır. Ana tuval/karo nesilleri ve aynı dört örnek pikselin,
+   ayrıca görünür mürekkep içeriğinin değişmediği denetlenir. Bu kontrol
+   tüm bitmap'in eşitlik ölçümü olarak sunulmaz.
+5. `--replay` yokken ek çağrı kaydı ve tekrar çizim yapılmaz. Standart stage
+   deneyi CI'da ayrı kalır. Özgün kabul sonuçları yeniden çizim sonucuyla
+   değiştirilmez; `releaseEligible=false` her durumda korunur.
+
+Yanıtlanan tek soru: **aynı nesne, mevcut okuma geçmişinden sonra aynı
+çağrılarla yeniden çizilince ölçülen dört piksel değişiyor mu?** Değişirse
+bu örnekte farklı sonuç için yeni canvas oluşturmanın zorunlu olmadığını
+gösterir; değişmezse yalnız bu tek tekrarın yeterli olmadığını gösterir.
+İki sonuç da zamanlama, flush, sürücü veya CPU/GPU nedenini tek başına
+ayıramaz. Bir kare erteleme çözümünü veya iPad kabulünü kanıtlamaz.
+
+Yerel ön kontrol: 12/12 saf koruma testi geçti. Windows WebKit'te normal stage
+ve `--replay` koşularının hedef senaryosu ayrı ayrı 1/1 geçti; hata oluşmadı.
+Nesne zinciri doğrulandı; replay `performed=false` ve `inconclusive` kaldı.
+Dolayısıyla gerçek yeniden çizim kolu yerel hatasız koşuyla doğrulanmış sayılmaz.
+Çıktılar `20261008192359107` (replay isteği) ve `20261008192418250` (normal stage).
+
+Linux tekrar çizim sonucu bu commit hazırlanırken henüz yoktur. Uygulama yaması,
+merge veya yayın onayı yoktur.

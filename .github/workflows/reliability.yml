@@ -41,6 +41,9 @@ jobs:
         run: |
           node work/diagnose-ink-stages.cjs --self-test
           node work/diagnose-ink-stages.cjs
+      - name: Diagnostic only - one replay on the same held scratch
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        run: node work/diagnose-ink-stages.cjs --replay
       - name: Continuous slide flow and guarded ink cache
         run: npm run test:slide-flow
         env:
