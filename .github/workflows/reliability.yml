@@ -36,6 +36,11 @@ jobs:
       - name: Diagnostic only - scratch lifetime in the original failed scenario
         if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
         run: node work/diagnose-ink-lifetime.cjs
+      - name: Diagnostic only - post-audit scratch tile and main samples
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        run: |
+          node work/diagnose-ink-stages.cjs --self-test
+          node work/diagnose-ink-stages.cjs
       - name: Continuous slide flow and guarded ink cache
         run: npm run test:slide-flow
         env:
@@ -105,6 +110,10 @@ jobs:
             outputs/ink-lifetime-diagnostic/**/results.json
             outputs/ink-lifetime-diagnostic/**/fixture.json
             outputs/ink-lifetime-diagnostic/**/runner.log
+            outputs/ink-stage-diagnostic/**/results.json
+            outputs/ink-stage-diagnostic/**/fixture.json
+            outputs/ink-stage-diagnostic/**/runner.log
+            outputs/ink-stage-diagnostic/**/runner.cjs
             outputs/marker-icons/
             outputs/theme-logo/
             outputs/pptx-v78-release/notebook-compat/
