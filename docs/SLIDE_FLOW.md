@@ -226,3 +226,44 @@ Eski ve reddedilen ölçümler sırasıyla `dpr-2-tile-baseline-perf/` ve
 Gerçek iPad'de Apple Pencil, avuç, iki parmakla kaydırma, bellek baskısı ve uzun ders
 oturumu kabulü hâlâ ayrı testtir. Bu belge test kanıtıdır; commit, merge veya canlı
 yayının yapıldığını kendi başına göstermez.
+
+## 8 Ekim — Linux WebKit ek kalite kapısı ve kontrollü tanı
+
+Yukarıdaki Windows sonucu Linux kabulü yerine geçmez. `57a6ce72` için GitHub
+Actions `37734784617`, Ubuntu WebKit/DPR 2'de medya taşıma/geri alma aşamasında
+**49/50** kaldı. Değişmemiş ikinci slaytın 13 kalem kenarı pikselinde alfa farkı
+64, beyaz üzerinde en büyük kanal farkı yaklaşık 58,23 ölçüldü. Referans görüntü,
+silgi aşamasındaki referansla aynıdır; ilk/kalem/silgi/yakınlaştırma aşamalarında
+bu fark yoktur. Kaynak sapması yoktur. Bu, metin/görsel kaybı veya yalnız test
+toleransı olarak sınıflandırılmadı; kalite eşiği gevşetilmedi ve kapı açıktır.
+
+İndirilen kanıtlar
+`outputs/direct-pptx-release-v78/ci-37734784617/slide-flow/dpr-2/` altındadır.
+Tuval boyutu veya raster arka ucunun değişiminden sonra önbellek piksellerinin
+yeniden kullanılması olası nedendir; bu aşamada kesin neden kanıtlanmış değildir.
+
+Tanı yaması yalnız `work/verify-slide-flow.cjs` dosyasındadır. Uygulama
+`pdf-workspace.js` dosyasının SHA-256'sı hâlâ
+`b0737f159b188faa810594ed1f9372615e9a07d16d36a49cd23f1fe1a5cbf7ab`:
+
+- Özgün sıcak görüntü, ölçüm ve başarısız assertion korunur.
+- Yalnız medya geri alma kalite ölçümü başarısızsa, sentetik görünür sayfalara
+  `touchPage` uygulanarak önbellek geçersiz kılınır. Sonraki doğrudan referans
+  karşılaştırması **ayrı tanı sonucudur**; başarısız ölçümün yerine geçmez.
+- Mürekkep içeriğinin SHA-256'sı önce/sonra karşılaştırılır. Not içeriği değiştirilmez;
+  yalnız bu sentetik testin sayfa revizyonları yenilenir. Canlı hesaba işlem yoktur.
+- Ana tuvalin fiziksel/CSS boyutu, dönüşüm matrisi, görünür sayfa dönüşümleri ve
+  revizyonları raporlanır. Medya açma/geri alma/kapatma sırasında yalnız fiziksel
+  tuval ve bağlam değerleri okunur; yeni bekleme veya üretim koduna iz eklenmez.
+- `${engine}-ink-parity.json`, `${engine}-ink-surface-diagnostic.json` ve ayrı
+  sıcak/soğuk PNG'ler kaydedilir. `finally`, özgün test başarısızken de tanı JSON'unu
+  yazar. Soğuk karşılaştırmanın geçmesi, özgün testi başarılı yapmaz.
+
+Hedef komut: `node work/verify-slide-flow.cjs --dpr=2 --case="warm ink"`.
+Yerel Windows Chromium/WebKit kontrolü 2/2 geçti; bu Linux hatasının çözüldüğü
+anlamına gelmez. Ayrı ve açıkça **yapay** tanı-akışı öz testinde yalnız özgün
+`media undo` ölçümüne `alphaMax=64` enjekte edildi: soğuk ölçüm 0 ve içerik hash'i
+aynı olduğu halde iki test de beklenen şekilde başarısız kaldı (0/2). Bu bir
+görüntü hatası tekrarı değil, başarısızlığın tanı tarafından gizlenemediğinin
+kontrolüdür. Kanıt: `outputs/slide-flow/dpr-2-diagnostic-plumbing-negative-exact/`.
+Linux tanı koşusu ve ona dayanacak olası uygulama düzeltmesi ayrıca gereklidir.

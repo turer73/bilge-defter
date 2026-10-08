@@ -26,6 +26,16 @@ jobs:
       - run: npx playwright install --with-deps chromium webkit
       - run: python -m pip install -r server-candidate/v49/requirements.txt pytest
       - run: npm run build
+      # Fail fast on drawing quality before the longer historical suite.
+      # These are the same mandatory DPR checks, not a diagnostic bypass.
+      - name: Retina continuous flow and strict raster quality (DPR 2)
+        run: npm run test:slide-flow-dpr2
+        env:
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
+      - name: Continuous slide flow and guarded ink cache
+        run: npm run test:slide-flow
+        env:
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
       - run: npm run prepare:baselines
       - name: Prepare historical and actual published v77 baselines
         run: |
@@ -58,14 +68,6 @@ jobs:
         run: node work/verify-pptx-raster.cjs
       - name: Real published v77 reader accepts v78 notebook pages (synthetic only)
         run: node work/verify-pptx-notebook-compat.cjs
-      - name: Continuous slide flow and guarded ink cache
-        run: npm run test:slide-flow
-        env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
-      - name: Retina continuous flow and strict raster quality (DPR 2)
-        run: npm run test:slide-flow-dpr2
-        env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
       - name: Marker opacity, persistence and Tabler icons
         run: npm run test:marker-icons
         env:
