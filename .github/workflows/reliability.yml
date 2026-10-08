@@ -44,6 +44,11 @@ jobs:
       - name: Diagnostic only - one replay on the same held scratch
         if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
         run: node work/diagnose-ink-stages.cjs --replay
+      - name: Diagnostic only - isolated final-geometry media close candidate
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        run: |
+          node work/diagnose-media-close.cjs --self-test
+          node work/diagnose-media-close.cjs --variant=candidate --probe
       - name: Continuous slide flow and guarded ink cache
         run: npm run test:slide-flow
         env:
@@ -117,6 +122,12 @@ jobs:
             outputs/ink-stage-diagnostic/**/fixture.json
             outputs/ink-stage-diagnostic/**/runner.log
             outputs/ink-stage-diagnostic/**/runner.cjs
+            outputs/media-close-candidate/**/results.json
+            outputs/media-close-candidate/**/candidate-hooks.json
+            outputs/media-close-candidate/**/fixture.json
+            outputs/media-close-candidate/**/runner.log
+            outputs/media-close-candidate/**/probe.log
+            outputs/media-close-candidate/**/probe/
             outputs/marker-icons/
             outputs/theme-logo/
             outputs/pptx-v78-release/notebook-compat/
