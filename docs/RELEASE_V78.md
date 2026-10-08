@@ -269,6 +269,20 @@ Bu ilave bellek maliyeti fiziksel iPad kabulü gerektirir. Kaynak SHA256:
 `3b3fcdedfd40ba4656b7c8dca2ece1eeb605f54229326b3d91b03351cb11007e`.
 Kontrollü deney tek başına bu adayın özgün Linux kalite kapısını kapatmaz.
 
+`0b20ea7b` / Linux `37743868072` bu adayı da özgün medya geri alma
+kontrolünde reddetti: **53/54**, yine 13 pikselde en çok 64 alfa farkı.
+Hatalı görüntü ilk reddedilen adayla bayt düzeyinde aynıdır. Yerel 108/108
+slayt ve 91/91 ek kontrol bunu geçersiz kılmaz; bağımsız scratch yüzeyi
+nedeni çözmüş sayılmaz. Bu commit'in immutable paketi yalnız yereldedir;
+canonical v78 sunucu dizini yoktur, canlı v77 ve PR #19 durumu değişmedi.
+
+Sonraki test-only tanı, aynı gerçek akışı iki ayrı tarayıcı bağlamında
+çalıştırır: birebir paket ve yalnız geçici tuvalin bırakılmasını erteleyen
+ignored kopya. İkinci kopya en çok 100 milyon piksel tutar (RGBA yaklaşık
+400 MB; yalnız tanı), kaynak/manifest uyumsuzluğu açıkça kaydedilir ve
+yayına uygun değildir. Özgün zorunlu CI adımı önce çalışır; başarısızlığı
+korunur. Tanı sonucu üretim düzeltmesi, geçen CI veya yayın kanıtı sayılmaz.
+
 - Yerel Retina/DPR2 ve hedefli kontroller son adayda geçti; ancak kaynak
   yeniden değişirse ilgili testler tekrar çalıştırılır. Tek kaynak commit'ine
   bağlı paket/receipt, PR ve gerçek CI sonucu ayrıca gerekir.

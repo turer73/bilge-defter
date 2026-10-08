@@ -29,9 +29,13 @@ jobs:
       # Fail fast on drawing quality before the longer historical suite.
       # These are the same mandatory DPR checks, not a diagnostic bypass.
       - name: Retina continuous flow and strict raster quality (DPR 2)
+        id: slide_flow_dpr2
         run: npm run test:slide-flow-dpr2
         env:
           BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
+      - name: Diagnostic only - scratch lifetime in the original failed scenario
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        run: node work/diagnose-ink-lifetime.cjs
       - name: Continuous slide flow and guarded ink cache
         run: npm run test:slide-flow
         env:
@@ -98,6 +102,9 @@ jobs:
             outputs/pptx-v78-release/v77-baseline/build-proof.json
             outputs/pptx-notebook/
             outputs/slide-flow/
+            outputs/ink-lifetime-diagnostic/**/results.json
+            outputs/ink-lifetime-diagnostic/**/fixture.json
+            outputs/ink-lifetime-diagnostic/**/runner.log
             outputs/marker-icons/
             outputs/theme-logo/
             outputs/pptx-v78-release/notebook-compat/
