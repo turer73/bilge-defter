@@ -300,3 +300,28 @@ vakası **4/4** geçti (`dpr-1-surface-key-fix/`, `dpr-2-surface-key-fix/`). Tes
 çalıştırıcısı artık motor başına 26, DPR başına **52** vaka içerir. Linux'taki
 özgün medya geri alma senaryosunun yeni kaynakla geçmesi hâlâ asıl kabul kapısıdır;
 bu yerel sonuç onun yerine geçmez.
+
+### Linux yüzey anahtarı sonrası: kapı hâlâ açık
+
+`94d81ec` / `64ce1a24…` kaynağıyla Linux koşusu `37738959813`, DPR2 WebKit'te
+**51/52** kaldı. Fiziksel bitmap testi geçti ancak özgün `media undo` ölçümünün
+alfa farkı yine **64**, ayrı soğuk çizimin farkı **0** ve içerik hash'i aynıydı.
+Bu nedenle fiziksel boyut anahtarı gerekli geçersizleştirmeyi eklemiş olsa da
+özgün Linux hatasını **çözmedi**. Yeni görüntüde 10 farklı piksel var: ilk sayfada
+5 yeşil kalem kenarı, komşu sayfada 4 yeşil kalem kenarı ve 1 mavi kalem başlığı.
+Referans görüntü önceki koşuyla bit düzeyinde aynıdır. Kesin raster nedeni hâlâ
+kanıtlanmadığından yayımlama kapısı kapalıdır.
+
+İkinci tanı yalnız test çalıştırıcısına eklenmiştir; uygulama kaynağı `64ce1a24…`
+değişmedi. Sentetik örnekteki 16, 27 ve 63 numaralı üç çizgi için gerçek tuval
+kimliği/boyutu, çizim durumu, 17 anlamlı haneli dönüşüm, gözlenen dikdörtgen clip
+işlemleri ve ana tuval↔parça kopyalarının kaynak/hedef koordinatları kaydedilir.
+Toplam iz 4000 kayıtla sınırlıdır; taşan kayıt sayısı ayrıca raporlanır.
+Prototip sarmalayıcıları yalnız bu testin tarayıcı bağlamında çalışıp `finally`
+içinde geri alınır. Yeni `getImageData`, ek bekleme, üretim kaynağına iz veya
+kalite eşiği değişikliği yoktur; soğuk sonuç özgün başarısızlığın yerine geçmez.
+
+Windows hedef kontrolü iki motorda **2/2**, kayıt sayısı motor başına 762 ve
+taşan kayıt 0'dır (`outputs/slide-flow/dpr-2-stroke-transfer-trace/`). Bu yerel
+geçiş Linux'ta düzeldiği anlamına gelmez. Linux'ta aynı özgün kalite kapısıyla
+izlerin alınması ve nedenin ayrıştırılması beklenmektedir.
