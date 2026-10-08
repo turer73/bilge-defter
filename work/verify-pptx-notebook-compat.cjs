@@ -1,19 +1,19 @@
 'use strict';
-// Real published v76 reads a v77-written normal notebook on the SAME origin,
+// Real published v77 reads a v78-written normal notebook on the SAME origin,
 // account and IndexedDB. No transformed old source and no private document.
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const {chromium,webkit}=require('playwright');
-const repo=path.resolve(__dirname,'..'),out=path.join(repo,'outputs/pptx-v77-release/notebook-compat');
-const candidate=path.resolve(process.env.BILGE_TEST_ROOT||path.join(__dirname,'bilge-defter-invited-v77'));
-const oldRoot=path.join(repo,'outputs/pptx-v77-release/v76-baseline/package');
-const oldCommit='811d089044df8fe4fcad2698bd0532047f2acc31';
-const oldManifest='e81d8d6236fbda48cdeb02b8d1f216227cab39ab3fa91587e01f263d3b75688a';
+const repo=path.resolve(__dirname,'..'),out=path.join(repo,'outputs/pptx-v78-release/notebook-compat');
+const candidate=path.resolve(process.env.BILGE_TEST_ROOT||path.join(__dirname,'bilge-defter-invited-v78'));
+const oldRoot=path.join(repo,'outputs/pptx-v78-release/v77-baseline/package');
+const oldCommit='a441a2d3e1cb2fce7afcd592f7ca5d1480fe9e05';
+const oldManifest='faf16c238f8e390c1a87ce4358b3e1eca517fcf7db01614c5e439d8aa73de25e';
 const account='11111111-1111-4111-8111-111111111111',sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const engine=process.argv.find(s=>s.startsWith('--engine='))?.slice(9);assert.ok(!engine||['chromium','webkit'].includes(engine));
 const report={startedAt:new Date().toISOString(),runnerSha256:sha(fs.readFileSync(__filename)),results:[],snapshots:[],boundaries:[
   'Loopback HTTP with synthetic approved whoami; not real Cloudflare Access login.',
-  'Two-slide deterministic PPTX uses actual v77 main import UI; no private document, upload, PDF or external network.',
-  'Published v76 bytes are unmodified; app server switches packages without changing browser origin, account or IndexedDB.',
+  'Two-slide deterministic PPTX uses actual v78 main import UI; no private document, upload, PDF or external network.',
+  'Published v77 bytes are unmodified; app server switches packages without changing browser origin, account or IndexedDB.',
   'Service workers are disabled. This is persisted-data rollback compatibility, not service-worker downgrade/update acceptance.',
   'Desktop WebKit is not physical iPad, Apple Pencil, palm or memory-pressure acceptance.'
 ]};
@@ -22,8 +22,8 @@ function snapshot(dir,version){
   const files=new Map();function walk(folder,prefix=''){for(const e of fs.readdirSync(folder,{withFileTypes:true}))e.isDirectory()?walk(path.join(folder,e.name),prefix+e.name+'/'):files.set('/'+prefix+e.name,fs.readFileSync(path.join(folder,e.name)));}walk(dir);
   const manifest=JSON.parse(files.get('/offline-assets.json'));assert.equal(manifest.version,version);
   for(const f of manifest.files)assert.equal(sha(files.get('/'+f.path)),f.sha256,version+': '+f.path);
-  if(version==='v76')assert.equal(sha(files.get('/SHA256SUMS')),oldManifest,'Actual published v76 manifest required; do not regenerate from candidate');
-  report.snapshots.push({root:dir,version,commit:version==='v76'?oldCommit:undefined,manifestSha256:sha(files.get('/SHA256SUMS')),offlineSha256:sha(files.get('/offline-assets.json')),assets:manifest.files.length});
+  if(version==='v77')assert.equal(sha(files.get('/SHA256SUMS')),oldManifest,'Actual published v77 manifest required; do not regenerate from candidate');
+  report.snapshots.push({root:dir,version,commit:version==='v77'?oldCommit:undefined,manifestSha256:sha(files.get('/SHA256SUMS')),offlineSha256:sha(files.get('/offline-assets.json')),assets:manifest.files.length});
   return{dir,files,version};
 }
 function deck(){
@@ -59,44 +59,44 @@ async function run(browserType,name,current,old){
     await context.route('**/*',route=>{const u=new URL(route.request().url());if(['http:','https:'].includes(u.protocol)&&u.origin!==origin){external.push(u.origin);return route.abort();}return route.continue();});
     let p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));
     const goto=async version=>{await p.goto(origin+'/?compat='+version);await p.waitForFunction(()=>typeof ready!=='undefined'&&ready&&window.__v2UI&&canEdit());assert.equal(await p.evaluate(()=>APP_VERSION),version);assert.equal(await p.evaluate(()=>DB),'bilge-defter-account-'+account);};
-    await goto('v77');await settle(p);await draw(p);const initial=await summary(p),initialStored=await p.evaluate(async()=>JSON.stringify(await dbGet()));let backup,expected;
-    await stage('v77 actual PPTX import appends two normal pages and keeps original page',async()=>{
+    await goto('v78');await settle(p);await draw(p);const initial=await summary(p),initialStored=await p.evaluate(async()=>JSON.stringify(await dbGet()));let backup,expected;
+    await stage('v78 actual PPTX import appends two normal pages and keeps original page',async()=>{
       const bytes=deck();await p.evaluate(()=>BilgePptx.importToNotebook());await p.locator('#pptxImportDialog[open]').waitFor();await p.locator('#pptxNotebookFile').setInputFiles({name:'rollback-anatomi.pptx',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation',buffer:bytes});
       await p.waitForFunction(()=>['ready','error','uncertain'].includes(BilgePptx.snapshot().import?.phase),null,{timeout:60000});assert.equal(await p.evaluate(()=>BilgePptx.snapshot().import.phase),'ready');
       await p.locator('#pptxNotebookApply').click();await p.waitForFunction(()=>!document.querySelector('#pptxImportDialog')?.open&&canEdit()&&pdfBackgroundReady());
       const book=await summary(p);assert.equal(book.pages.length,3);assert.deepEqual(book.pages[0],initial.pages[0]);assert.ok(book.pages.slice(1).every(v=>v.pdf.name==='rollback-anatomi.pptx'));return{slides:2,pages:3,sourceSha256:sha(bytes)};
     });
-    await stage('v77 normal pen and marker persist with migrated assets and JSON backup',async()=>{
+    await stage('v78 normal pen and marker persist with migrated assets and JSON backup',async()=>{
       await draw(p,'pen');await draw(p,'marker',240);await settle(p);expected=await summary(p);
       const saved=await p.evaluate(async()=>({record:await dbGet(),previous:await inflateRecord(await dbGet('before-import'))}));
       assert.equal(expected.previous,initialStored,'Exact pre-import record must survive asset migration');
       assert.equal(saved.previous.pages.length,1);assert.deepEqual(saved.previous.pages[0].strokes,initial.pages[0].strokes);
       const refs=saved.record.pages.filter(v=>v.pdf).map(v=>v.pdf.image);assert.equal(new Set(refs).size,2);assert.ok(refs.every(v=>/^asset:[0-9a-f]{64}$/.test(v)));
-      const download=p.waitForEvent('download');await p.evaluate(()=>exportNotebook());const file=await download;const target=path.join(out,name+'-v77.json');await file.saveAs(target);backup=JSON.parse(fs.readFileSync(target,'utf8'));
-      assert.equal(backup.appVersion,'v77');assert.equal(backup.pages.length,3);assert.ok(backup.pages.filter(v=>v.pdf).every(v=>v.pdf.image.startsWith('data:image/png;base64,')));assert.deepEqual(backup.pages.find(v=>v.id===backup.active).strokes.map(v=>v.tool),['pen','marker']);return{schema:expected.schema,assetCount:refs.length,backupVersion:backup.backupVersion,backupSha256:sha(fs.readFileSync(target))};
+      const download=p.waitForEvent('download');await p.evaluate(()=>exportNotebook());const file=await download;const target=path.join(out,name+'-v78.json');await file.saveAs(target);backup=JSON.parse(fs.readFileSync(target,'utf8'));
+      assert.equal(backup.appVersion,'v78');assert.equal(backup.pages.length,3);assert.ok(backup.pages.filter(v=>v.pdf).every(v=>v.pdf.image.startsWith('data:image/png;base64,')));assert.deepEqual(backup.pages.find(v=>v.id===backup.active).strokes.map(v=>v.tool),['pen','marker']);assert.equal(backup.pages.find(v=>v.id===backup.active).strokes.find(v=>v.tool==='marker').markerOpacity,.4);return{schema:expected.schema,assetCount:refs.length,backupVersion:backup.backupVersion,markerOpacity:.4,backupSha256:sha(fs.readFileSync(target))};
     });
-    await stage('published v76 opens same account IndexedDB including PPTX-named backgrounds and ink',async()=>{
-      live=old;await goto('v76');await p.waitForFunction(()=>pdfBackgroundReady());await settle(p);const actual=await summary(p);sameBook(actual,expected);assert.equal(actual.previous,expected.previous);
-      await p.screenshot({path:path.join(out,name+'-v76-rollback.png')});return{origin,db:actual.db,pages:actual.pages.length,manifest:oldManifest};
+    await stage('published v77 opens same account IndexedDB including PPTX-named backgrounds and ink',async()=>{
+      live=old;await goto('v77');await p.waitForFunction(()=>pdfBackgroundReady());await settle(p);const actual=await summary(p);sameBook(actual,expected);assert.equal(actual.previous,expected.previous);
+      const oldMarkerAlpha=await p.evaluate(()=>{const marker=page().strokes.find(s=>s.tool==='marker');if(marker.markerOpacity!==.4)throw Error('v77 discarded the new marker field');const c=document.createElement('canvas');c.width=160;c.height=60;const cx=c.getContext('2d');drawStroke({...marker,points:[{x:30,y:30,p:.5},{x:110,y:30,p:.5}]},cx);const alpha=cx.getImageData(70,30,1,1).data[3];c.width=c.height=1;return alpha;});assert.ok(Math.abs(oldMarkerAlpha-64)<=1,'v77 keeps its legacy 0.25 marker appearance');await p.screenshot({path:path.join(out,name+'-v77-rollback.png')});return{origin,db:actual.db,pages:actual.pages.length,manifest:oldManifest,markerFieldPreserved:.4,oldMarkerAlpha};
     });
-    await stage('v76 can add normal ink without losing backgrounds or before-import recovery copy',async()=>{
+    await stage('v77 can add normal ink without losing backgrounds or before-import recovery copy',async()=>{
       await draw(p,'pen',340);const updated=await summary(p);assert.equal(updated.pages.find(v=>v.id===updated.active).strokes.length,3);assert.deepEqual(updated.pages.map(v=>v.pdf),expected.pages.map(v=>v.pdf));assert.equal(updated.previous,expected.previous);expected=updated;
       await p.reload();await p.waitForFunction(()=>ready&&canEdit()&&pdfBackgroundReady());sameBook(await summary(p),expected);return{activeStrokeCount:3};
     });
-    await stage('v76 accepts and restores v77 JSON backup after a deliberate blank replacement',async()=>{
-      await p.evaluate(async backup=>{const parsed=parseBackup(backup);await validatePdfImages(parsed.book);if(!await replaceNotebook(blank(),'Fixture blank'))throw Error('Blank replacement rejected');if(!await replaceNotebook(parsed.book,'Fixture v77 restore'))throw Error('v77 backup rejected');},backup);
+    await stage('v77 accepts and restores v78 JSON backup after a deliberate blank replacement',async()=>{
+      await p.evaluate(async backup=>{const parsed=parseBackup(backup);await validatePdfImages(parsed.book);if(!await replaceNotebook(blank(),'Fixture blank'))throw Error('Blank replacement rejected');if(!await replaceNotebook(parsed.book,'Fixture v78 restore'))throw Error('v78 backup rejected');},backup);
       await settle(p);const actual=await summary(p);assert.deepEqual(actual.pages,backup.pages.map(({updated,...v})=>v));assert.equal(actual.active,backup.active);assert.equal(actual.schema,backup.version);assert.equal(actual.editable,true);expected=actual;return{backupVersion:backup.backupVersion,pages:actual.pages.length};
     });
-    await stage('restored v76 notebook reopens and remains readable when upgraded to v77 again',async()=>{
+    await stage('restored v77 notebook reopens and remains readable when upgraded to v78 again',async()=>{
       await draw(p,'pen',340);expected=await summary(p);await p.reload();await p.waitForFunction(()=>ready&&canEdit()&&pdfBackgroundReady());sameBook(await summary(p),expected);
-      live=current;await goto('v77');await p.waitForFunction(()=>pdfBackgroundReady());await settle(p);sameBook(await summary(p),expected);return{pages:expected.pages.length,finalActiveStrokeCount:expected.pages.find(v=>v.id===expected.active).strokes.length};
+      live=current;await goto('v78');await p.waitForFunction(()=>pdfBackgroundReady());await settle(p);sameBook(await summary(p),expected);return{pages:expected.pages.length,finalActiveStrokeCount:expected.pages.find(v=>v.id===expected.active).strokes.length};
     });
     await stage('rollback run has no outside requests, uploads or unhandled page errors',async()=>{assert.deepEqual(errors,[]);assert.deepEqual(external,[]);assert.ok(requests.every(r=>r.method==='GET'));assert.equal(requests.some(r=>r.path.includes('pdf-tools')),false);return{requests:requests.length};});
   }catch(error){if(!report.results.some(r=>r.engine===name&&!r.passed))report.results.push({engine:name,name:'setup',passed:false,error:String(error.stack||error)});}
   finally{await context?.close();await browser?.close();if(server){server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}}
 }
 (async()=>{
-  fs.mkdirSync(out,{recursive:true});const current=snapshot(candidate,'v77'),old=snapshot(oldRoot,'v76');
+  fs.mkdirSync(out,{recursive:true});const current=snapshot(candidate,'v78'),old=snapshot(oldRoot,'v77');
   for(const[name,type]of[['chromium',chromium],['webkit',webkit]])if(!engine||engine===name)await run(type,name,current,old);
   report.drift=[];for(const snap of[current,old])for(const[name,bytes]of snap.files){const file=path.join(snap.dir,name.slice(1));if(!fs.existsSync(file)||sha(fs.readFileSync(file))!==sha(bytes))report.drift.push({version:snap.version,path:name});}
   report.finishedAt=new Date().toISOString();report.passed=report.results.filter(r=>r.passed).length;report.failed=report.results.filter(r=>!r.passed).length;

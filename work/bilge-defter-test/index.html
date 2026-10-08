@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v77</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v78</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -163,7 +163,7 @@ let DB='bilge-defter-test-v1'; const STORE='state'; let db,state,activeId,tool='
 let storedJSON=null,editRevision=0,savedRevision=0,savePromise=null,saveFailed=false,saveConflict=false,importing=false,allowLeave=false,failureMessage='',failureCode='';
 // v69: a short local log of save failures and lifecycle events, kept in localStorage because
 // IndexedDB may be what is failing. No note content: names, sizes, durations, visibility only.
-const APP_VERSION='v77',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
+const APP_VERSION='v78',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
 let lastSaveBytes=null,failStreak=0,failSince=0,saveRetrying=false,retryTimer=null,retryWhenVisible=false,hiddenAt=0,lastShownAt=0;
 function diag(ev,extra={}){try{const list=JSON.parse(localStorage.getItem(DIAG_KEY)||'[]');list.push({t:new Date().toISOString(),ev,vis:document.visibilityState,...extra});while(list.length>80)list.shift();localStorage.setItem(DIAG_KEY,JSON.stringify(list))}catch{}}
 function errorInfo(e){return {name:String(e?.name||'Error').slice(0,40),msg:String(e?.message||'').slice(0,160)}}
@@ -178,6 +178,7 @@ function canEdit(){return ready&&!window.BilgeAccount?.locked&&!window.BilgePptx
 const clearedPages=new Map();
 // Each tool retains its own width during this open session.
 const toolWidths={pen:4,marker:4,eraser:12};
+const NEW_MARKER_OPACITY=0.4;
 // Pen and highlighter keep their own colours; the colour input always shows the current tool's.
 const toolColors={pen:'#173b36',marker:'#f5c400'};
 let preferencesReady=false;
@@ -238,12 +239,17 @@ writingSurface.addEventListener('touchmove',e=>{
   if(!pinchT.startDist||Math.abs(dist-pinchT.startDist)<=2)return;
   const zoom=Math.max(1,Math.min(3,pinchT.startZoom*dist/pinchT.startDist));
   if(Math.abs(zoom-pdfZoom())<=0.0005)return;
+  if(window.BilgeSlideFlow?.enabled()){
+    const r=canvas.getBoundingClientRect();
+    window.BilgeSlideFlow.pinch(zoom,(a.clientX+b.clientX)/2-r.left,(a.clientY+b.clientY)/2-r.top);
+    pinchDirty=true;return;
+  }
   const r=canvas.getBoundingClientRect(),oldScale=paperScale(),mx=(a.clientX+b.clientX)/2-r.left,my=(a.clientY+b.clientY)/2-r.top,cx=viewX()+mx/oldScale,cy=viewY()+my/oldScale;
   page().pdfZoom=zoom;const scale=paperScale();
   page().viewX=Math.max(0,Math.min(maxViewX(),cx-mx/scale));page().viewY=Math.max(0,cy-my/scale);
   updatePdfZoom();drawAll();pinchDirty=true;
 },{passive:true});
-for(const type of ['touchend','touchcancel'])writingSurface.addEventListener(type,e=>{if(pinchT&&e.touches.length<2){pinchT=null;if(pinchDirty){pinchDirty=false;markViewChanged();scheduleViewSave()}}},{passive:true});
+for(const type of ['touchend','touchcancel'])writingSurface.addEventListener(type,e=>{if(pinchT&&e.touches.length<2){pinchT=null;if(pinchDirty){pinchDirty=false;markViewChanged();scheduleViewSave()}window.BilgeSlideFlow?.settle()}},{passive:true});
 function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>{const c=r.result;c.onclose=()=>{if(db===c)db=null};c.onversionchange=()=>{c.close();if(db===c)db=null};db=c;ok()};r.onerror=()=>no(r.error)})}
 // WebKit can drop an IndexedDB connection (app in the background, storage process evicted under
 // memory pressure). A lost connection is reopened and the step retried once.
@@ -373,7 +379,11 @@ document.querySelectorAll('[data-paper-color]').forEach(b=>b.onclick=()=>setPape
 document.querySelectorAll('[data-paper-pattern]').forEach(b=>b.onclick=()=>setPaperPattern(b.dataset.paperPattern));
 document.querySelector('#paperColor').oninput=e=>setPaperColor(e.target.value);
 function uniquePageTitle(base){const titles=new Set(state.pages.map(p=>p.title));let title=base.slice(0,80),n=2;while(titles.has(title)){const suffix=` (${n++})`;title=base.slice(0,80-suffix.length)+suffix}return title}
-function validPage(p){return typeof p?.id==='string'&&typeof p.title==='string'&&(p.notebookId===undefined||typeof p.notebookId==='string')&&(p.paperColor===undefined||(typeof p.paperColor==='string'&&/^#[0-9a-f]{6}$/i.test(p.paperColor)))&&(p.paperPattern===undefined||['lined','grid','dotted','blank'].includes(p.paperPattern))&&(p.viewY===undefined||(Number.isFinite(p.viewY)&&p.viewY>=0))&&Array.isArray(p.strokes)&&p.strokes.every(s=>isMedia(s)?validMediaStroke(s):['pen','marker','eraser'].includes(s?.tool)&&typeof s.color==='string'&&Number.isFinite(s.width)&&s.width>0&&Array.isArray(s.points)&&s.points.every(pt=>Number.isFinite(pt?.x)&&Number.isFinite(pt?.y)))}
+function validMarkerOpacity(s){return s?.markerOpacity===undefined||(s?.tool==='marker'&&Number.isFinite(s.markerOpacity)&&s.markerOpacity>=0.1&&s.markerOpacity<=0.6)}
+// Keep pre-existing markers at their original strength. New strokes carry their
+// own optional value, also used by PDF export and the continuous-slide ink cache.
+function markerAlpha(s){return s?.tool==='marker'?(validMarkerOpacity(s)&&s.markerOpacity!==undefined?s.markerOpacity:0.25):1}
+function validPage(p){return typeof p?.id==='string'&&typeof p.title==='string'&&(p.notebookId===undefined||typeof p.notebookId==='string')&&(p.paperColor===undefined||(typeof p.paperColor==='string'&&/^#[0-9a-f]{6}$/i.test(p.paperColor)))&&(p.paperPattern===undefined||['lined','grid','dotted','blank'].includes(p.paperPattern))&&(p.viewY===undefined||(Number.isFinite(p.viewY)&&p.viewY>=0))&&Array.isArray(p.strokes)&&p.strokes.every(s=>validMarkerOpacity(s)&&(isMedia(s)?validMediaStroke(s):['pen','marker','eraser'].includes(s?.tool)&&typeof s.color==='string'&&Number.isFinite(s.width)&&s.width>0&&Array.isArray(s.points)&&s.points.every(pt=>Number.isFinite(pt?.x)&&Number.isFinite(pt?.y))))}
 function validState(x){
   if(!([1,2,3,4,5,6].includes(x?.version)&&Array.isArray(x.pages)&&x.pages.length>0&&x.pages.every(validPage))||!validPlannerBook(x))return false;
   if(x.trash!==undefined&&(!Array.isArray(x.trash)||!x.trash.every(t=>validPage(t?.page)&&typeof t.notebookTitle==='string'&&typeof t.deletedAt==='string'&&Number.isFinite(Date.parse(t.deletedAt))&&Number.isSafeInteger(t.position)&&t.position>=0)))return false;
@@ -600,7 +610,7 @@ function flushSave(auto=false){
 document.querySelector('#retrySave').onclick=()=>{if(!importing)void flushSave()};
 document.querySelector('#reloadSaved').onclick=()=>{if(confirm('Bu sekmedeki kaydedilmemiş değişiklikler kapanacak. Yedeğinizi aldıysanız kayıtlı defter yeniden açılsın mı?')){allowLeave=true;location.reload()}};
 const FULL_LEAVE_LIMIT=8*1024*1024;
-function flushOnLeave(){if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear();lifeWrite(true);if(importing)return;
+function flushOnLeave(){if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear();if(!importing)window.BilgeSlideFlow?.settle();lifeWrite(true);if(importing)return;
   // iPadOS gives a hidden page little time and memory. Only a small notebook (≤ 8 MB) still gets the
   // full check and rewrite here; a large one saves just what changed and is checked when idle (v69).
   if((lastSaveBytes??0)<=FULL_LEAVE_LIMIT&&!storedAssets.size){if(!isDirty()&&!saveConflict&&pageCacheStale())markChanged();if(isDirty())saveFullNext=true}
@@ -613,11 +623,11 @@ document.addEventListener('visibilitychange',()=>{
 });
 window.addEventListener('pagehide',flushOnLeave);
 // Losing focus (Control Center, a file picker, Slide Over) only ends the current gesture.
-window.addEventListener('blur',()=>{if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear()});
+window.addEventListener('blur',()=>{if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear();window.BilgeSlideFlow?.settle()});
 window.addEventListener('beforeunload',e=>{if(!allowLeave&&(isDirty()||drawing||importing||pdfBusy||mediaPending||plannerDirty)){e.preventDefault();e.returnValue=''}});
 function pageContentWidth(p){let max=0;for(const s of p?.strokes||[]){if(isMedia(s)){max=Math.max(max,mediaBounds(s).right)}else{let m=0;for(const pt of s.points)m=Math.max(m,pt.x);max=Math.max(max,m+(s.width||2)/2)}}return max}
 function fitPageToWidth(){const p=page();if(!p||p.pdf)return false;const w=canvas.getBoundingClientRect().width;if(!Number.isFinite(w)||w<60)return false;const content=pageContentWidth(p),target=Math.max(1,w-16);const next=content>target?Math.max(0.2,Math.min(1,target/content)):1;if(Math.abs((p.fitScale||1)-next)<1e-4)return false;p.fitScale=next;drawAll();return true}
-function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(r.width*d)),h=Math.max(1,Math.round(r.height*d));if(canvas.width===w&&canvas.height===h&&ctx.getTransform().a===d)return;canvas.width=w;canvas.height=h;ctx.setTransform(d,0,0,d,0,0);if(!fitPageToWidth())drawAll()}
+function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(r.width*d)),h=Math.max(1,Math.round(r.height*d));if(canvas.width===w&&canvas.height===h&&ctx.getTransform().a===d)return;if(window.BilgeSlideFlow?.enabled()){if(drawing)finishStroke();pan=null;pinchT=null;touchPoints.clear();suppressTouch=false;}canvas.width=w;canvas.height=h;ctx.setTransform(d,0,0,d,0,0);if(!fitPageToWidth())drawAll()}
 function drawStroke(s,target=ctx,images=mediaImages){
   if(isMedia(s)){drawMediaStroke(s,target,images);return}
   if(!s.points.length)return;
@@ -625,7 +635,7 @@ function drawStroke(s,target=ctx,images=mediaImages){
   target.lineCap='round';
   target.lineJoin='round';
   target.globalCompositeOperation=s.tool==='eraser'?'destination-out':'source-over';
-  target.globalAlpha=s.tool==='marker'?.25:1;
+  target.globalAlpha=markerAlpha(s);
   target.strokeStyle=s.color;
   target.fillStyle=s.color;
   if(s.points.length===1){
@@ -651,9 +661,10 @@ function drawStrokeSegment(s,i0,i1,target=ctx){
   if(!s||!s.points.length)return;
   const scale=paperScale(),offset=viewY();
   target.save();target.scale(scale,scale);target.translate(-viewX(),-offset);
+  if(window.BilgeSlideFlow?.enabled())window.BilgeSlideFlow.clip(target);
   target.lineCap='round';target.lineJoin='round';
   target.globalCompositeOperation=s.tool==='eraser'?'destination-out':'source-over';
-  target.globalAlpha=s.tool==='marker'?.25:1;
+  target.globalAlpha=markerAlpha(s);
   target.strokeStyle=s.color;target.fillStyle=s.color;
   const p0=s.points[i0],p1=s.points[i1];
   if(i0===i1||!p1){
@@ -668,7 +679,7 @@ function drawStrokeSegment(s,i0,i1,target=ctx){
   }
   target.restore();
 }
-function viewY(){return page()?.viewY||0}
+function viewY(){return window.BilgeSlideFlow?.enabled()?window.BilgeSlideFlow.y():page()?.viewY||0}
 function visibleStroke(s,top,bottom){
   if(isMedia(s)){const b=mediaBounds(s);return b.bottom>=top&&b.top<=bottom}
   let bounds=strokeBounds.get(s);if(!bounds||bounds.count!==s.points.length){let min=Infinity,max=-Infinity;for(const p of s.points){min=Math.min(min,p.y);max=Math.max(max,p.y)}bounds={count:s.points.length,min,max};strokeBounds.set(s,bounds)}
@@ -681,13 +692,19 @@ function drawAll(options){
   if(!options?.viewportOnly){if(typeof refreshChrome==='function')refreshChrome();applyPaperColor();pruneMediaImages()}
   drawPdfBackground();
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.restore();
+  if(window.BilgeSlideFlow?.enabled()){
+    window.BilgeSlideFlow.drawInk();refreshMediaSelection();return;
+  }
   const scale=paperScale(),offset=viewY(),bottom=offset+canvas.getBoundingClientRect().height/scale;
   ctx.save();ctx.scale(scale,scale);ctx.translate(-viewX(),-offset);page()?.strokes.forEach(original=>{const s=mediaVisualStroke(original);if(visibleStroke(s,offset,bottom))drawStroke(s)});drawPendingMedia();ctx.restore();
   paperGrid(scale,offset);
   refreshMediaSelection();
 }
-function point(e){const r=canvas.getBoundingClientRect(),scale=paperScale();return{x:(e.clientX-r.left)/scale+viewX(),y:(e.clientY-r.top)/scale+viewY(),p:e.pressure||.5}}
+function point(e){if(window.BilgeSlideFlow?.enabled())return window.BilgeSlideFlow.point(e);const r=canvas.getBoundingClientRect(),scale=paperScale();return{x:(e.clientX-r.left)/scale+viewX(),y:(e.clientY-r.top)/scale+viewY(),p:e.pressure||.5}}
 function scrollPaper(next,nextX=viewX()){
+  if(window.BilgeSlideFlow?.enabled()){
+    window.BilgeSlideFlow.scroll(next,nextX);if(!pan)window.BilgeSlideFlow.settle();return;
+  }
   if(!canEdit()||!page()||!Number.isFinite(next)||!Number.isFinite(nextX))return;next=Math.max(0,next);nextX=Math.max(0,Math.min(maxViewX(),nextX));if(next===viewY()&&nextX===viewX())return;
   page().viewY=next;setViewX(nextX);markViewChanged();scheduleViewSave();queueViewportRender();const status=page().pdf?'PDF · iki parmakla her yöne kaydırılıyor':`Satır ${Math.floor(next/32)+1} · iki parmakla kaydırılıyor`;const inputState=document.querySelector('#inputState');if(inputState.textContent!==status)inputState.textContent=status;
 }
@@ -699,7 +716,7 @@ function updateWidthPreview(){
   const base=+document.querySelector('#width').value,color=tool==='eraser'?'#657973':document.querySelector('#color').value;
   toolWidths[tool]=base;if(tool!=='eraser')toolColors[tool]=document.querySelector('#color').value;updateEraserControls();persistToolPreferences();
   const name={pen:'Kalem',marker:'Fosforlu',eraser:'Silgi'}[tool],label=width=>`${width.toLocaleString('tr-TR')} px`;
-  const paint=(line,width)=>{line.setAttribute('stroke-width',width);line.setAttribute('stroke',color);line.setAttribute('opacity',tool==='marker'?.25:1)};
+  const paint=(line,width)=>{line.setAttribute('stroke-width',width);line.setAttribute('stroke',color);line.setAttribute('opacity',tool==='marker'?NEW_MARKER_OPACITY:1)};
   document.querySelectorAll('[data-width]').forEach(b=>{const width=selectedWidth(+b.dataset.width);paint(b.querySelector('line'),width);b.querySelector('span').textContent=label(width);b.setAttribute('aria-label',`${name} ${label(width)}`);b.setAttribute('aria-pressed',String(+b.dataset.width===base))});
   const width=selectedWidth();paint(document.querySelector('#widthPreviewLine'),width);document.querySelector('#widthValue').textContent=`${name} · ${label(width)}`;document.querySelector('#width').setAttribute('aria-valuetext',label(width));document.querySelector('.width-preview').setAttribute('aria-label',`${name} ${label(width)} çizgi önizlemesi`);
 }
@@ -722,7 +739,7 @@ document.querySelector('#width').addEventListener('input',updateWidthPreview);do
 canvas.addEventListener('pointerdown',e=>{
   // A rejected palm contact must not start the browser's selection gesture either.
   if(e.cancelable)e.preventDefault();
-  if(!canEdit()||!page()||!pdfBackgroundReady()){document.querySelector('#inputState').textContent='Yazı şu an durduruldu; kayıt ve PDF yükleme durumunu kontrol edin';return}
+  if(!canEdit()||!page()){document.querySelector('#inputState').textContent='Yazı şu an durduruldu; kayıt durumunu kontrol edin';return}
   if(e.pointerType==='touch'){
     // Palm contacts cannot take over an active pen/mouse stroke.
     if(drawing&&activeInputType!=='touch')return;
@@ -746,9 +763,13 @@ canvas.addEventListener('pointerdown',e=>{
   }
   if(!allowed(e)){document.querySelector('#inputState').textContent='Dokunma engellendi; kaleminiz yazmıyorsa avuç içi korumasını kapatın';return}
   if(activePointer!==null||(e.pointerType==='mouse'&&e.button!==0))return;
+  // Hit-test only after rejecting palms and resolving an old gesture. The
+  // selected slide and its transform then stay pinned through pointerup.
+  if(window.BilgeSlideFlow?.enabled()&&!window.BilgeSlideFlow.preparePointer(e))return;
+  if(!pdfBackgroundReady()){document.querySelector('#inputState').textContent='Sayfa açılıyor; hazır olduğunda yazabilirsiniz';return}
   finishViewportRender();
   e.preventDefault();try{canvas.setPointerCapture(e.pointerId)}catch{}
-  activePointer=e.pointerId;activeInputType=e.pointerType;drawing=true;current={tool,color:document.querySelector('#color').value,width:selectedWidth()/paperScale(),points:[point(e)]};page().strokes.push(current);
+  activePointer=e.pointerId;activeInputType=e.pointerType;drawing=true;current={tool,color:document.querySelector('#color').value,width:selectedWidth()/paperScale(),points:[point(e)],...(tool==='marker'?{markerOpacity:NEW_MARKER_OPACITY}:{})};page().strokes.push(current);
   checkpointDrawing();
   document.querySelector('#inputState').textContent=`${e.pointerType==='pen'?'Kalem':e.pointerType==='touch'?'Dokunma':'Fare'} algılandı · çiziliyor`;
   drawStrokeSegment(current,0,0);
@@ -770,7 +791,7 @@ canvas.addEventListener('pointermove',e=>{
 });
 function finishStroke(){if(!drawing)return;const id=activePointer,finishedTool=current?.tool;drawing=false;activePointer=null;activeInputType=null;current=null;try{if(canvas.hasPointerCapture(id))canvas.releasePointerCapture(id)}catch{}scheduleInkSave();if(finishedTool!=='pen')drawAll()}
 function end(e){
-  if(touchPoints.has(e.pointerId)){if(pan&&pan.ids.includes(e.pointerId)){finishViewportRender();pan=null;if(typeof refreshChrome==='function')refreshChrome();scheduleViewSave()}touchPoints.delete(e.pointerId);if(!touchPoints.size)suppressTouch=false}
+  if(touchPoints.has(e.pointerId)){if(pan&&pan.ids.includes(e.pointerId)){finishViewportRender();pan=null;window.BilgeSlideFlow?.settle();if(typeof refreshChrome==='function')refreshChrome();scheduleViewSave()}touchPoints.delete(e.pointerId);if(!touchPoints.size)suppressTouch=false}
   if(!drawing||e.pointerId!==activePointer)return;if(e.type==='pointerup'&&canEdit()){current.points.push(point(e));drawStrokeSegment(current,current.points.length-2,current.points.length-1)}finishStroke();
 }window.addEventListener('pointerup',end,true);window.addEventListener('pointercancel',end,true);canvas.addEventListener('lostpointercapture',end);
 document.querySelector('#penOnly').addEventListener('change',e=>{document.querySelector('#inputState').textContent=e.target.checked?'Avuç içi koruması açık: yalnız pen/mouse kabul edilir':'Uyumluluk modu açık: kalem touch görünse de yazabilir'});

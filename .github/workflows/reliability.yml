@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Reconstruct historical packages and immutable v74/v75/v76 baselines.
+          fetch-depth: 0 # Reconstruct historical packages and immutable v74/v75/v76/v77 baselines.
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -27,7 +27,7 @@ jobs:
       - run: python -m pip install -r server-candidate/v49/requirements.txt pytest
       - run: npm run build
       - run: npm run prepare:baselines
-      - name: Prepare historical and actual published v76 baselines
+      - name: Prepare historical and actual published v77 baselines
         run: |
           node work/prepare-v64-baseline.cjs
           node work/prepare-v65-baseline.cjs
@@ -39,8 +39,8 @@ jobs:
           node work/prepare-v71-baseline.cjs
           node work/prepare-v72-baseline.cjs
           npm run prepare:compat-reader
-      - name: Historical behavior against current v77, updates from actual v76
-        run: node work/verify-v77.cjs
+      - name: Historical behavior against current v78, updates from actual v77
+        run: node work/verify-v78.cjs
       - run: npm run test:reliability
       - run: npm run test:presentations
       - run: npm run test:page-limit
@@ -53,17 +53,34 @@ jobs:
       - name: Ordinary notebook PPTX imports, UI and guarded storage (synthetic only)
         run: node work/verify-pptx-notebook.cjs
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v77
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
       - name: Native raster safety and image readiness (synthetic only)
         run: node work/verify-pptx-raster.cjs
-      - name: Real published v76 reader accepts v77 notebook pages (synthetic only)
+      - name: Real published v77 reader accepts v78 notebook pages (synthetic only)
         run: node work/verify-pptx-notebook-compat.cjs
+      - name: Continuous slide flow and guarded ink cache
+        run: npm run test:slide-flow
+        env:
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
+      - name: Retina continuous flow and strict raster quality (DPR 2)
+        run: npm run test:slide-flow-dpr2
+        env:
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
+      - name: Marker opacity, persistence and Tabler icons
+        run: npm run test:marker-icons
+        env:
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
+      - name: Frame-linked logo contrast, preferences and fallback
+        run: npm run test:theme-logo
+        env:
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
       - run: python -m pytest server-candidate/v49/tests -q
       - run: python -m pytest worker -q
       - run: python -B work/test_deploy_v73.py
       - run: python -B work/test_deploy_v75.py
       - run: python -B work/test_deploy_v76.py
       - run: python -B work/test_deploy_v77.py
+      - run: npm run test:deploy-v78
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -73,12 +90,15 @@ jobs:
             outputs/presentations/
             outputs/page-limit/
             outputs/page-limit-sw/
-            outputs/v77/
-            outputs/pptx-v77-release/integration-*.json
-            outputs/pptx-v77-release/*native-pptx-ready.png
-            outputs/pptx-v77-release/v76-baseline/build-proof.json
+            outputs/v78/
+            outputs/pptx-v78-release/integration-*.json
+            outputs/pptx-v78-release/*native-pptx-ready.png
+            outputs/pptx-v78-release/v77-baseline/build-proof.json
             outputs/pptx-notebook/
-            outputs/pptx-v77-release/notebook-compat/
+            outputs/slide-flow/
+            outputs/marker-icons/
+            outputs/theme-logo/
+            outputs/pptx-v78-release/notebook-compat/
             outputs/pptx-v76-release/raster-probe/
           retention-days: 7
 # No secrets, live accounts, deployment, self-hosted runner or paid API.
