@@ -116,6 +116,20 @@ async function run(browser,engine){
     const g=await geometry(p),y=(g.rows[1].top-g.scroll+80)*g.scale;assert.ok((await pixel(p,'canvas',200*g.scale,y))[3]>30,'Neighbor cache miss actually paints its marker');
     await pointer(p,'pointerup',230,120);await save(p);return{heldInkPreserved:true,neighborPainted:true};
   });
+  await check(browser,engine,'physical bitmap resize rebuilds ink before warm reuse',async({p})=>{
+    await importSlides(p,3);await p.evaluate(()=>{for(const p of notebookPages()){p.strokes=[{tool:'marker',color:'#173b36',width:14,points:[{x:300,y:80},{x:420,y:80}]},{tool:'pen',color:'#0000ff',width:5,points:[{x:300,y:90,p:.5},{x:420,y:90,p:.5}]},{tool:'eraser',width:3,points:[{x:350,y:70},{x:350,y:100}]}];touchPage(p)}drawAll()});await paint(p);
+    const results=await p.evaluate(()=>{
+      const original=drawStroke,baseWidth=canvas.width,baseHeight=canvas.height,d=ctx.getTransform().a,ink=JSON.stringify(state.pages.map(p=>p.strokes)),results=[];
+      const counted=()=>{let calls=0;drawStroke=function(...args){calls++;return original(...args)};try{drawAll()}finally{drawStroke=original}return calls;};
+      // Model the real ResizeObserver interval: CSS geometry is unchanged while
+      // the actual bitmap changes. No cache limit or production hook is altered.
+      for(const [label,width,height]of [['width',baseWidth+64,baseHeight],['height',baseWidth+64,baseHeight+64],['restore',baseWidth,baseHeight]]){
+        canvas.width=width;canvas.height=height;ctx.setTransform(d,0,0,d,0,0);const coldCalls=counted(),warmCalls=counted(),snap=BilgeSlideFlow.snapshot(),scale=BilgeSlideFlow.scale(),ref=document.createElement('canvas');ref.width=width;ref.height=height;const target=ref.getContext('2d');
+        for(const row of snap.rows.filter(row=>snap.visible.includes(row.id))){target.save();target.setTransform(d*scale,0,0,d*scale,-snap.x*d*scale,(row.top-snap.scroll)*d*scale);target.beginPath();target.rect(0,0,1000,row.height);target.clip();for(const stroke of state.pages.find(p=>p.id===row.id).strokes)original(stroke,target,mediaImages);target.restore();}
+        const a=ctx.getImageData(0,0,width,height).data,b=target.getImageData(0,0,width,height).data;let alphaMax=0,whiteMax=0,sum=0,fg=0,over16=0;for(let i=0;i<a.length;i+=4){if(a[i+3]||b[i+3])fg++;alphaMax=Math.max(alphaMax,Math.abs(a[i+3]-b[i+3]));let max=0;for(let c=0;c<3;c++){const diff=Math.abs(a[i+c]*a[i+3]/255+255-a[i+3]-(b[i+c]*b[i+3]/255+255-b[i+3]));whiteMax=Math.max(whiteMax,diff);sum+=diff;max=Math.max(max,diff)}if(max>16)over16++;}ref.width=ref.height=1;results.push({label,width,height,coldCalls,warmCalls,alphaMax,whiteMax,mean:sum/(3*fg),ratio:over16/fg,inkPixels:snap.inkPixels,inkUnchanged:ink===JSON.stringify(state.pages.map(p=>p.strokes))});
+      }return results;
+    });fs.writeFileSync(path.join(out,`${engine}-bitmap-resize.json`),JSON.stringify(results,null,2));for(const result of results){assert.ok(result.coldCalls>0,result.label+': a different raster surface must rebuild cached geometry');assert.equal(result.warmCalls,0,result.label+': unchanged surface stays warm');assert.ok(result.inkUnchanged);assert.ok(result.inkPixels<=8000000);assert.ok(result.alphaMax<=32);assert.ok(result.whiteMax<=32);assert.ok(result.mean<=1);assert.ok(result.ratio<=.002);}return{results};
+  });
   await check(browser,engine,'oversized viewport preserves reference pixels at cache budget fallback',async({p})=>{
     // Size the real constrained paper, not a guessed screen/paper ratio. Only
     // viewport dimensions change; application CSS and the 8M limit stay intact.

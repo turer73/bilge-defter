@@ -182,7 +182,7 @@ düzeltmesinden sonra oluşacak son pakete bu sonuçlar kendiliğinden taşınma
   Bu dört pozitif hedefli kontrol, tek başına tam **50+50** koşusunun veya aynı
   commit CI'sının yerine geçmez. Son üretilen paket ayrıca aşağıda doğrulandı.
 
-### Son yerel aday — 191/191 hedefli kontrol
+### İlk kaynak adayı (57a6ce72) — yerel 191/191 hedefli kontrol
 
 Son `work/bilge-defter-invited-v78/SHA256SUMS` SHA256:
 `a4d32169cc0dd3a8e032960d210093149e0da0d23669ceafe8123566100d668c`.
@@ -202,10 +202,48 @@ bitişinde bu paket hash'i aynı kaldı; raporların kaynak farkı listesi `[]`.
   (`outputs/pptx-v78-release/notebook-compat/results.json`), PPTX entegrasyonu
   **44** (`outputs/pptx-v78-release/integration-all-synthetic.json`).
 
-Bu bölüm yerel uygulama paketi kabulüdür; bir Git commit'i, GitHub CI sonucu,
+Bu bölüm yerel uygulama paketi kabulüdür; başarılı GitHub CI sonucu,
 stage veya canlı yayın receipt'i değildir. Önceki başarısız/ara koşular yukarıda
 korunur. Son paket için tarihsel 26-paket kapısı aynı kaynak commit'inin gerçek
 CI'ında yeniden kapanmalıdır; ara adayın yeşil sonucu bunun yerine kullanılmaz.
+
+### Linux CI engeli ve dar yüzey-boyutu düzeltmesi
+
+`57a6ce72` kaynak commit'i PR #19'a gönderildi. Bu adayın kaynak receipt'i
+`95f0681f8397279a051e383ce23b8f71e74596d67980fe09a5c780250d0476ea`, payload'ı
+`bf8f68877f767d0869234b82e0b11eeb3deea232727abedcda6ae2c1086b9219` idi.
+Klipper önizlemesinde 246 HTTP gövde hash'i, 243 çevrimdışı dosya, 16 kimlik
+reddi ve 16 özel-yol reddi geçti. Gerçek nginx üzerinde sentetik hesapla
+tarayıcı kontrolü 12/12 geçti; bunlar gerçek öğrenci veya iPad kabulü değildir.
+**Bu aday aktive edilmedi; canlı v77 kaldı.**
+
+GitHub koşusu `37734784617`, Linux WebKit/DPR2 medya geri alma kontrolünde
+49/50 kaldı: değişmeyen komşu slaytta 13 kalem kenarı pikseli farklıydı
+(alfa en çok 64). Tarihsel 26 paket ve DPR1 50/50 geçmişti; sonrasındaki
+adımlar atlandığı için bütün CI başarılı sayılmadı. Test-only `6faf334`
+commit'inin `37737955194` koşusu aynı hatayı tekrar üretti; içerik SHA'sı
+değişmeden önbelleği yenilemek farkı sıfırladı. Eski sıcak sonuç başarısız
+kalmaya devam etti. Eşikler gevşetilmedi.
+
+Dar düzeltme yalnız çizim önbelleğinin kimliğine ana tuvalin fiziksel genişlik
+ve yüksekliğini ekler. Medya paneli/yeniden boyutlandırma sonrası eski yüzey
+pikselleri kullanılamaz; aynı boyutta kaydırma ve sıcak çizim yeniden kullanılır.
+Kaynak `pdf-workspace.js` SHA256:
+`64ce1a24e4fb7c3997d693718721ff9d08300ca68bf77f6d75d43ff5953f2eb9`.
+Yeni sentetik bitmap testi önce iki motorda 0/2 kaldı, düzeltmeden sonra
+DPR1/DPR2 toplam 4/4 geçti; eski medya/geri alma hedefi de 4/4 geçti.
+Tam slayt süiti artık 52 kontrol/DPR içerir. Ayrıntı ve ölçüm sınırları
+[SLIDE_FLOW.md](SLIDE_FLOW.md) dosyasındadır. Bu yerel sonuç yeni kaynak
+commit'inin Linux CI kapısını kapatmaz.
+
+İlk adayın üzerine yazılmaz. Tam kaynak/receipt/preview kimliği ve canlı
+v77/current/floor değişmezliği doğrulandıktan sonra yalnız geçici preview
+durdurulup kaldırılabilir; aday dosyaları ve özel yedekleri aynı diskteki
+0700 arşive korunarak taşınır. Yeni temiz kaynak için yeni immutable payload,
+yeni `prepare`, yeni off-host yedek ve yeni stage/tarayıcı kanıtı gerekir.
+Eski stage receipt'i yeni adaya aktarılamaz. Arşivdeki eski deploy betiği
+çalıştırılmaz; onun ROOT yolu canonical v78 olarak sabittir. Bu operasyon
+canlı v77'yi veya başka servisi durdurmaz.
 
 ### Henüz kapanmamış kapılar
 

@@ -267,3 +267,36 @@ aynı olduğu halde iki test de beklenen şekilde başarısız kaldı (0/2). Bu 
 görüntü hatası tekrarı değil, başarısızlığın tanı tarafından gizlenemediğinin
 kontrolüdür. Kanıt: `outputs/slide-flow/dpr-2-diagnostic-plumbing-negative-exact/`.
 Linux tanı koşusu ve ona dayanacak olası uygulama düzeltmesi ayrıca gereklidir.
+
+### Linux tanı sonucu ve fiziksel yüzey anahtarı
+
+Sonraki Linux tanı koşusu `37737955194`, özgün başarısızlığı beklenen şekilde
+korudu. Medya geri almada sıcak alfa farkı **64** iken ayrı soğuk yeniden çizimde
+farklı kanal sayısı ve alfa farkı **0** oldu; mürekkep içeriği SHA-256'sı aynıydı.
+İki ölçümde de son fiziksel tuval 1676 × 1318 ve sayfa dönüşümleri aynıdır.
+İz, medya düzenlerken 2260 × 1482'ye geçilip sonra eski boyuta dönüldüğünü
+gösterir. Böylece hatanın not içeriğinden veya değişen referanstan değil, yeniden
+kullanılan raster önbelleğinden kaynaklandığı ayrıştırıldı.
+
+Dar uygulama düzeltmesi: `inkStamp` artık üretim tuvalinin **fiziksel genişlik ve
+yüksekliğini** de kimlik olarak saklar ve karşılaştırır. Boyut değişirse o sayfanın
+parçaları yeniden rasterlanır; boyut aynı kaldığı sürece mevcut kaydırma/kenar
+onarımı ve sıcak tekrar davranışı korunur. Tam dönüşüm kimliğini genişleten,
+kalite eşiğini değiştiren veya kayıt şemasını değiştiren ek işlem yapılmadı.
+Kaynak SHA-256:
+`64ce1a24e4fb7c3997d693718721ff9d08300ca68bf77f6d75d43ff5953f2eb9`.
+
+Yeni `physical bitmap resize rebuilds ink before warm reuse` vakası, CSS veya
+önbellek sınırını değiştirmeden gerçek bitmap genişliğini, yüksekliğini ve geri
+dönüşünü sırayla değiştirir. Eski kaynakta iki motorda da yeniden çizim sayısı
+0 olduğu için **0/2** kalır (`dpr-2-surface-key-negative/`); Windows'ta eski
+kaynağın bu örnekte piksel farkı 0'dır. Bu negatif kontrol, Linux'taki 64 farkını
+Windows'ta tekrar üretme iddiası değil, gerekli yüzey geçersizleştirme sözleşmesidir.
+
+Düzeltme sonrası iki DPR ve iki motorda her boyut geçişi 6 görünür çizgiyi
+yeniden çizdi; sonraki sıcak tekrar 0 çağrı, referans farkı 0 ve içerik hash'i
+değişmez kaldı. Yeni vaka **4/4**, mevcut medya geri alma/silgi/kalem/yakınlaştırma
+vakası **4/4** geçti (`dpr-1-surface-key-fix/`, `dpr-2-surface-key-fix/`). Test
+çalıştırıcısı artık motor başına 26, DPR başına **52** vaka içerir. Linux'taki
+özgün medya geri alma senaryosunun yeni kaynakla geçmesi hâlâ asıl kabul kapısıdır;
+bu yerel sonuç onun yerine geçmez.

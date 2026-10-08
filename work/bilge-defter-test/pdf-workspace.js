@@ -732,7 +732,9 @@ window.BilgeSlideFlow=(()=>{
     const strokes=p.strokes,last=strokes.at(-1),revision=pageRevs.get(p)||0;
     const media=[];let radius=0;for(const stroke of strokes){if(stroke.tool==='image'){const image=mediaImages.get(stroke.image);media.push(stroke.image,image,!!image?.complete,image?.naturalWidth||0)}else if(!isMedia(stroke))radius=Math.max(radius,(stroke.width||2)*(stroke.tool==='pen'?.8:.5))}
     const old=inkStamps.get(p);
-    if(old&&old.strokes===strokes&&old.count===strokes.length&&old.last===last&&old.points===last?.points?.length&&old.revision===revision&&old.updated===p.updated&&old.scale===pixelScale&&old.phaseX===phaseX&&old.phaseY===phaseY&&old.media.length===media.length&&old.media.every((value,i)=>value===media[i]))return old;
+    // Raster coverage can change when the actual canvas bitmap is resized even
+    // if CSS scale and phase return unchanged after closing a media panel.
+    if(old&&old.surfaceWidth===canvas.width&&old.surfaceHeight===canvas.height&&old.strokes===strokes&&old.count===strokes.length&&old.last===last&&old.points===last?.points?.length&&old.revision===revision&&old.updated===p.updated&&old.scale===pixelScale&&old.phaseX===phaseX&&old.phaseY===phaseY&&old.media.length===media.length&&old.media.every((value,i)=>value===media[i]))return old;
     // A clipped segment can change its cap coverage beyond the centerline's
     // radius. Keep its entire axis span plus full pressure width untrusted at
     // moving viewport edges; very long segments safely require more replay.
@@ -743,7 +745,7 @@ window.BilgeSlideFlow=(()=>{
       if(!nativePressure(stroke))cacheable=false;
       for(let i=1;i<stroke.points.length;i++){const point=stroke.points[i];spanX=Math.max(spanX,Math.abs(point.x-stroke.points[i-1].x));spanY=Math.max(spanY,Math.abs(point.y-stroke.points[i-1].y))}
     }
-    const stamp={strokes,count:strokes.length,last,points:last?.points?.length,revision,updated:p.updated,scale:pixelScale,phaseX,phaseY,media,cacheable,edgeX:Math.ceil((spanX+2*radius)*pixelScale)+4,edgeY:Math.ceil((spanY+2*radius)*pixelScale)+4};inkStamps.set(p,stamp);return stamp;
+    const stamp={strokes,count:strokes.length,last,points:last?.points?.length,revision,updated:p.updated,scale:pixelScale,phaseX,phaseY,media,cacheable,surfaceWidth:canvas.width,surfaceHeight:canvas.height,edgeX:Math.ceil((spanX+2*radius)*pixelScale)+4,edgeY:Math.ceil((spanY+2*radius)*pixelScale)+4};inkStamps.set(p,stamp);return stamp;
   }
   function paintTile(p,stamp,box,target,bleed){
     const boxes=Array.isArray(box)?box:[box];
