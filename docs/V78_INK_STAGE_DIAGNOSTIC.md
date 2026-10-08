@@ -110,3 +110,21 @@ Dolayısıyla gerçek yeniden çizim kolu yerel hatasız koşuyla doğrulanmış
 
 Linux tekrar çizim sonucu bu commit hazırlanırken henüz yoktur. Uygulama yaması,
 merge veya yayın onayı yoktur.
+
+### İlk Linux tekrar girişimi: tanı kodunda yakalanan hata
+
+`ac42e29` / CI `37831804609`: zorunlu test yine 53/54; stage ölçümü önceki
+dört-nokta ayrımını yeniden verdi. Ancak replay `inconclusive`,
+`performed=false` kaldı. Bu koşu yeniden çizimin etkisi için kullanılamaz.
+
+Tanı fonksiyonu izleme fonksiyonu içine yerleştirildiğinde, üç `state.pages`
+erişimi uygulama verisi yerine aynı adlı izleme yardımcısına bağlanıyordu.
+Yerel hatasız koşu yeniden çizim koluna girmediği için bu eksik, ilk 12 saf
+kontrol testinde ve ilk incelemede kaçtı. Kanıtlar korunuyor; uygulama kodu
+değişmedi. Düzeltme yalnız bu erişimleri uygulamanın `notebookPages()`
+işlevinden yapar. Gerçek serileştirilmiş tanı fonksiyonunu gölgeleyen kapsam
+içinde çalıştıran pozitif/negatif saf kontrol de eklendi. Düzeltme sonrası
+14/14 saf test geçti: düzeltilmiş fonksiyon tek tekrar yapıyor, eski üç
+erişim geri konunca aynı test TypeError ile tekrar çizim öncesinde duruyor.
+Bu hafif bağlam taklitleri raster kalitesini değil yürütme/kapsam davranışını
+ölçer. Tanı hatası #2317, ürünün çizim hatası #2300'den ayrı izlenir.

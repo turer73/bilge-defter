@@ -75,8 +75,8 @@ function installInkReplayObserver(matrix,pathState,renderer,stage,rules){
       target=record.context;const outside=pathState(target);if(outside.clip.length||outside.stack.length)return reject('Scratch has an unknown active clip or save stack');
       const first=record.calls[0],expected=audit.surface.rowTransforms.find(r=>r.id===last.id)?.transform;
       if(!rules.sameMetadata(first.transform,expected)||!rules.replayGeometry(first.transform,first.clip,first.depth,last.height))return reject('Replay transform or row clip mismatch');
-      for(const entry of record.calls){if(entry.page!==state.pages.find(p=>p.id===last.id)||entry.page.strokes[entry.pair[1]]!==entry.stroke||entry.stroke.points!==entry.points||entry.pointRefs.some((p,i)=>entry.points[i]!==p)||JSON.stringify(entry.stroke)!==entry.payload||!rules.replayGeometry(entry.transform,entry.clip,entry.depth,last.height))return reject('Replay source object, points, payload or geometry drift');}
-      const visibleInk=JSON.stringify(audit.visible.map(row=>({id:row.id,strokes:state.pages.find(p=>p.id===row.id).strokes}))),mainToken=stage.token(canvas),tileTokens=plans.map(p=>stage.token(p.tile)),currentState=drawingState(target),currentTransform=matrix(target);
+      for(const entry of record.calls){if(entry.page!==notebookPages().find(p=>p.id===last.id)||entry.page.strokes[entry.pair[1]]!==entry.stroke||entry.stroke.points!==entry.points||entry.pointRefs.some((p,i)=>entry.points[i]!==p)||JSON.stringify(entry.stroke)!==entry.payload||!rules.replayGeometry(entry.transform,entry.clip,entry.depth,last.height))return reject('Replay source object, points, payload or geometry drift');}
+      const visibleInk=JSON.stringify(audit.visible.map(row=>({id:row.id,strokes:notebookPages().find(p=>p.id===row.id).strokes}))),mainToken=stage.token(canvas),tileTokens=plans.map(p=>stage.token(p.tile)),currentState=drawingState(target),currentTransform=matrix(target);
       restoreTransform=currentTransform;
       result.provenance={scratch:stage.token(scratch),row:last.id,phase:plans[0].input.phase,observedOrder:record.calls.map(e=>e.pair),transform:first.transform,transformPrecision17:first.transform.map(n=>n.toPrecision(17)),clip:first.clip,inputState:first.state,renderer:'Pinned original drawStroke function; captured ordered subset only.'};
       // Synchronous, one replay, no new context/canvas, hint, resize, frame or wait.
@@ -88,11 +88,11 @@ function installInkReplayObserver(matrix,pathState,renderer,stage,rules){
       result.performed=true;result.samples=plans.map((p,i)=>{const replay=Array.from(target.getImageData(p.sx,p.sy,1,1).data),main=Array.from(ctx.getImageData(p.sample.x,p.sample.y,1,1).data),tile=Array.from(p.tile.getContext('2d').getImageData(p.tx,p.ty,1,1).data);return{x:p.sample.x,y:p.sample.y,oldScratch:stageSamples[i].scratch,replay,reference:p.sample.reference,main,tile,changed:!rules.sameMetadata(replay,stageSamples[i].scratch),matchesReference:rules.sameMetadata(replay,p.sample.reference)};});
       result.mainAndTileTokensUnchanged=rules.sameToken(stage.token(canvas),mainToken)&&plans.every((p,i)=>rules.sameToken(stage.token(p.tile),tileTokens[i]));
       result.mainAndTileSamplesUnchanged=result.samples.every((p,i)=>rules.sameMetadata(p.main,stageSamples[i].mainReadback)&&rules.sameMetadata(p.tile,stageSamples[i].tile));
-      result.visibleInkUnchanged=visibleInk===JSON.stringify(audit.visible.map(row=>({id:row.id,strokes:state.pages.find(p=>p.id===row.id).strokes})));
+      result.visibleInkUnchanged=visibleInk===JSON.stringify(audit.visible.map(row=>({id:row.id,strokes:notebookPages().find(p=>p.id===row.id).strokes})));
       result.contextRestored=rules.sameMetadata(drawingState(target),currentState)&&rules.sameMetadata(matrix(target),currentTransform)&&pathState(target).clip.length===0&&pathState(target).stack.length===0;
       if(!result.mainAndTileTokensUnchanged||!result.mainAndTileSamplesUnchanged||!result.visibleInkUnchanged||!result.contextRestored)return reject('Unrelated state changed during replay');
       result.status=result.samples.some(p=>p.changed)?'replay-changed':'replay-unchanged';result.reason='Repeated rendering after readbacks only; not a one-frame fix, time/instance separation or backend proof.';return result;
-    }catch(error){return reject(String(error.stack||error));}finally{if(saved)target.restore();if(restoreTransform)target.setTransform(...restoreTransform);running=false;}
+    }catch(error){result.error={name:String(error.name||'Error'),message:String(error.message||error),stack:String(error.stack||'')};return reject(result.error.name+': '+result.error.message);}finally{if(saved)target.restore();if(restoreTransform)target.setTransform(...restoreTransform);running=false;}
   }
   return{begin,end,run};
 }
@@ -200,6 +200,33 @@ function installInkStageObserver(identity,matrix,rules){
 }
 
 function replaceOnce(text,before,after,label){assert.equal(text.split(before).length-1,1,'Unique pinned runner hook: '+label);return text.replace(before,()=>after);}
+function serializedReplayScopeProbe(observerSource){
+  // Exercise the real serialized observer inside traceInkFixture's shadowing
+  // lexical shape. Lightweight contexts model control flow, not raster quality.
+  const vm=require('node:vm'),stroke={tool:'pen',width:3,color:'#173b36',points:[{x:553,y:40,p:.5},{x:565,y:60,p:.5}]},page={id:'last-row',strokes:[]};page.strokes.push(stroke);
+  const main={width:1676,height:1318},scratch={width:1676,height:1318},tile={width:512,height:512},tokens=new WeakMap(),transforms=new WeakMap(),paths=new WeakMap();let writes=0,renders=0;
+  const copy=x=>JSON.parse(JSON.stringify(x)),t=[1.676,0,0,1.676,0,983.812],row={id:page.id,height:563};
+  for(const [id,c]of [['main',main],['scratch',scratch],['tile',tile]])tokens.set(c,{id,generation:1,revision:1,width:c.width,height:c.height,lastWrite:++writes,lastKind:'full clear'});
+  const mutate=c=>{const n=tokens.get(c);n.revision++;n.lastWrite=++writes;n.lastKind='stroke';};
+  function context(c){
+    const stack=[],p={clip:[],stack:[],rects:[]},target={canvas:c,globalAlpha:1,globalCompositeOperation:'source-over',lineWidth:1,lineCap:'butt',lineJoin:'miter',miterLimit:10,lineDashOffset:0,fillStyle:'#000000',strokeStyle:'#000000',imageSmoothingEnabled:true,imageSmoothingQuality:'low'};let dash=[];
+    paths.set(target,p);transforms.set(target,[1,0,0,1,0,0]);
+    target.getLineDash=()=>dash.slice();target.setLineDash=x=>{dash=x.slice();};target.setTransform=(...x)=>transforms.set(target,x.slice());
+    target.save=()=>{stack.push({values:Object.fromEntries(Object.keys(target).filter(k=>k!=='canvas'&&typeof target[k]!=='function').map(k=>[k,target[k]])),transform:transforms.get(target).slice(),clip:copy(p.clip),dash:dash.slice()});p.stack.push(copy(p.clip));};
+    target.restore=()=>{const saved=stack.pop();Object.assign(target,saved.values);transforms.set(target,saved.transform);p.clip=saved.clip;p.stack.pop();dash=saved.dash;};
+    target.beginPath=()=>{p.rects=[];};target.rect=(...rect)=>p.rects.push({rect,transform:transforms.get(target).slice()});target.clip=()=>{p.clip.push({rects:copy(p.rects),arguments:[]});};
+    target.clearRect=()=>mutate(c);target.getImageData=()=>({data:Uint8ClampedArray.from([0,0,0,0])});c.getContext=()=>target;return target;
+  }
+  const target=context(scratch),mainContext=context(main);context(tile);const matrix=c=>transforms.get(c).slice(),pathState=c=>paths.get(c),stage={token:c=>({...tokens.get(c)})},renderer=(s,c)=>{assert.equal(s,stroke);renders++;mutate(c.canvas);};
+  const sandbox={matrix,pathState,stage,renderer,rules:stageRules(),notebookPages:()=>[page],canvas:main,ctx:mainContext};
+  // `state` intentionally means the trace helper, not application state.
+  const observer=vm.runInNewContext(`(()=>{const state=c=>({canvas:c});return (${observerSource})(matrix,pathState,renderer,stage,rules);})()`,sandbox);
+  target.setTransform(...t);pathState(target).clip=[{rects:[{rect:[0,0,1000,563],transform:t.slice()}],arguments:[]}];pathState(target).stack=[[]];
+  const ticket=observer.begin(stroke,target,[0,0]);renderer(stroke,target);observer.end(ticket);const sourceToken=stage.token(scratch);
+  target.setTransform(1,0,0,1,0,0);pathState(target).clip=[];pathState(target).stack=[];
+  const args={plans:[{scratch,tile,sx:939,sy:1066,tx:427,ty:83,sample:{x:939,y:1066,reference:[0,0,0,0]},input:{sourceToken,phase:'after media close sync'}}],audit:{visible:[row],surface:{rowTransforms:[{id:row.id,transform:t}]}},stageSamples:[{scratch:[0,0,0,0],mainReadback:[0,0,0,0],tile:[0,0,0,0]}],last:row};
+  const result=observer.run(args),second=observer.run(args);return{result,second,renders};
+}
 function selfTest(){
   const r=stageRules(),tests=[];const check=(name,fn)=>{fn();tests.push(name);};
   check('hash mismatch rejects',()=>assert.throws(()=>assert.equal(sha('altered'),SOURCE_SHA)));
@@ -217,6 +244,8 @@ function selfTest(){
   const transform=[1.676,0,0,1.676,0,983.812],clip=[{rects:[{rect:[0,0,1000,563],transform}],arguments:[]}];
   check('replay clip/transform/stack mismatch rejects',()=>{assert.ok(r.replayGeometry(transform,clip,1,563));assert.equal(r.replayGeometry(transform,clip,2,563),false);assert.equal(r.replayGeometry(transform,clip,1,564),false);assert.equal(r.replayGeometry([1.676,0,0,1.676,0,983.8120000001],clip,1,563),false);assert.equal(r.replayGeometry(transform,[...clip,...clip],1,563),false);});
   check('replay media and changed source payload reject',()=>{const stroke={tool:'pen',width:3,color:'#173b36',points:[{x:1,y:2,p:.5},{x:2,y:3,p:.5}]};assert.ok(r.supportedStroke(stroke));assert.equal(r.supportedStroke({...stroke,tool:'text'}),false);assert.equal(r.sameMetadata(stroke,{...stroke,width:4}),false);});
+  check('serialized replay works with trace state shadow and runs once',()=>{const p=serializedReplayScopeProbe(installInkReplayObserver.toString());assert.equal(p.result.status,'replay-unchanged',JSON.stringify(p.result));assert.equal(p.result.performed,true);assert.equal(p.renders,2);assert.equal(p.second.status,'inconclusive');assert.match(p.second.reason,/already requested/);assert.equal(p.result.mainAndTileTokensUnchanged,true);assert.equal(p.result.mainAndTileSamplesUnchanged,true);assert.equal(p.result.visibleInkUnchanged,true);assert.equal(p.result.contextRestored,true);});
+  check('old serialized state capture fails before replay with explicit error',()=>{const source=installInkReplayObserver.toString();assert.equal(source.split('notebookPages().find').length-1,3);const p=serializedReplayScopeProbe(source.replaceAll('notebookPages().find','state.pages.find'));assert.equal(p.result.status,'inconclusive');assert.equal(p.result.performed,false);assert.equal(p.renders,1);assert.equal(p.result.error.name,'TypeError');assert.match(p.result.error.message,/find/);assert.ok(p.result.error.stack);});
   console.log(JSON.stringify({diagnosticOnly:true,releaseEligible:false,selfTest:true,passed:tests.length,tests}));
 }
 if(process.argv.includes('--self-test')){selfTest();return;}
