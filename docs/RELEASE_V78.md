@@ -257,6 +257,18 @@ Yeni kontrollü test sonuçları özgün başarısızlığı veya kabul eşikler
 değiştiremez. Yereldeki `94d81ec` payload'ı son aday sayılmaz; nihai temiz
 kaynak commit'i için yeniden paket ve ayrı yayın kanıtları gerekir.
 
+`1e193da` / Linux `37742482193` kontrollü deneyi özgün hatayı yine üretti;
+ayrı varsayılan tuvalden aynı parçalara kopyalanan tüm/gerçek çağrı sıraları
+referansla tam eşleşti. `willReadFrequently` deneyi eşleşmedi ve çözümde
+kullanılmadı. Sonraki dar aday, yalnız cache eksiklerinde bağımsız tam-viewport
+tuvali kullanır; sıcak çizimde ek tuval yoktur. Geçici yüzey en çok 8 milyon
+piksel (RGBA yaklaşık 32 MB), mevcut parça bütçesi ayrıca 8 milyon pikseldir.
+Geçici yüzey her çizim sonunda bırakılır; büyük yüzey veya bağlam oluşturma
+başarısızlığında tam doğrudan çizime dönülür. Üretimde piksel okuma eklenmedi.
+Bu ilave bellek maliyeti fiziksel iPad kabulü gerektirir. Kaynak SHA256:
+`3b3fcdedfd40ba4656b7c8dca2ece1eeb605f54229326b3d91b03351cb11007e`.
+Kontrollü deney tek başına bu adayın özgün Linux kalite kapısını kapatmaz.
+
 - Yerel Retina/DPR2 ve hedefli kontroller son adayda geçti; ancak kaynak
   yeniden değişirse ilgili testler tekrar çalıştırılır. Tek kaynak commit'ine
   bağlı paket/receipt, PR ve gerçek CI sonucu ayrıca gerekir.

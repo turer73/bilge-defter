@@ -24,6 +24,11 @@ için dev tuval oluşturulmaz. Yalnız görünen slaytlar ve sınırlı yakın k
 Kaydırırken aynı çizgileri tekrar hesaplamamak için yalnız görünen mürekkep
 parçaları, toplam 8 milyon tuval pikseliyle sınırlı geçici tuvallere alınır.
 Bu yaklaşık 32 MB ham RGBA alanıdır; uygulamanın toplam RAM sınırı değildir.
+Önbellek eksiklerini çizen bağımsız yüzey de yalnız o karede, en çok 8 milyon
+piksel olarak açılır ve kare sonunda bırakılır. İki ayrı sınırın toplamı en çok
+16 milyon offscreen piksel / 64 MB ham RGBA'dır; mevcut görünüm ve zemin tuvalleri,
+görseller ve tarayıcı ek yükü buna dahil değildir. Görünüm 8 milyon pikseli aşarsa
+veya bağımsız 2D bağlam açılamazsa görünen sayfalar bütünüyle doğrudan çizilir.
 Aktif çizim ve öğe taşıma bu önbelleği kullanmaz; değişiklik/geri alma, ölçek ve
 görsel yüklenme durumu önbelleği geçersiz kılar. Yoğun bir sayfanın ilk çizimi
 hâlâ pahalı olabilir; sıcak önbellek ölçümü fiziksel iPad akıcılık kabulü değildir.
@@ -120,6 +125,9 @@ kanıtlar `outputs/slide-flow/dpr-1-negative/` ve `dpr-2-negative/` altındadır
 Kalite eşikleri değiştirilmedi.
 
 ### Çözüm ve sınırları
+
+Aşağıdaki bölüm ilk Windows adayının tarihsel kaydıdır. Linux'ta görülen sonraki
+başarısızlık ve bağımsız yüzeye geçiş belgenin sonunda ayrıca açıklanır.
 
 Küçük parça tuvalleri içinde vektörleri yeniden rasterlamak yerine, eksik
 parçaların çizgileri **gerçek görünüm tuvalinin aynı kökeni, boyutu, dönüşümü ve
@@ -368,3 +376,47 @@ başarısız sonucunu değiştirmez. Windows iki motorda 2/2 geçti; 16 varyant�
 tamamı 0 alfa/kanal farkı ve değişmeyen not içeriği verdi. Her motorda 612 ayrıntı,
 17 grup/4242 çağrı ve 0 taşma var. Bu Windows sonucu Linux kök nedenini çözmez;
 Linux'ta özgün başarısızlığın yanında aynı deney çıktısı alınmalıdır.
+
+### Bağımsız varsayılan raster yüzeyi adayı
+
+Linux `37742482193` özgün kapıda yine 51/52 kaldı. Buna karşılık kontrollü deneyde
+varsayılan bağımsız tuvalin hem yeni hem boyut geçmişli, hem bütün girdi hem de
+gerçekte çağrılan alt küme varyantları **0 alfa/kanal farkı** verdi. Deneydeki
+`willReadFrequently:true` yolu 255 alfa farkı verdi; bu yol uygulamaya alınmadı.
+Bu sonuç bir tarayıcı kök nedeninin ispatı değil, dar alternatif raster yolunu
+asıl senaryoda sınamak için kanıttır.
+
+Yeni aday kaynak SHA-256:
+`3b3fcdedfd40ba4656b7c8dca2ece1eeb605f54229326b3d91b03351cb11007e`.
+Paket manifesti:
+`6f172d47680d93b9d39e316a1f1512ee0e0c2e4645b95af9aab33890b34890f9`.
+
+- Yalnız önbellek eksiği varsa tam gerçek viewport boyutunda tek, bağımsız ve
+  varsayılan 2D tuval açılır. Aynı dönüşüm, clip, sıralı `drawStroke` ve tam sayılı
+  parça kopyaları korunur. Üretimde readback, CPU ipucu veya resim kodlama yoktur.
+- Sıcak karede ek tuval veya çizgi yeniden hesabı yoktur. Bağımsız tuval son
+  kompozitlemeden sonra `finally` içinde 1×1'e indirilerek bırakılır.
+- Ek yüzey ayrı olarak 8 milyon piksel, mevcut parça önbelleği ayrı olarak
+  8 milyon pikselle sınırlıdır. Büyük viewport veya null 2D bağlamda küçük kutu
+  süzmesi yapılmadan bütün görünür satır doğrudan çizilir; notlar değiştirilmez.
+
+Yeni `independent miss surface is bounded disposable warm free and fails safely`
+vakası tek yüzey/sonda bırakma, sıfır sıcak tahsis/çizim, gerçek null-context
+fallback'i, tam referans paritesini ve değişmeyen notları ölçer. Eski `64ce1a24…`
+kaynak Git'ten yalnız fixture belleğine alınarak aynı vaka **0/2** kaldı: bağımsız
+yüzey sayısı 0 yerine 1 bekleniyordu. Bu davranış negatif kontrolüdür; Linux
+piksel hatasını Windows'ta yeniden ürettiği iddia edilmez. Rapordaki tek bilinçli
+fixture farkı `/pdf-workspace.js`'dir; diskte eski/yeni uygulama değiştirilmedi.
+Kanıt: `outputs/slide-flow/dpr-2-independent-scratch-negative/`.
+
+Yeni paketle hedef DPR2 kontrolü **2/2** geçti. Çalıştırıcı artık motor başına 27,
+DPR başına **54** vaka içerir. Aynı üretilen paket üzerinde tam DPR1 **54/54** ve
+DPR2 **54/54**, toplam **108/108** geçti; drift boş, ölçülen en büyük alfa ve
+beyaz-kompozit farkı 0'dır. Raporlar eski kanıtları ezmeden
+`outputs/slide-flow/dpr-1-independent-final/report.json` ve
+`outputs/slide-flow/dpr-2-independent-final/report.json` altına yazıldı.
+Rapor SHA-256'ları sırasıyla
+`376cd3977d02a37c46c2f5ac987be9450b137f187c3a31cad66fa83474c00979` ve
+`ed0f138e0a8cd1c6f3d9f195dd5562b5dc5f633a0604afbe9342ef0c3886fc5e`.
+Bağımsız performans karşılaştırması ve özellikle Linux'taki özgün medya geri
+alma kabulü tamamlanmadan bu aday çözülmüş veya yayına hazır sayılmaz.

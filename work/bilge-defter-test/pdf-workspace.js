@@ -645,9 +645,10 @@ window.BilgeSlideFlow=(()=>{
     pruneMediaImages();
     const s=scale(),r=rect(),rows=visibleRows(),bottom=flow.scroll+r.height/s,d=ctx.getTransform().a,pixelScale=s*d;
     const edge=Math.min(512,Math.max(1,Math.floor(512*pixelScale)))/pixelScale,plans=[],wanted=new Set();
+    let scratch=null,raster=null,rasterFailed=canvas.width*canvas.height>INK_PIXEL_BUDGET;
     for(const row of rows){
       const phaseX=pixelPhase(-flow.x*pixelScale),phaseY=pixelPhase((row.top-flow.scroll)*pixelScale);
-      const direct=row.page.id===activeId&&(drawing||mediaGesture||mediaPending),stamp=direct?null:inkStamp(row.page,pixelScale,phaseX,phaseY);
+      const direct=rasterFailed||row.page.id===activeId&&(drawing||mediaGesture||mediaPending),stamp=direct?null:inkStamp(row.page,pixelScale,phaseX,phaseY);
       const left=Math.max(0,flow.x),right=Math.min(WIDTH,flow.x+r.width/s),top=Math.max(0,flow.scroll-row.top),end=Math.min(row.height,bottom-row.top),tiles=[];
       if(!direct&&stamp.cacheable&&right>left&&end>top){
         for(let iy=Math.floor(top/edge);iy<Math.ceil(end/edge);iy++)for(let ix=Math.floor(left/edge);ix<Math.ceil(right/edge);ix++){
@@ -661,8 +662,10 @@ window.BilgeSlideFlow=(()=>{
       plans.push({row,direct,stamp,tiles,top,end});
     }
     for(const key of inkTiles.keys())if(!wanted.has(key))dropInk(key);
-    // Rasterize misses on the real viewport, then copy only their pixel bounds.
-    // Small raster surfaces can give different repeated-cap antialiasing.
+    // A fresh independent viewport-sized surface avoids the visible canvas's
+    // resize/readback raster history. Allocate only on a miss, never read pixels,
+    // and keep its extra area bounded independently of the existing tile budget.
+    try{
     for(const {row,stamp,tiles} of plans){
       const jobs=[],updates=[];
       for(const box of tiles){
@@ -686,16 +689,20 @@ window.BilgeSlideFlow=(()=>{
         }
       }
       if(jobs.length){
+        if(!scratch){
+          try{scratch=document.createElement('canvas');scratch.width=canvas.width;scratch.height=canvas.height;raster=scratch.getContext('2d')}catch{raster=null}
+          if(!raster){rasterFailed=true;clearInk();break}
+        }
         const boxes=jobs.map(({x,y,area})=>({x:flow.x+x/pixelScale,y:flow.scroll-row.top+y/pixelScale,w:area.w/pixelScale,h:area.h/pixelScale}));
-        clearInkViewport();ctx.save();ctx.setTransform(d*s,0,0,d*s,-flow.x*d*s,(row.top-flow.scroll)*d*s);
-        ctx.beginPath();ctx.rect(0,0,WIDTH,row.height);ctx.clip();paintTile(row.page,stamp,boxes,ctx,2/pixelScale);ctx.restore();
-        for(const {tile,area,x,y} of jobs){const target=tile.canvas.getContext('2d');target.clearRect(area.x,area.y,area.w,area.h);target.drawImage(canvas,x,y,area.w,area.h,area.x,area.y,area.w,area.h)}
+        raster.setTransform(1,0,0,1,0,0);raster.clearRect(0,0,scratch.width,scratch.height);raster.save();raster.setTransform(d*s,0,0,d*s,-flow.x*d*s,(row.top-flow.scroll)*d*s);
+        raster.beginPath();raster.rect(0,0,WIDTH,row.height);raster.clip();paintTile(row.page,stamp,boxes,raster,2/pixelScale);raster.restore();
+        for(const {tile,area,x,y} of jobs){const target=tile.canvas.getContext('2d');target.clearRect(area.x,area.y,area.w,area.h);target.drawImage(scratch,x,y,area.w,area.h,area.x,area.y,area.w,area.h)}
       }
       for(const {tile,...update} of updates)Object.assign(tile,update);
     }
     clearInkViewport();
     for(const {row,direct,stamp,tiles,top,end} of plans){
-      const fallback=direct?row.page.strokes.some(stroke=>!nativePressure(stroke)):!stamp.cacheable||tiles.some(box=>!inkTiles.has(box.key));
+      const fallback=rasterFailed||(direct?row.page.strokes.some(stroke=>!nativePressure(stroke)):!stamp.cacheable||tiles.some(box=>!inkTiles.has(box.key)));
       if(direct||fallback){
         ctx.save();ctx.setTransform(d*s,0,0,d*s,-flow.x*d*s,(row.top-flow.scroll)*d*s);
         ctx.beginPath();ctx.rect(0,0,WIDTH,row.height);ctx.clip();
@@ -706,6 +713,7 @@ window.BilgeSlideFlow=(()=>{
         if(tile){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(tile.canvas,box.cropX,box.cropY,box.dw,box.dh,box.dx,box.dy,box.dw,box.dh);ctx.restore()}
       }
     }
+    }finally{if(scratch)scratch.width=scratch.height=1}
   }
   function uncoveredInk(want,have){
     if(!have)return [want];

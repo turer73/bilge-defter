@@ -80,7 +80,7 @@ function traceInkFixture(){
   proto.restore=function(...args){const p=path(this);if(p.stack.length)p.clip=p.stack.pop();return native.restore.apply(this,args);};
   proto.clip=function(...args){const p=path(this);p.clip=[...p.clip,{rects:p.rects.slice(),arguments:args.map(a=>typeof a==='string'?a:'path')}];add({op:'clip',state:state(this)});return native.clip.apply(this,args);};
   for(const name of ['stroke','fill'])proto[name]=function(...args){if(current?.target===this)add({op:name,stroke:current.stroke,state:state(this)});return native[name].apply(this,args);};
-  proto.drawImage=function(source,...args){if(source===canvas||this===ctx&&source instanceof HTMLCanvasElement)add({op:'drawImage',source:{id:id(source),width:source.width,height:source.height},target:state(this),coordinates:args});return native.drawImage.call(this,source,...args);};
+  proto.drawImage=function(source,...args){if(source instanceof HTMLCanvasElement&&(source===canvas||this===ctx||source.width===canvas.width&&source.height===canvas.height))add({op:'drawImage',source:{id:id(source),width:source.width,height:source.height},target:state(this),coordinates:args});return native.drawImage.call(this,source,...args);};
   const original=drawStroke;
   drawStroke=function(stroke,target=ctx,...args){
     if(window.__captureInkCalls){
@@ -98,7 +98,7 @@ function controlledInkRaster(){
   const width=canvas.width,height=canvas.height,base=ctx.getTransform(),s=BilgeSlideFlow.snapshot(),scale=BilgeSlideFlow.scale(),d=base.a,rows=s.rows.filter(row=>s.visible.includes(row.id));
   const inkBefore=JSON.stringify(state.pages.map(p=>p.strokes)),phase=window.__inkTracePhase,groups=window.__inkCallGroups||[],points=[[810,149],[813,153],[813,154],[816,158],[816,159],[576,1048],[939,1066],[942,1071],[945,1076],[948,1081]],variants=[];
   window.__captureInkCalls=false;
-  const observed=rows.map(row=>{const pageIndex=notebookPages().findIndex(p=>p.id===row.id),group=groups.filter(g=>g.canvas==='main'&&g.phase==='after media close sync'&&g.calls.some(c=>c[0]===pageIndex)).at(-1);return{pageIndex,indices:group?group.calls.filter(c=>c[0]===pageIndex).map(c=>c[1]):null};});
+  const observed=rows.map(row=>{const pageIndex=notebookPages().findIndex(p=>p.id===row.id),group=groups.filter(g=>g.phase==='after media close sync'&&g.calls.some(c=>c[0]===pageIndex)).at(-1);return{pageIndex,indices:group?group.calls.filter(c=>c[0]===pageIndex).map(c=>c[1]):null};});
   const clear=target=>{target.setTransform(1,0,0,1,0,0);target.clearRect(0,0,target.canvas.width,target.canvas.height);};
   function paintRow(target,row,pixelScale,input){
     target.save();target.setTransform(pixelScale,0,0,pixelScale,-s.x*pixelScale,(row.top-s.scroll)*pixelScale);target.beginPath();target.rect(0,0,1000,row.height);target.clip();
@@ -192,6 +192,29 @@ async function run(browser,engine){
     assert.equal(await p.evaluate(()=>drawing),true);assert.equal(await p.evaluate(()=>activeId),ids[0]);assert.ok((await pixel(p,'canvas',190,120))[3]>200,'Scratch work must not erase the already-held first-page ink');
     const g=await geometry(p),y=(g.rows[1].top-g.scroll+80)*g.scale;assert.ok((await pixel(p,'canvas',200*g.scale,y))[3]>30,'Neighbor cache miss actually paints its marker');
     await pointer(p,'pointerup',230,120);await save(p);return{heldInkPreserved:true,neighborPainted:true};
+  });
+  await check(browser,engine,'independent miss surface is bounded disposable warm free and fails safely',async({p})=>{
+    await importSlides(p,3);await p.evaluate(()=>{for(const p of notebookPages()){p.strokes=[{tool:'marker',color:'#173b36',width:14,points:[{x:300,y:80},{x:420,y:80}]},{tool:'pen',color:'#0000ff',width:5,points:[{x:300,y:90,p:.5},{x:420,y:90,p:.5}]},{tool:'eraser',width:3,points:[{x:350,y:70},{x:350,y:100}]}];touchPage(p)}drawAll()});await paint(p);
+    const result=await p.evaluate(()=>{
+      const nativeCreate=document.createElement,nativeContext=HTMLCanvasElement.prototype.getContext,nativeStroke=drawStroke,ink=JSON.stringify(state.pages.map(p=>p.strokes));
+      function run(cold,failContext){
+        const created=new Set(),surfaces=[],width=canvas.width,height=canvas.height;let calls=0;
+        document.createElement=function(...args){const el=nativeCreate.apply(this,args);if(el instanceof HTMLCanvasElement)created.add(el);return el;};
+        HTMLCanvasElement.prototype.getContext=function(...args){if(created.has(this)&&args[0]==='2d'&&this.width===width&&this.height===height){surfaces.push({canvas:this,width:this.width,height:this.height,options:args[1]||null,connected:this.isConnected});if(failContext)return null;}return nativeContext.apply(this,args);};
+        drawStroke=function(...args){calls++;return nativeStroke(...args)};
+        try{if(cold)for(const p of BilgeSlideFlow.visiblePages())touchPage(p);drawAll();}finally{document.createElement=nativeCreate;HTMLCanvasElement.prototype.getContext=nativeContext;drawStroke=nativeStroke;}
+        return{calls,created:created.size,surfaces:surfaces.map(x=>({width:x.width,height:x.height,options:x.options,connected:x.connected,disposed:x.canvas.width===1&&x.canvas.height===1})),stats:BilgeSlideFlow.snapshot()};
+      }
+      function parity(){
+        const snap=BilgeSlideFlow.snapshot(),scale=BilgeSlideFlow.scale(),d=ctx.getTransform().a,reference=nativeCreate.call(document,'canvas');reference.width=canvas.width;reference.height=canvas.height;const target=reference.getContext('2d');
+        for(const row of snap.rows.filter(row=>snap.visible.includes(row.id))){target.save();target.setTransform(d*scale,0,0,d*scale,-snap.x*d*scale,(row.top-snap.scroll)*d*scale);target.beginPath();target.rect(0,0,1000,row.height);target.clip();for(const stroke of state.pages.find(p=>p.id===row.id).strokes)nativeStroke(stroke,target,mediaImages);target.restore();}
+        const a=ctx.getImageData(0,0,canvas.width,canvas.height).data,b=target.getImageData(0,0,reference.width,reference.height).data;let alphaMax=0,whiteMax=0,sum=0,fg=0,over16=0;
+        for(let i=0;i<a.length;i+=4){if(a[i+3]||b[i+3])fg++;alphaMax=Math.max(alphaMax,Math.abs(a[i+3]-b[i+3]));let max=0;for(let c=0;c<3;c++){const diff=Math.abs(a[i+c]*a[i+3]/255+255-a[i+3]-(b[i+c]*b[i+3]/255+255-b[i+3]));sum+=diff;max=Math.max(max,diff)}whiteMax=Math.max(whiteMax,max);if(max>16)over16++;}reference.width=reference.height=1;return{alphaMax,whiteMax,mean:sum/(3*fg),ratio:over16/fg,fg};
+      }
+      const cold=run(true,false),warm=run(false,false),cachedParity=parity(),unavailable=run(true,true),fallbackParity=parity(),expectedCalls=BilgeSlideFlow.visiblePages().reduce((n,p)=>n+p.strokes.length,0);
+      return{cold,warm,cachedParity,unavailable,fallbackParity,expectedCalls,inkUnchanged:ink===JSON.stringify(state.pages.map(p=>p.strokes))};
+    });fs.writeFileSync(path.join(out,`${engine}-independent-surface.json`),JSON.stringify(result,null,2));
+    assert.equal(result.cold.surfaces.length,1,'One independent viewport surface for all cold page misses');assert.ok(result.cold.calls>0);const surface=result.cold.surfaces[0];assert.ok(surface.width*surface.height<=8000000);assert.equal(surface.options,null,'No readback/CPU hint');assert.equal(surface.connected,false);assert.equal(surface.disposed,true);assert.equal(result.warm.created,0);assert.equal(result.warm.calls,0);assert.equal(result.unavailable.surfaces.length,1);assert.equal(result.unavailable.surfaces[0].disposed,true);assert.equal(result.unavailable.calls,result.expectedCalls,'Null context replays complete visible rows');assert.equal(result.unavailable.stats.inkPixels,0);assert.ok(result.cold.stats.inkPixels<=8000000);assert.ok(result.inkUnchanged);for(const quality of [result.cachedParity,result.fallbackParity]){assert.ok(quality.fg>0);assert.ok(quality.alphaMax<=32);assert.ok(quality.whiteMax<=32);assert.ok(quality.mean<=1);assert.ok(quality.ratio<=.002);}return result;
   });
   await check(browser,engine,'physical bitmap resize rebuilds ink before warm reuse',async({p})=>{
     await importSlides(p,3);await p.evaluate(()=>{for(const p of notebookPages()){p.strokes=[{tool:'marker',color:'#173b36',width:14,points:[{x:300,y:80},{x:420,y:80}]},{tool:'pen',color:'#0000ff',width:5,points:[{x:300,y:90,p:.5},{x:420,y:90,p:.5}]},{tool:'eraser',width:3,points:[{x:350,y:70},{x:350,y:100}]}];touchPage(p)}drawAll()});await paint(p);
