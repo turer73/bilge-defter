@@ -46,6 +46,11 @@ jobs:
         run: |
           node --test work/test-ink-gesture.cjs
           node work/diagnose-ink-gesture.cjs
+      - name: Diagnostic only - commit and undo terminal endpoints
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        run: |
+          node --test work/test-ink-endpoint.cjs
+          node work/diagnose-ink-endpoint.cjs
       - name: Diagnostic only - standalone Canvas2D reduction
         if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
         run: |
@@ -146,6 +151,7 @@ jobs:
             outputs/ink-mini-diagnostic/
             outputs/ink-history-diagnostic/
             outputs/ink-gesture-diagnostic/
+            outputs/ink-endpoint-diagnostic/
             outputs/marker-icons/
             outputs/theme-logo/
             outputs/pptx-v78-release/notebook-compat/
