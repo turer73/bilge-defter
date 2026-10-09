@@ -171,7 +171,7 @@ async function validateMediaImages(book){for(const src of new Set([...book.pages
 function mediaLines(s,target=ctx){target.font=`${s.fontSize}px system-ui, sans-serif`;const lines=[];for(const line of s.text.split('\n')){let row='';for(const c of line){if(row&&target.measureText(row+c).width>s.width){lines.push(row);row=c}else row+=c}lines.push(row)}return lines}
 function mediaHeight(s){return s.tool==='image'?s.width*s.imageHeight/s.imageWidth:mediaLines(s).length*s.fontSize*1.35}
 function drawMediaStroke(s,target=ctx,images=mediaImages){target.save();target.globalCompositeOperation='source-over';target.globalAlpha=1;const p=s.points[0],c=mediaCenter(s);target.translate(c.x,c.y);target.rotate(mediaAngle(s));target.translate(-c.x,-c.y);if(s.tool==='text'){target.fillStyle=s.color;target.textBaseline='top';const lines=mediaLines(s,target);for(let i=0;i<lines.length;i++)target.fillText(lines[i],p.x,p.y+i*s.fontSize*1.35)}else{let im=images.get(s.image);if(!im){im=new Image();images.set(s.image,im);im.onload=()=>drawAll();im.onerror=()=>{document.querySelector('#inputState').textContent='Bir görsel okunamadı; yedeğinizi koruyun.'};im.src=s.image}if(im.complete&&im.naturalWidth)target.drawImage(im,p.x,p.y,s.width,mediaHeight(s))}target.restore()}
-function pruneMediaImages(){const used=new Set(page()?.strokes.filter(s=>s.tool==='image').map(s=>s.image));if(mediaPending?.draft.tool==='image')used.add(mediaPending.draft.image);for(const [src,im] of mediaImages)if(!used.has(src)){im.onload=im.onerror=null;im.src='';mediaImages.delete(src)}}
+function pruneMediaImages(){const pages=window.BilgeSlideFlow?.enabled()?window.BilgeSlideFlow.visiblePages():page()?[page()]:[];const used=new Set(pages.flatMap(p=>p.strokes.filter(s=>s.tool==='image').map(s=>s.image)));if(mediaPending?.draft.tool==='image')used.add(mediaPending.draft.image);for(const [src,im] of mediaImages)if(!used.has(src)){im.onload=im.onerror=null;im.src='';mediaImages.delete(src)}}
 function mediaMessage(t){document.querySelector('#mediaMessage').textContent=t}
 function mediaAvailable(){return canEdit()&&!drawing&&!pan&&!!page()&&pdfBackgroundReady()}
 function syncMediaDraft(){if(!mediaDraft)return;mediaDraft.width=Number(document.querySelector('#mediaWidth').value);if(mediaDraft.tool==='text'){mediaDraft.text=document.querySelector('#mediaText').value;mediaDraft.fontSize=Number(document.querySelector('#mediaFont').value);mediaDraft.color=document.querySelector('#mediaColor').value}}
@@ -184,7 +184,7 @@ function showMedia(){
  document.querySelector('#mediaDelete').hidden=!mediaTarget;document.querySelector('#mediaApply').textContent=mediaTarget?'Değişikliği kaydet':'Sayfaya ekle';mediaMessage('');closeTools();mediaDialog.showModal();mediaDialog.scrollTop=0;(text?document.querySelector('#mediaText'):document.querySelector('#mediaWidth')).focus({preventScroll:true});
 }
 function beginMedia(draft,target=null){mediaDraft=structuredClone(draft);mediaTarget=target;mediaPage=activeId;showMedia()}
-function defaultMediaPoint(){return {x:viewX()+24/paperScale(),y:viewY()+48/paperScale()}}
+function defaultMediaPoint(){return {x:viewX()+24/paperScale(),y:Math.max(0,viewY()+48/paperScale())}}
 document.querySelector('#textAdd').onclick=()=>{if(!mediaAvailable())return;beginPendingMedia({tool:'text',text:'',fontSize:24,color:penColor(),width:Math.max(80,Math.min(440,(canvas.getBoundingClientRect().width-60)/paperScale())),points:[defaultMediaPoint()]})};
 document.querySelector('#imageAdd').onclick=()=>{if(mediaAvailable())mediaFile.click()};
 document.querySelector('#mediaClose').onclick=()=>mediaDialog.close();
@@ -212,12 +212,26 @@ function commitMedia(remove=false){
 }
 document.querySelector('#mediaForm').onsubmit=e=>{e.preventDefault();commitMedia()};document.querySelector('#mediaDelete').onclick=()=>{if(confirm('Bu metin/görsel silinsin mi? Bu oturumda Geri al kullanılabilir.'))commitMedia(true)};
 function undoMedia(){const h=mediaUndo.get(activeId),last=h?.at(-1);if(!last||JSON.stringify(page().strokes)!==JSON.stringify(last.after))return false;page().strokes=last.before;h.pop();return true}
-function cancelMediaMode(){const placing=mediaPlacement,creating=!!mediaPending;cancelMediaGesture();mediaPending=null;mediaSelection=null;layoutTouches.clear();layoutMulti=false;mediaPlacement=false;mediaSelecting=false;mediaCancelMode.hidden=true;drawAll();if(creating)document.querySelector('#inputState').textContent='Kalemle yazın · iki parmakla yukarı/aşağı kaydırın';if(placing&&mediaDraft&&activeId===mediaPage)showMedia()}
+function redrawClosedMediaMode(){
+  if(!window.BilgeSlideFlow?.enabled()){drawAll();return;}
+  refreshMediaSelection();
+  const workspace=document.querySelector('.workspace'),host=workspace.closest('bilge-defter-ui');
+  // V2 normally mirrors this class in a MutationObserver. Mirror only this
+  // workspace's actual owning host now, before resize reads the final layout.
+  if(host)host.classList.toggle('layout-active',workspace.classList.contains('layout-active'));
+  const width=canvas.width,height=canvas.height,scale=ctx.getTransform().a;
+  resize();
+  // resize already draws when its bitmap dimensions or DPR transform change.
+  // Its no-op path still needs one draw to remove a cancelled draft/selection.
+  if(canvas.width===width&&canvas.height===height&&ctx.getTransform().a===scale)drawAll();
+}
+function cancelMediaMode(){const placing=mediaPlacement,creating=!!mediaPending;cancelMediaGesture();mediaPending=null;mediaSelection=null;layoutTouches.clear();layoutMulti=false;mediaPlacement=false;mediaSelecting=false;mediaCancelMode.hidden=true;redrawClosedMediaMode();if(creating)document.querySelector('#inputState').textContent='Kalemle yazın · iki parmakla yukarı/aşağı kaydırın';if(placing&&mediaDraft&&activeId===mediaPage)showMedia()}
 mediaCancelMode.onclick=cancelMediaMode;
 document.querySelector('#mediaPlace').onclick=()=>{syncMediaDraft();mediaPlacement=true;mediaDialog.close();mediaCancelMode.hidden=false;document.querySelector('#inputState').textContent='Metin/görselin sol üst köşesi için kalem veya fareyle sayfaya dokunun. Dokunma için avuç korumasını kapatın.'};
 document.querySelector('#mediaEdit').onclick=()=>{if(!mediaAvailable())return;closeTools();setSidebarOpen(false);mediaSelecting=true;mediaCancelMode.hidden=true;drawAll();document.querySelector('#inputState').textContent='Öğeye dokunun ve sürükleyin. ↘ tutamacıyla boyutlandırın. Bu modda tek parmak, kalem veya fare kullanılabilir.'};
 document.querySelector('#canvas').addEventListener('pointerdown',e=>{
  if(!mediaPlacement&&!mediaSelecting)return;e.preventDefault();e.stopImmediatePropagation();if(!ready||saveConflict||importing||!page()||(mediaPlacement&&!allowed(e))||(e.pointerType==='mouse'&&e.button!==0))return;
+ if(window.BilgeSlideFlow?.enabled()&&!mediaPending&&!mediaPlacement&&!mediaGesture&&!window.BilgeSlideFlow.preparePointer(e))return;
  const pt=point(e);if(mediaPlacement){if(activeId!==mediaPage)return;mediaDraft.points=[{x:Math.max(0,pt.x),y:Math.max(0,pt.y)}];mediaPlacement=false;mediaCancelMode.hidden=true;showMedia();return}
  const target=mediaPending?(mediaHit(mediaPending.draft,pt)?mediaPending.draft:null):[...page().strokes].reverse().find(s=>isMedia(s)&&mediaHit(s,pt));
  if(mediaSelecting)startMediaGesture(e,target,false);

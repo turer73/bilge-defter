@@ -99,17 +99,18 @@ async function validatePdfImages(book){
   for(const src of images){const image=new Image();let timer;try{image.src=src;await Promise.race([image.decode(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error()),10000)})])}catch{throw new Error('Yedekteki PDF görüntüsü okunamadı. Mevcut notlar değiştirilmedi.')}finally{clearTimeout(timer);image.src=''}}
 }
 function validPdfView(p){return (p.fitScale===undefined||(!p.pdf&&Number.isFinite(p.fitScale)&&p.fitScale>=0.2&&p.fitScale<=1))&&(p.pdfZoom===undefined||(!!p.pdf&&Number.isFinite(p.pdfZoom)&&p.pdfZoom>=1&&p.pdfZoom<=3))&&(p.viewX===undefined||(!!p.pdf&&Number.isFinite(p.viewX)&&p.viewX>=0&&p.viewX<=1000*(1-1/(p.pdfZoom??1))+1e-7))}
-function pdfZoom(){return page()?.pdf?(page().pdfZoom??1):1}
+function pdfZoom(){return window.BilgeSlideFlow?.enabled()?window.BilgeSlideFlow.zoom():page()?.pdf?(page().pdfZoom??1):1}
 // Plain pages zoom for this session only: their saved shape stays the one v60 reads,
 // so rollback and older copies keep working. PDF zoom and position are saved as before.
 const plainViews=new WeakMap();
 function viewZoom(){const p=page();return p?.pdf?pdfZoom():(plainViews.get(p)?.zoom??1)}
-function maxViewX(){const p=page(),zoom=viewZoom();if(!p||zoom===1)return 0;return (p.pdf?p.pdf.width:Math.max(1,canvas.getBoundingClientRect().width)/(p.fitScale||1))*(1-1/zoom)}
-function viewX(){const p=page();return Math.min(maxViewX(),Math.max(0,(p?.pdf?p.viewX:plainViews.get(p)?.x)||0))}
-function setViewX(x){const p=page();if(!p)return;if(p.pdf){p.viewX=x;return}const v=plainViews.get(p);if(v)v.x=x}
-function paperScale(){const p=page();return p?.pdf?Math.max(1,canvas.getBoundingClientRect().width)/p.pdf.width*pdfZoom():(p?.fitScale||1)*viewZoom()}
+function maxViewX(){if(window.BilgeSlideFlow?.enabled())return window.BilgeSlideFlow.maxX();const p=page(),zoom=viewZoom();if(!p||zoom===1)return 0;return (p.pdf?p.pdf.width:Math.max(1,canvas.getBoundingClientRect().width)/(p.fitScale||1))*(1-1/zoom)}
+function viewX(){if(window.BilgeSlideFlow?.enabled())return window.BilgeSlideFlow.x();const p=page();return Math.min(maxViewX(),Math.max(0,(p?.pdf?p.viewX:plainViews.get(p)?.x)||0))}
+function setViewX(x){if(window.BilgeSlideFlow?.enabled()){window.BilgeSlideFlow.setX(x);return}const p=page();if(!p)return;if(p.pdf){p.viewX=x;return}const v=plainViews.get(p);if(v)v.x=x}
+function paperScale(){if(window.BilgeSlideFlow?.enabled())return window.BilgeSlideFlow.scale();const p=page();return p?.pdf?Math.max(1,canvas.getBoundingClientRect().width)/p.pdf.width*pdfZoom():(p?.fitScale||1)*viewZoom()}
 function updatePdfZoom(){const zoom=viewZoom();document.querySelector('#pdfZoomValue').textContent=`%${Math.round(zoom*100)}`;document.querySelector('#pdfZoomOut').disabled=zoom<=1;document.querySelector('#pdfZoomIn').disabled=zoom>=3}
 function setViewZoom(value){
+  if(window.BilgeSlideFlow?.enabled()){window.BilgeSlideFlow.setZoom(value);return}
   const p=page();if(!canEdit()||drawing||pan||!p||!Number.isFinite(value))return;
   const next=Math.max(1,Math.min(3,Math.round(value*4)/4));if(next===viewZoom())return;
   const r=canvas.getBoundingClientRect(),oldScale=paperScale(),cx=viewX()+r.width/(2*oldScale),cy=viewY()+r.height/(2*oldScale);
@@ -119,8 +120,10 @@ function setViewZoom(value){
 }
 function setPdfZoom(value){if(page()?.pdf)setViewZoom(value)}
 document.querySelector('#pdfZoomOut').onclick=()=>setPdfZoom(pdfZoom()-.25);document.querySelector('#pdfZoomIn').onclick=()=>setPdfZoom(pdfZoom()+.25);document.querySelector('#pdfFit').onclick=()=>setPdfZoom(1);
-function pdfBackgroundReady(){return !page()?.pdf||(pdfImageSource===page().pdf.image&&pdfImage?.complete&&pdfImage.naturalWidth>0&&!pdfImageFailed)}
+function pdfBackgroundReady(){return window.BilgeSlideFlow?.enabled()?window.BilgeSlideFlow.ready():!page()?.pdf||(pdfImageSource===page().pdf.image&&pdfImage?.complete&&pdfImage.naturalWidth>0&&!pdfImageFailed)}
 function drawPdfBackground(){
+  if(window.BilgeSlideFlow?.enabled()){window.BilgeSlideFlow.drawBackground();return}
+  pdfBackdropState.classList.remove('slide-flow-status');
   const bg=page()?.pdf;pdfCanvas.hidden=!bg;pdfBackdropState.hidden=!bg;if(!bg){pdfImage=null;pdfImageSource=null;pdfImageFailed=false;return}
   if(pdfImageSource!==bg.image){
     pdfImageSource=bg.image;pdfImageFailed=false;const image=new Image();pdfImage=image;
@@ -133,7 +136,11 @@ function drawPdfBackground(){
 }
 function updatePdfNavigation(){
   updatePdfZoom();
-  const bg=page()?.pdf;pdfNavigation.hidden=!bg;document.querySelector('.workspace').classList.toggle('has-pdf',!!bg);if(!bg)return;
+  const bg=page()?.pdf;
+  // A presentation uses the notebook controls, even during startup/account
+  // locking or when an older slide size cannot enter continuous flow.
+  const showNavigation=!!bg&&!/\.pptx$/i.test(bg.name||'');
+  pdfNavigation.hidden=!showNavigation;document.querySelector('.workspace').classList.toggle('has-pdf',showNavigation);if(!showNavigation)return;
   const pages=notebookPages(),index=pages.findIndex(p=>p.id===activeId),kind=/\.pptx$/i.test(bg.name)?'Slayt':'PDF';document.querySelector('#pdfPageLabel').textContent=`${bg.name} · ${kind} ${bg.number}/${bg.total}`;
   document.querySelector('#pdfPrevious').disabled=index<=0||!pages[index-1]?.pdf;document.querySelector('#pdfNext').disabled=index>=pages.length-1||!pages[index+1]?.pdf;
 }
@@ -409,4 +416,376 @@ async function presentationErrorMessage(response){
   addEventListener('offline',()=>{if(selected||busy){cancelPdf();if(pdfDialog.open)pdfMessage('Bağlantı kesildi; aktarım tamamlanmadı. Notlar değişmedi. Sunucuya ulaşan işlem bir süre daha çalışabilir.')}});
   addEventListener('bilge-account-locked',()=>{cancelPdf();if(pdfDialog.open)pdfMessage('Hesap erişimi değişti. Aktarım durduruldu; notlar değişmedi.')});
   addEventListener('pagehide',()=>cancelPdf());
+})();
+
+// Main-notebook PPTX pages retain the existing PDF-background/ink storage shape.
+// Only the viewport is continuous: one background canvas, one editable ink canvas,
+// and a bounded set of decoded pictures. The separate PPTX reader is unaffected.
+window.BilgeSlideFlow=(()=>{
+  const WIDTH=1000,GAP=24,PREFETCH_PIXEL_BUDGET=12000000,INK_PIXEL_BUDGET=8000000;
+  const pictures=new Map(),heights=new WeakMap(),inkTiles=new Map(),inkStamps=new WeakMap(),inkBounds=new WeakMap(),inkPressures=new WeakMap();
+  let inkPixels=0;
+  let flow=null;
+  pdfStyle.textContent+='#pdfBackdropState.slide-flow-status{inset:auto;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}';
+
+  function initialized(){
+    // This script is loaded before the main inline script declares its globals.
+    try{return !!ready&&!!state&&!window.BilgeAccount?.locked}catch{return false}
+  }
+  function isSlide(p){return !!p?.pdf&&p.pdf.width===WIDTH&&/\.pptx$/i.test(p.pdf.name||'')}
+  function frozen(){return drawing||!!mediaGesture}
+  function selectionBusy(){return drawing||!!pan||!!mediaGesture||!!mediaPending||!!mediaPlacement}
+  function disposePicture(entry){entry.image.onload=entry.image.onerror=null;entry.image.src=''}
+  function dropInk(key){const tile=inkTiles.get(key);if(!tile)return;inkPixels-=tile.pixels;tile.canvas.width=tile.canvas.height=1;inkTiles.delete(key)}
+  function clearInk(){for(const key of inkTiles.keys())dropInk(key)}
+  function reset(){for(const entry of pictures.values())disposePicture(entry);pictures.clear();clearInk();flow=null}
+  function rect(){return canvas.getBoundingClientRect()}
+  function rawScale(){return Math.max(1,rect().width)/WIDTH*flow.zoom}
+  function scale(){
+    if(!ensure())return 1;
+    if(frozen()){if(!flow.frozenScale)flow.frozenScale=rawScale();return flow.frozenScale}
+    flow.frozenScale=null;return rawScale();
+  }
+  function rowFor(id=activeId){return flow?.byId.get(id)}
+  function maxX(){return ensure()?WIDTH*(1-1/flow.zoom):0}
+  function maxScroll(){return Math.max(0,flow.total-rect().height/rawScale())}
+  function aligned(value,limit){
+    const pixels=rawScale()*Math.min(devicePixelRatio||1,2),bounded=Math.max(0,Math.min(limit,value));
+    return Math.max(0,Math.min(limit,Math.round(bounded*pixels)/pixels));
+  }
+  // Subpixel movement cannot show more than the physical display pixels. Keep
+  // pan offsets on that grid so cached ink retains the exact rasterization phase.
+  function clampScroll(value){return aligned(value,maxScroll())}
+  function clampX(value){return aligned(value,WIDTH*(1-1/flow.zoom))}
+  function pixelPhase(value){return (Math.round((value-Math.floor(value))*1e8)/1e8)%1}
+  function pageHeight(p){
+    const list=p.strokes,last=list.at(-1),revision=pageRevs.get(p)||0,memo=heights.get(p);
+    if(memo&&memo.list===list&&memo.count===list.length&&memo.revision===revision&&memo.updated===p.updated&&memo.last===last&&memo.points===last?.points?.length&&memo.background===p.pdf)return memo.height;
+    let height=p.pdf.height;
+    for(const stroke of list){
+      if(isMedia(stroke)){height=Math.max(height,mediaBounds(stroke).bottom);continue}
+      let bottom=0;for(const point of stroke.points)bottom=Math.max(bottom,point.y);
+      height=Math.max(height,bottom+(stroke.width||2));
+    }
+    // Old pages could contain handwriting below the picture; never truncate it.
+    height=Math.max(p.pdf.height,Number.isFinite(height)?height:p.pdf.height);
+    heights.set(p,{list,count:list.length,revision,updated:p.updated,last,points:last?.points?.length,background:p.pdf,height});
+    return height;
+  }
+  function ensure(){
+    if(!initialized()){if(flow)reset();return false}
+    // Coalesced pen samples call these coordinate helpers repeatedly. The
+    // gesture owns its page/geometry; do not scan a notebook per pen sample.
+    if(flow&&flow.state===state&&flow.db===DB&&flow.notebook===activeNotebook&&flow.activeId===activeId&&(frozen()||pan))return true;
+    const currentPage=page();
+    if(!isSlide(currentPage)){if(flow)reset();return false}
+    const all=notebookPages(),at=all.indexOf(currentPage);
+    if(at<0){reset();return false}
+    let first=at,last=at;
+    while(first>0&&isSlide(all[first-1]))first--;
+    while(last+1<all.length&&isSlide(all[last+1]))last++;
+    const pages=all.slice(first,last+1);
+    const same=flow&&flow.state===state&&flow.db===DB&&flow.notebook===activeNotebook&&pages.length===flow.rows.length&&pages.every((p,i)=>flow.rows[i].page===p);
+    if(!same){
+      reset();let top=0;
+      const rows=pages.map(p=>{const row={page:p,top,height:pageHeight(p)};top+=row.height+GAP;return row});
+      flow={state,db:DB,notebook:activeNotebook,rows,byId:new Map(rows.map(row=>[row.page.id,row])),total:top-GAP,scroll:0,x:0,zoom:1,activeId,frozenScale:null};
+      const row=rowFor();flow.scroll=clampScroll(row.top+Math.min(row.height,Math.max(0,currentPage.viewY||0)));
+    }else if(!frozen()){
+      const oldRow=rowFor(flow.activeId),local=oldRow?flow.scroll-oldRow.top:0;
+      let top=0,changed=false;
+      for(const row of flow.rows){const height=pageHeight(row.page);if(row.height!==height||row.top!==top)changed=true;row.top=top;row.height=height;top+=height+GAP}
+      flow.total=top-GAP;
+      if(changed&&oldRow)flow.scroll=clampScroll(oldRow.top+local);
+      if(flow.activeId!==activeId){
+        // Sidebar/page actions selected a page, not a scroll-driven hand-off.
+        flow.activeId=activeId;const row=rowFor();
+        const saved=Math.max(0,currentPage.viewY||0);
+        flow.scroll=clampScroll(row.top+(saved<row.height?saved:0));
+      }
+    }
+    if(!frozen()&&!pan)flow.scroll=clampScroll(flow.scroll);
+    return true;
+  }
+  function visibleRows(){
+    if(!ensure())return [];
+    const bottom=flow.scroll+rect().height/scale();
+    return flow.rows.filter(row=>row.top+row.height>flow.scroll&&row.top<bottom);
+  }
+  function persist(){
+    const row=rowFor();if(!row)return false;
+    // While a pan crosses several pages its owner remains fixed. Do not store a
+    // later page's global offset in that old page; settle saves the new owner.
+    const beforeY=row.page.viewY,beforeZoom=row.page.pdfZoom,beforeX=row.page.viewX,local=flow.scroll-row.top;
+    if(local>=0&&local<row.height&&(row.page.viewY!==undefined||local!==0))row.page.viewY=local;
+    // Merely opening/leaving the new viewer must not materialize optional
+    // default fields in a previously unchanged, backwards-readable notebook.
+    const nextX=Math.max(0,Math.min(WIDTH*(1-1/flow.zoom),flow.x));
+    if(row.page.pdfZoom!==undefined||flow.zoom!==1)row.page.pdfZoom=flow.zoom;
+    if(row.page.viewX!==undefined||nextX!==0)row.page.viewX=nextX;
+    return beforeY!==row.page.viewY||beforeZoom!==row.page.pdfZoom||beforeX!==row.page.viewX;
+  }
+  function changed(){persist();markViewChanged();scheduleViewSave();queueViewportRender()}
+  function desiredRows(){
+    const viewport=rect();if(viewport.width<60||viewport.height<60)return [];
+    const visible=visibleRows(),wanted=[];
+    let pixels=0;
+    const add=(row,prefetch=false)=>{if(row&&!wanted.includes(row)){const size=row.page.pdf.width*row.page.pdf.height;if(prefetch&&pixels+size>PREFETCH_PIXEL_BUDGET)return;wanted.push(row);pixels+=size}};
+    const active=rowFor();if(visible.includes(active))add(active);
+    for(const row of visible)add(row);
+    // Every visible short slide must be paintable, even on a tall viewport.
+    // Only the two optional neighbors are constrained by the decode budget.
+    if(visible.length){add(flow.rows[flow.rows.indexOf(visible[0])-1],true);add(flow.rows[flow.rows.indexOf(visible.at(-1))+1],true)}
+    return wanted;
+  }
+  function warm(){
+    if(!ensure())return;
+    const owner=flow,wanted=desiredRows(),ids=new Set(wanted.map(row=>row.page.id));
+    for(const [id,entry] of pictures)if(!ids.has(id)||entry.source!==rowFor(id)?.page.pdf.image){disposePicture(entry);pictures.delete(id)}
+    for(const row of wanted){
+      if(pictures.has(row.page.id))continue;
+      const image=new Image(),entry={source:row.page.pdf.image,image,status:'loading'};
+      pictures.set(row.page.id,entry);
+      const finish=status=>{
+        if(flow!==owner||pictures.get(row.page.id)!==entry)return;
+        entry.status=status;
+        if(!initialized()||state!==owner.state||DB!==owner.db){reset();return}
+        queueViewportRender();
+      };
+      image.onload=()=>finish(image.naturalWidth>0?'ready':'error');
+      image.onerror=()=>finish('error');image.src=entry.source;
+    }
+  }
+  function imageReady(row){const entry=row&&pictures.get(row.page.id);return !!entry&&entry.source===row.page.pdf.image&&entry.status==='ready'&&entry.image.complete&&entry.image.naturalWidth>0}
+  function imageReadyForActive(){if(!ensure())return false;warm();return imageReady(rowFor())}
+  function select(row){
+    if(!row||row.page.id===activeId)return false;
+    activeId=row.page.id;state.active=activeId;flow.activeId=activeId;
+    persist();markViewChanged();scheduleViewSave();refreshChrome();updatePdfNavigation();return true;
+  }
+  function settle(){
+    if(!ensure()||!canEdit()||selectionBusy()||pinchT||saveConflict||importing)return false;
+    const row=flow.rows.find(item=>item.top+item.height>flow.scroll)||flow.rows.at(-1);
+    const selected=select(row),viewChanged=persist();if(viewChanged&&!selected){markViewChanged();scheduleViewSave()}if(selected)queueViewportRender();return selected;
+  }
+  function preparePointer(event){
+    if(!ensure()||saveConflict||importing||window.BilgePptx?.active||selectionBusy())return false;
+    const r=rect(),s=scale(),x=(event.clientX-r.left)/s+flow.x,y=(event.clientY-r.top)/s+flow.scroll;
+    if(x<0||x>WIDTH)return false;
+    const row=flow.rows.find(item=>y>=item.top&&y<=item.top+item.height);
+    if(!row)return false;
+    warm();if(!imageReady(row))return false;
+    if(select(row)){drawAll();warm()}
+    return true;
+  }
+  function point(event){
+    if(!ensure())return null;
+    const r=rect(),s=scale(),row=rowFor();
+    let x=(event.clientX-r.left)/s+flow.x,y=(event.clientY-r.top)/s+flow.scroll-row.top;
+    // Media already has its own rotation/size constraints. Only a live ink
+    // stroke is clamped to its pinned page rather than spilling onto a neighbor.
+    if(drawing){
+      const margin=Math.max(0,current?.width||selectedWidth()/s);
+      x=Math.max(0,Math.min(WIDTH,x));y=Math.max(0,Math.min(Math.max(0,row.height-margin),y));
+    }
+    return {x,y,p:event.pressure||.5};
+  }
+  function clip(target){if(!ensure())return;const row=rowFor();target.beginPath();target.rect(0,0,WIDTH,row.height);target.clip()}
+  function scroll(nextLocal,nextX=flow?.x||0){
+    if(!ensure()||!canEdit()||drawing||mediaGesture||!Number.isFinite(nextLocal)||!Number.isFinite(nextX))return false;
+    const next=clampScroll(rowFor().top+nextLocal),x=clampX(nextX);
+    if(next===flow.scroll&&x===flow.x)return false;
+    flow.scroll=next;flow.x=x;changed();
+    const status=document.querySelector('#inputState');if(status)status.textContent='Slaytlar · iki parmakla aşağı/yukarı kaydırın';return true;
+  }
+  function applyZoom(value,mx,my){
+    if(!ensure()||!Number.isFinite(value)||drawing||mediaGesture||mediaPending||!canEdit())return false;
+    const next=Math.max(1,Math.min(3,value));if(next===flow.zoom)return false;
+    const previous=scale(),anchorX=flow.x+mx/previous,anchorY=flow.scroll+my/previous;
+    flow.zoom=next;flow.frozenScale=null;const after=scale();
+    flow.x=clampX(anchorX-mx/after);flow.scroll=clampScroll(anchorY-my/after);
+    changed();updatePdfZoom();return true;
+  }
+  function setZoom(value){
+    if(!ensure()||pan||pinchT||!Number.isFinite(value))return false;
+    const r=rect(),result=applyZoom(Math.round(value*4)/4,r.width/2,r.height/2);
+    if(result){settle();drawAll();refreshChrome()}return result;
+  }
+  function pinch(value,mx,my){
+    const result=applyZoom(value,mx,my);
+    if(result&&pan){
+      const a=touchPoints.get(pan.ids[0]),b=touchPoints.get(pan.ids[1]);
+      if(a&&b){pan.startY=(a.y+b.y)/2;pan.startX=(a.x+b.x)/2;pan.startOffset=flow.scroll-rowFor().top;pan.startOffsetX=flow.x;pan.pageId=activeId}
+    }
+    return result;
+  }
+  function drawBackground(){
+    if(!ensure())return;
+    // Release the old single-page decoder when entering the continuous view.
+    if(pdfImage){pdfImage.onload=pdfImage.onerror=null;pdfImage.src='';pdfImage=null;pdfImageSource=null;pdfImageFailed=false}
+    warm();pdfCanvas.hidden=false;
+    if(pdfCanvas.width!==canvas.width||pdfCanvas.height!==canvas.height){pdfCanvas.width=canvas.width;pdfCanvas.height=canvas.height}
+    const c=pdfCanvas.getContext('2d'),s=scale(),d=ctx.getTransform().a;
+    c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,pdfCanvas.width,pdfCanvas.height);c.fillStyle='#e5ebe7';c.fillRect(0,0,pdfCanvas.width,pdfCanvas.height);
+    for(const row of visibleRows()){
+      c.save();c.setTransform(d*s,0,0,d*s,-flow.x*d*s,(row.top-flow.scroll)*d*s);
+      c.beginPath();c.rect(0,0,WIDTH,row.height);c.clip();c.fillStyle=row.page.paperColor||'#fffdf8';c.fillRect(0,0,WIDTH,row.height);
+      const entry=pictures.get(row.page.id);
+      if(imageReady(row))c.drawImage(entry.image,0,0,WIDTH,row.page.pdf.height);
+      else{c.fillStyle='#46645b';c.font='24px sans-serif';c.textAlign='center';c.fillText(entry?.status==='error'?'Slayt açılamadı — notlar korunuyor':'Slayt hazırlanıyor…',WIDTH/2,Math.min(row.page.pdf.height/2,120))}
+      c.restore();
+    }
+    const active=rowFor(),entry=pictures.get(active.page.id);
+    pdfBackdropState.classList.add('slide-flow-status');pdfBackdropState.hidden=imageReady(active);
+    const message=entry?.status==='error'?'Bu slayt görüntüsü açılamadı. Notlar korunuyor; bu sayfada yazı durduruldu.':'Slayt görüntüsü hazırlanıyor.';
+    if(pdfBackdropState.textContent!==message)pdfBackdropState.textContent=message;
+  }
+  function drawInk(){
+    if(!ensure())return;
+    pruneMediaImages();
+    const s=scale(),r=rect(),rows=visibleRows(),bottom=flow.scroll+r.height/s,d=ctx.getTransform().a,pixelScale=s*d;
+    const edge=Math.min(512,Math.max(1,Math.floor(512*pixelScale)))/pixelScale,plans=[],wanted=new Set();
+    let scratch=null,raster=null,rasterFailed=canvas.width*canvas.height>INK_PIXEL_BUDGET;
+    for(const row of rows){
+      const phaseX=pixelPhase(-flow.x*pixelScale),phaseY=pixelPhase((row.top-flow.scroll)*pixelScale);
+      // Media commits/undo replace the stroke list while this layout is temporary.
+      // Replay the active page until selection closes instead of rebuilding its
+      // tiles after each edit; idle selection redraws trade that replay for no
+      // throwaway cache. Neighbor pages keep their normal bounded tile reuse.
+      const direct=rasterFailed||row.page.id===activeId&&(drawing||mediaGesture||mediaPending||mediaSelecting),stamp=direct?null:inkStamp(row.page,pixelScale,phaseX,phaseY);
+      const left=Math.max(0,flow.x),right=Math.min(WIDTH,flow.x+r.width/s),top=Math.max(0,flow.scroll-row.top),end=Math.min(row.height,bottom-row.top),tiles=[];
+      if(!direct&&stamp.cacheable&&right>left&&end>top){
+        for(let iy=Math.floor(top/edge);iy<Math.ceil(end/edge);iy++)for(let ix=Math.floor(left/edge);ix<Math.ceil(right/edge);ix++){
+          const key=`${row.page.id}:${ix}:${iy}`,x=ix*edge,y=iy*edge,w=Math.min(edge,WIDTH-x),h=Math.min(edge,row.height-y);
+          const bw=x+w>=WIDTH-1e-7?Math.ceil(w*pixelScale+phaseX):Math.round(w*pixelScale),bh=y+h>=row.height-1e-7?Math.ceil(h*pixelScale+phaseY):Math.round(h*pixelScale);
+          const bx=Math.round((x-flow.x)*pixelScale-phaseX),by=Math.round((row.top-flow.scroll+y)*pixelScale-phaseY);
+          const dx=Math.max(0,bx),dy=Math.max(0,by),dw=Math.min(canvas.width,bx+bw)-dx,dh=Math.min(canvas.height,by+bh)-dy;
+          if(dw>0&&dh>0){tiles.push({key,x,y,w,h,bx,by,bw,bh,dx,dy,dw,dh,cropX:dx-bx,cropY:dy-by});wanted.add(key)}
+        }
+      }
+      plans.push({row,direct,stamp,tiles,top,end});
+    }
+    for(const key of inkTiles.keys())if(!wanted.has(key))dropInk(key);
+    // A fresh independent viewport-sized surface avoids the visible canvas's
+    // resize/readback raster history. Allocate only on a miss, never read pixels,
+    // and keep its extra area bounded independently of the existing tile budget.
+    try{
+    for(const {row,stamp,tiles} of plans){
+      const jobs=[],updates=[];
+      for(const box of tiles){
+        let tile=inkTiles.get(box.key);
+        if(tile&&(tile.stamp!==stamp||tile.w!==box.bw||tile.h!==box.bh)){dropInk(box.key);tile=null}
+        if(!tile&&inkPixels+box.bw*box.bh<=INK_PIXEL_BUDGET){
+          const surface=document.createElement('canvas');surface.width=box.bw;surface.height=box.bh;
+          tile={canvas:surface,pixels:box.bw*box.bh,stamp,w:box.bw,h:box.bh,coverage:null};inkTiles.set(box.key,tile);inkPixels+=tile.pixels;
+        }
+        if(tile){
+          const required={x:box.cropX,y:box.cropY,w:box.dw,h:box.dh};
+          const edges={x:stamp.edgeX-box.bx,y:stamp.edgeY-box.by,w:canvas.width-2*stamp.edgeX,h:canvas.height-2*stamp.edgeY};
+          // Pixels rasterized against an old viewport edge are not reusable in
+          // its interior. Only changed axes need old and new edge repair.
+          let have=tile.coverage;
+          if(have&&(tile.viewX!==flow.x||tile.viewW!==canvas.width)){for(const edge of [tile.edges,edges])have=inkIntersection(have,{x:edge.x,y:0,w:edge.w,h:tile.h})}
+          if(have&&(tile.viewY!==flow.scroll||tile.viewH!==canvas.height)){for(const edge of [tile.edges,edges])have=inkIntersection(have,{x:0,y:edge.y,w:tile.w,h:edge.h})}
+          const missing=uncoveredInk(required,have);
+          for(const area of missing)jobs.push({tile,area,x:box.bx+area.x,y:box.by+area.y});
+          updates.push({tile,coverage:required,edges,viewX:flow.x,viewY:flow.scroll,viewW:canvas.width,viewH:canvas.height});
+        }
+      }
+      if(jobs.length){
+        if(!scratch){
+          try{scratch=document.createElement('canvas');scratch.width=canvas.width;scratch.height=canvas.height;raster=scratch.getContext('2d')}catch{raster=null}
+          if(!raster){rasterFailed=true;clearInk();break}
+        }
+        const boxes=jobs.map(({x,y,area})=>({x:flow.x+x/pixelScale,y:flow.scroll-row.top+y/pixelScale,w:area.w/pixelScale,h:area.h/pixelScale}));
+        raster.setTransform(1,0,0,1,0,0);raster.clearRect(0,0,scratch.width,scratch.height);raster.save();raster.setTransform(d*s,0,0,d*s,-flow.x*d*s,(row.top-flow.scroll)*d*s);
+        raster.beginPath();raster.rect(0,0,WIDTH,row.height);raster.clip();paintTile(row.page,stamp,boxes,raster,2/pixelScale);raster.restore();
+        for(const {tile,area,x,y} of jobs){const target=tile.canvas.getContext('2d');target.clearRect(area.x,area.y,area.w,area.h);target.drawImage(scratch,x,y,area.w,area.h,area.x,area.y,area.w,area.h)}
+      }
+      for(const {tile,...update} of updates)Object.assign(tile,update);
+    }
+    clearInkViewport();
+    for(const {row,direct,stamp,tiles,top,end} of plans){
+      const fallback=rasterFailed||(direct?row.page.strokes.some(stroke=>!nativePressure(stroke)):!stamp.cacheable||tiles.some(box=>!inkTiles.has(box.key)));
+      if(direct||fallback){
+        ctx.save();ctx.setTransform(d*s,0,0,d*s,-flow.x*d*s,(row.top-flow.scroll)*d*s);
+        ctx.beginPath();ctx.rect(0,0,WIDTH,row.height);ctx.clip();
+        // Selection replays the full active row: visibleStroke's half-width
+        // margin can omit high-pressure pen caps that still touch the viewport.
+        for(const original of row.page.strokes){const stroke=mediaVisualStroke(original);if(fallback||row.page.id===activeId&&mediaSelecting||visibleStroke(stroke,top,end))drawStroke(stroke)}
+        if(row.page.id===activeId)drawPendingMedia();ctx.restore();
+      }else for(const box of tiles){
+        const tile=inkTiles.get(box.key);
+        if(tile){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(tile.canvas,box.cropX,box.cropY,box.dw,box.dh,box.dx,box.dy,box.dw,box.dh);ctx.restore()}
+      }
+    }
+    }finally{if(scratch)scratch.width=scratch.height=1}
+  }
+  function uncoveredInk(want,have){
+    if(!have)return [want];
+    const left=Math.max(want.x,have.x),top=Math.max(want.y,have.y),right=Math.min(want.x+want.w,have.x+have.w),bottom=Math.min(want.y+want.h,have.y+have.h);
+    if(right<=left||bottom<=top)return [want];
+    return [{x:want.x,y:want.y,w:want.w,h:top-want.y},{x:want.x,y:bottom,w:want.w,h:want.y+want.h-bottom},{x:want.x,y:top,w:left-want.x,h:bottom-top},{x:right,y:top,w:want.x+want.w-right,h:bottom-top}].filter(r=>r.w>0&&r.h>0);
+  }
+  function inkIntersection(a,b){
+    if(!a||!b||a.w<=0||a.h<=0||b.w<=0||b.h<=0)return null;
+    const x=Math.max(a.x,b.x),y=Math.max(a.y,b.y),right=Math.min(a.x+a.w,b.x+b.w),bottom=Math.min(a.y+a.h,b.y+b.h);
+    return right>x&&bottom>y?{x,y,w:right-x,h:bottom-y}:null;
+  }
+  function clearInkViewport(){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.restore()}
+  function nativePressure(stroke){
+    if(stroke.tool!=='pen')return true;
+    const points=stroke.points,old=inkPressures.get(stroke);
+    // Finished ink is immutable; a live stroke appends points. Reuse the check
+    // for finished strokes instead of rescanning every old point while drawing.
+    if(old&&old.points===points&&old.count===points.length)return old.native;
+    const native=points.every(point=>point.p==null||(Number.isFinite(point.p)&&point.p>=0&&point.p<=1));
+    inkPressures.set(stroke,{points,count:points.length,native});return native;
+  }
+  function inkStamp(p,pixelScale,phaseX,phaseY){
+    const strokes=p.strokes,last=strokes.at(-1),revision=pageRevs.get(p)||0;
+    const media=[];let radius=0;for(const stroke of strokes){if(stroke.tool==='image'){const image=mediaImages.get(stroke.image);media.push(stroke.image,image,!!image?.complete,image?.naturalWidth||0)}else if(!isMedia(stroke))radius=Math.max(radius,(stroke.width||2)*(stroke.tool==='pen'?.8:.5))}
+    const old=inkStamps.get(p);
+    // Raster coverage can change when the actual canvas bitmap is resized even
+    // if CSS scale and phase return unchanged after closing a media panel.
+    if(old&&old.surfaceWidth===canvas.width&&old.surfaceHeight===canvas.height&&old.strokes===strokes&&old.count===strokes.length&&old.last===last&&old.points===last?.points?.length&&old.revision===revision&&old.updated===p.updated&&old.scale===pixelScale&&old.phaseX===phaseX&&old.phaseY===phaseY&&old.media.length===media.length&&old.media.every((value,i)=>value===media[i]))return old;
+    // A clipped segment can change its cap coverage beyond the centerline's
+    // radius. Keep its entire axis span plus full pressure width untrusted at
+    // moving viewport edges; very long segments safely require more replay.
+    let spanX=0,spanY=0,cacheable=true;for(const stroke of strokes)if(!isMedia(stroke)){
+      // Old JSON readers accepted pressures outside the device's 0..1 range.
+      // Preserve their direct-rendered shape; do not normalize or cull it with
+      // bounds calculated for a native stylus.
+      if(!nativePressure(stroke))cacheable=false;
+      for(let i=1;i<stroke.points.length;i++){const point=stroke.points[i];spanX=Math.max(spanX,Math.abs(point.x-stroke.points[i-1].x));spanY=Math.max(spanY,Math.abs(point.y-stroke.points[i-1].y))}
+    }
+    const stamp={strokes,count:strokes.length,last,points:last?.points?.length,revision,updated:p.updated,scale:pixelScale,phaseX,phaseY,media,cacheable,surfaceWidth:canvas.width,surfaceHeight:canvas.height,edgeX:Math.ceil((spanX+2*radius)*pixelScale)+4,edgeY:Math.ceil((spanY+2*radius)*pixelScale)+4};inkStamps.set(p,stamp);return stamp;
+  }
+  function paintTile(p,stamp,box,target,bleed){
+    const boxes=Array.isArray(box)?box:[box];
+    for(const stroke of p.strokes){
+      let bound=inkBounds.get(stroke);
+      if(!bound||bound.stamp!==stamp){
+        if(isMedia(stroke))bound={...mediaBounds(stroke),stamp};
+        else{
+          let left=Infinity,top=Infinity,right=-Infinity,bottom=-Infinity;
+          for(const point of stroke.points){left=Math.min(left,point.x);right=Math.max(right,point.x);top=Math.min(top,point.y);bottom=Math.max(bottom,point.y)}
+          const margin=Math.max(.5,stroke.width||2);bound={left:left-margin,right:right+margin,top:top-margin,bottom:bottom+margin,stamp};
+        }
+        inkBounds.set(stroke,bound);
+      }
+      if(boxes.some(box=>bound.right>=box.x-bleed&&bound.left<=box.x+box.w+bleed&&bound.bottom>=box.y-bleed&&bound.top<=box.y+box.h+bleed))drawStroke(stroke,target);
+    }
+  }
+  addEventListener('bilge-account-locked',reset);
+  // The main pagehide handler still has to finish/settle its active gesture and
+  // save it. Release decoders without resetting that viewport or its owner.
+  addEventListener('pagehide',()=>{for(const entry of pictures.values())disposePicture(entry);pictures.clear();clearInk()});
+  return Object.freeze({
+    enabled:ensure,scale,ready:imageReadyForActive,preparePointer,point,clip,scroll,settle,setZoom,pinch,drawBackground,drawInk,
+    y:()=>ensure()?flow.scroll-rowFor().top:0,x:()=>ensure()?flow.x:0,zoom:()=>ensure()?flow.zoom:1,maxX,
+    setX:value=>{if(ensure()&&Number.isFinite(value)){const next=clampX(value);if(next!==flow.x){flow.x=next;changed()}else if(persist()){markViewChanged();scheduleViewSave()}}},
+    visiblePages:()=>visibleRows().map(row=>row.page),
+    snapshot:()=>ensure()?{scroll:flow.scroll,x:flow.x,zoom:flow.zoom,activeId,totalHeight:flow.total,rows:flow.rows.map(row=>({id:row.page.id,top:row.top,height:row.height})),visible:visibleRows().map(row=>row.page.id),cachedImages:pictures.size,cachedInkTiles:inkTiles.size,inkPixels}:null
+  });
 })();

@@ -1,5 +1,15 @@
 # Geri dönüş zinciri
 
+> **8 Ekim 2026 — v78 yayın adayı:** v78 etkinleştirildikten sonra dar geri dönüş
+> yalnız korunmuş **v77 web**'dir:
+> `sudo python3 -B /opt/bilge-defter-classroom-v78/deploy-v78.py rollback`.
+> Kaynak commit'i/receipt'e bağlı `live-proof.json` aktivasyonu kanıtlamadan bu
+> satır canlı durum beyanı değildir; [RELEASE_V78](RELEASE_V78.md) kontrol edilir.
+> v77'nin eski deploy betiği kullanılmaz. API, kütüphane, dönüştürücü, DB ve
+> minimum-reader değişmez; hiçbir kullanıcı notu yedekten geri yüklenmez.
+> v77 yeni marker alanını saklar ama eski opaklıkla gösterir. Aşağıdaki v77 ve
+> önceki sürüm komutları tarihsel kayıttır, v78 için uygulanacak adım değildir.
+
 > **7 Ekim 2026 — v77 yayın adayı:** uygulanacak dar geri dönüş yalnız **v76 web**:
 > `sudo python3 -B /opt/bilge-defter-classroom-v77/deploy-v77.py rollback`.
 > Bu satır aktivasyon kanıtı değildir; kaynak/receipt'e bağlı canlı sonucu

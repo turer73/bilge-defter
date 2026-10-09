@@ -1,0 +1,344 @@
+'use strict';
+// Local-only continuous PPTX notebook acceptance. Real application state, raster
+// import and IndexedDB are used; identity and colored pages are synthetic.
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const {chromium,webkit}=require('playwright');
+const repo=path.resolve(__dirname,'..'),root=path.resolve(process.env.BILGE_TEST_ROOT||path.join(__dirname,'bilge-defter-test'));
+const dpr=Number(process.argv.find(x=>x.startsWith('--dpr='))?.slice(6)||1),tag=process.argv.find(x=>x.startsWith('--tag='))?.slice(6)||'',diagnoseInk=process.argv.includes('--diagnose-ink');
+assert.ok([1,2].includes(dpr),'DPR must be 1 or 2');assert.match(tag,/^[a-z0-9-]*$/,'Output tag is a simple local filename');
+const out=path.join(repo,'outputs/slide-flow',`dpr-${dpr}${tag?'-'+tag:''}`),engineFilter=process.argv.find(x=>x.startsWith('--engine='))?.slice(9),caseFilter=process.argv.find(x=>x.startsWith('--case='))?.slice(7);
+assert.ok(!engineFilter||['chromium','webkit'].includes(engineFilter));
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),files=new Map(),A='11111111-1111-4111-8111-111111111111';
+function snapshot(dir,prefix=''){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())snapshot(p,prefix+e.name+'/');else files.set('/'+prefix+e.name,fs.readFileSync(p));}}
+snapshot(root);
+const hashes=new Map([...files].map(([name,bytes])=>[name,sha(bytes)]));
+const report={startedAt:new Date().toISOString(),root,dpr,diagnoseInk,runnerSha256:sha(fs.readFileSync(__filename)),source:Object.fromEntries(hashes),results:[],boundaries:[
+  'Synthetic approved account, deterministic colored page.pdf PNGs and existing raster import helper; no real PPTX decoding in this suite.',
+  'Pointer/touch/pinch events are browser automation, not physical iPad/Pencil/palm acceptance.',
+  'Decoded background cache and canvas dimensions are measured, not operating-system memory pressure.',
+  'Raster cache parity is not bitwise RGBA: premultiplied offscreen round-trip antialiasing is bounded by white-composite max<=32, foreground mean<=1 and >16-delta pixels<=0.2% of the alpha>0 union. Alpha max<=32; exact small pen/eraser region and real media undo guards are separate.',
+  'Service workers are disabled. No external network, production, upload, conversion or account mutation.'
+]};
+const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml','.ico':'image/x-icon','.wasm':'application/wasm'};
+async function fixture(browser){
+  const requests=[],external=[],errors=[];
+  const server=http.createServer((req,res)=>{
+    const name=new URL(req.url,'http://loopback').pathname,route=name==='/'?'/index.html':decodeURIComponent(name);requests.push({method:req.method,path:route});
+    if(req.method!=='GET'){res.writeHead(405);res.end();return;}
+    if(route==='/api/v1/bilge-defter/whoami'){res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({account_protocol:'approval-v1',identity:{type:'access',id:A,status:'approved',role:'student',email:'fixture@example.test'}}));return;}
+    const bytes=files.get(route);res.writeHead(bytes?200:404,{'Content-Type':types[path.extname(route)]||'application/octet-stream','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(bytes||'');
+  });
+  await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
+  const context=await browser.newContext({viewport:{width:1180,height:920},hasTouch:true,deviceScaleFactor:dpr});context.setDefaultTimeout(20000);
+  await context.addInitScript(origin=>{if(window.top!==window||location.origin!==origin)return;window.__accountRequired=true;localStorage.setItem('bilge_defter_onboarding_v1','true');try{delete Navigator.prototype.serviceWorker;}catch{}},origin);
+  await context.route('**/*',route=>{const u=new URL(route.request().url());if(['http:','https:'].includes(u.protocol)&&u.origin!==origin){external.push(u.origin);return route.abort();}return route.continue();});
+  const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));
+  async function goto(){await p.goto(origin);await p.waitForFunction(()=>typeof ready!=='undefined'&&ready&&window.__v2UI);assert.equal(await p.evaluate(()=>!!window.BilgeSlideFlow),true,'Flow API present');await save(p);}
+  return{p,context,origin,requests,external,errors,goto,finish:async()=>{await context.close();server.closeAllConnections();await new Promise(r=>server.close(r));}};
+}
+async function save(p){await p.evaluate(async()=>{if(!await flushSave())throw Error('Save failed');if(typeof ensureAssets==='function')await ensureAssets();if(!await flushSave())throw Error('Post-asset save failed');});}
+async function paint(p){await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));}
+async function importSlides(p,count=3,height=563){
+  await save(p);
+  const result=await p.evaluate(async ({count,height})=>{
+    const pages=[];for(let i=0;i<count;i++){const c=document.createElement('canvas');c.width=1000;c.height=height;const cx=c.getContext('2d');cx.fillStyle=i%2?'#32b45a':'#dc4628';cx.fillRect(0,0,1000,height);cx.fillStyle=`rgb(${i+1},10,20)`;cx.fillRect(0,0,4,4);pages.push({image:c.toDataURL('image/png'),width:1000,height,number:i+1,total:count});c.width=c.height=1;}
+    const result=await BilgeRasterImport.commit({name:'Sürekli slayt.pptx',newNotebook:true,pages},BilgeRasterImport.capture());return{result,ids:notebookPages().map(x=>x.id)};
+  },{count,height});assert.equal(result.result.ok,true);assert.equal(result.ids.length,count);await p.waitForFunction(()=>BilgeSlideFlow.enabled()&&pdfBackgroundReady());await paint(p);return result.ids;
+}
+async function geometry(p){return p.evaluate(()=>{const r=canvas.getBoundingClientRect();return{...BilgeSlideFlow.snapshot(),scale:BilgeSlideFlow.scale(),localY:BilgeSlideFlow.y(),width:r.width,height:r.height,canvasWidth:canvas.width,canvasHeight:canvas.height,backgroundWidth:pdfCanvas.width,backgroundHeight:pdfCanvas.height};});}
+async function scrollTo(p,value){await p.evaluate(value=>{const s=BilgeSlideFlow.snapshot(),row=s.rows.find(x=>x.id===activeId);scrollPaper(value-row.top);},value);await paint(p);}
+async function adjacent(p){const s=await geometry(p);await scrollTo(p,s.rows[1].top-220);await p.waitForFunction(()=>BilgeSlideFlow.visiblePages().length>=2);await paint(p);return geometry(p);}
+async function pointer(p,type,x,y,id=73,pointerType='pen'){await p.locator('#canvas').evaluate((el,q)=>{const r=el.getBoundingClientRect();el.dispatchEvent(new PointerEvent(q.type,{bubbles:true,cancelable:true,pointerId:q.id,pointerType:q.pointerType,isPrimary:true,button:0,buttons:q.type==='pointerup'||q.type==='pointercancel'?0:1,pressure:.5,clientX:r.left+q.x,clientY:r.top+q.y}));},{type,x,y,id,pointerType});}
+// Desktop WebKit exposes an illegal Touch constructor. Dispatch the actual
+// touch event name and read-only touches data; do not call gesture functions.
+async function touch(p,type,points){await p.locator('#canvas').evaluate((el,{type,points})=>{const r=el.getBoundingClientRect(),touches=points.map(([id,x,y])=>({identifier:id,target:el,clientX:r.left+x,clientY:r.top+y}));const event=new Event(type,{bubbles:true,cancelable:true});for(const name of ['touches','targetTouches','changedTouches'])Object.defineProperty(event,name,{value:touches});el.dispatchEvent(event);},{type,points});}
+async function stroke(p,tool,points,id=73){await p.evaluate(tool=>selectTool(tool),tool);await pointer(p,'pointerdown',...points[0],id);for(const pt of points.slice(1))await pointer(p,'pointermove',...pt,id);await pointer(p,'pointerup',...points.at(-1),id);await paint(p);}
+async function pixel(p,id,x,y){return p.evaluate(({id,x,y})=>{const c=document.getElementById(id),r=c.getBoundingClientRect(),d=c.width/r.width;return Array.from(c.getContext('2d').getImageData(Math.floor(x*d),Math.floor(y*d),1,1).data);},{id,x,y});}
+function colorNear(actual,wanted){assert.ok(actual.every((n,i)=>Math.abs(n-wanted[i])<=3),`${actual} != ${wanted}`);}
+async function screenshot(p,engine,name){const filename=path.join(out,`${engine}-${name}.png`);await p.screenshot({path:filename});return filename;}
+async function check(browser,engine,name,fn){
+  if(caseFilter&&!name.includes(caseFilter))return;let f;console.log(`RUN ${engine}: ${name}`);
+  try{f=await fixture(browser);await f.goto();const detail=await fn(f);assert.deepEqual(f.external,[],'No external request');assert.equal(f.requests.some(x=>x.method!=='GET'),false,'No upload/account mutation');assert.deepEqual(f.errors,[],'No unhandled page errors');report.results.push({engine,name,passed:true,detail});console.log(`PASS ${engine}: ${name}`);}
+  catch(e){let diagnostic;try{diagnostic=await f?.p.evaluate(()=>({activeId,flow:window.BilgeSlideFlow?.snapshot(),drawing,pan,ready,saveConflict,errors:document.querySelector('#inputState')?.textContent}));await f?.p.screenshot({path:path.join(out,`${engine}-FAIL-${name.replace(/[^a-z0-9]+/gi,'-')}.png`)});}catch{}report.results.push({engine,name,passed:false,error:String(e.stack||e),diagnostic});console.error(`FAIL ${engine}: ${name}: ${e.message}`);}
+  finally{if(f)await f.finish();}
+}
+function traceInkFixture(){
+  const limit=4000,entries=[],ids=new WeakMap(),paths=new WeakMap(),selected=new WeakMap(),allStrokes=new WeakMap(),callGroups=[],proto=CanvasRenderingContext2D.prototype,native={};let serial=0,dropped=0,current=null,callCount=0,droppedCalls=0;
+  const id=c=>{if(!ids.has(c))ids.set(c,c===canvas?'main':c===pdfCanvas?'background':'canvas-'+(++serial));return ids.get(c);};
+  const matrix=c=>{const t=c.getTransform();return[t.a,t.b,t.c,t.d,t.e,t.f];};
+  const path=c=>{if(!paths.has(c))paths.set(c,{rects:[],clip:[],stack:[]});return paths.get(c);};
+  const state=c=>({canvas:id(c.canvas),width:c.canvas.width,height:c.canvas.height,transform:matrix(c),transformPrecision17:matrix(c).map(n=>n.toPrecision(17)),alpha:c.globalAlpha,composite:c.globalCompositeOperation,lineWidth:c.lineWidth,lineCap:c.lineCap,lineJoin:c.lineJoin,miterLimit:c.miterLimit,dash:c.getLineDash(),dashOffset:c.lineDashOffset,filter:c.filter,shadow:[c.shadowColor,c.shadowBlur,c.shadowOffsetX,c.shadowOffsetY],smoothing:c.imageSmoothingEnabled,smoothingQuality:c.imageSmoothingQuality,clip:path(c).clip,application:{mediaSelecting,mediaGesture:!!mediaGesture,drawing}});
+  const add=entry=>{if(entries.length<limit)entries.push({phase:window.__inkTracePhase||'setup',...entry});else dropped++;};
+  // These three exact fixture geometries cover the differing Linux pixels.
+  // No real notes or images are included, and no pixel reads are introduced.
+  for(const [pageIndex,p]of notebookPages().entries())for(const [index,s]of p.strokes.entries()){allStrokes.set(s,[pageIndex,index]);if([16,27,63].includes(index))selected.set(s,{pageIndex,pageId:p.id,index,tool:s.tool,width:s.width,color:s.color,points:s.points});}
+  window.__inkCallGroups=callGroups;window.__captureInkCalls=true;
+  for(const name of ['drawImage','stroke','fill','beginPath','rect','clip','save','restore'])native[name]=proto[name];
+  proto.beginPath=function(...args){path(this).rects=[];return native.beginPath.apply(this,args);};
+  proto.rect=function(...args){path(this).rects.push({rect:args,transform:matrix(this)});return native.rect.apply(this,args);};
+  proto.save=function(...args){path(this).stack.push(path(this).clip);return native.save.apply(this,args);};
+  proto.restore=function(...args){const p=path(this);if(p.stack.length)p.clip=p.stack.pop();return native.restore.apply(this,args);};
+  proto.clip=function(...args){const p=path(this);p.clip=[...p.clip,{rects:p.rects.slice(),arguments:args.map(a=>typeof a==='string'?a:'path')}];add({op:'clip',state:state(this)});return native.clip.apply(this,args);};
+  for(const name of ['stroke','fill'])proto[name]=function(...args){if(current?.target===this)add({op:name,stroke:current.stroke,state:state(this)});return native[name].apply(this,args);};
+  proto.drawImage=function(source,...args){if(source instanceof HTMLCanvasElement&&(source===canvas||this===ctx||source.width===canvas.width&&source.height===canvas.height))add({op:'drawImage',source:{id:id(source),width:source.width,height:source.height},target:state(this),coordinates:args});return native.drawImage.call(this,source,...args);};
+  const original=drawStroke;
+  drawStroke=function(stroke,target=ctx,...args){
+    if(window.__captureInkCalls){
+      let identity=allStrokes.get(stroke);if(!identity){for(const [pageIndex,p]of notebookPages().entries()){const index=p.strokes.indexOf(stroke);if(index>=0){identity=[pageIndex,index];allStrokes.set(stroke,identity);break;}}}
+      if(callCount<12000&&callGroups.length<200){const phase=window.__inkTracePhase||'setup',canvasId=id(target.canvas),transform=matrix(target).map(n=>n.toPrecision(17));let group=callGroups.at(-1);if(!group||group.phase!==phase||group.canvas!==canvasId||JSON.stringify(group.transform)!==JSON.stringify(transform)){group={phase,canvas:canvasId,transform,calls:[]};callGroups.push(group)}group.calls.push(identity||[-1,-1]);callCount++;}else droppedCalls++;
+    }
+    const info=selected.get(stroke),before=current;current=info?{stroke:info,target}:null;try{return original(stroke,target,...args);}finally{current=before;}
+  };
+  window.__finishInkTrace=()=>{drawStroke=original;for(const name of Object.keys(native))proto[name]=native[name];return{limit,dropped,entries,callGroups,callCount,droppedCalls,provenance:'Fixture-only wrappers; exact application bytes unchanged. No added pixel reads in the trace. Three known synthetic stroke indices (16,27,63), clip rectangles and main-canvas transfers; bounded synthetic call-order groups.'};};
+}
+function controlledInkRaster(){
+  // This deliberately interventionist experiment runs only AFTER preserving the
+  // original result. Its pixel reads and temporary canvas resizes are not part
+  // of the application or the acceptance oracle.
+  const width=canvas.width,height=canvas.height,base=ctx.getTransform(),s=BilgeSlideFlow.snapshot(),scale=BilgeSlideFlow.scale(),d=base.a,rows=s.rows.filter(row=>s.visible.includes(row.id));
+  const inkBefore=JSON.stringify(state.pages.map(p=>p.strokes)),phase=window.__inkTracePhase,groups=window.__inkCallGroups||[],points=[[810,149],[813,153],[813,154],[816,158],[816,159],[576,1048],[939,1066],[942,1071],[945,1076],[948,1081]],variants=[];
+  window.__captureInkCalls=false;
+  const observed=rows.map(row=>{const pageIndex=notebookPages().findIndex(p=>p.id===row.id),group=groups.filter(g=>g.phase==='after media close sync'&&g.calls.some(c=>c[0]===pageIndex)).at(-1);return{pageIndex,indices:group?group.calls.filter(c=>c[0]===pageIndex).map(c=>c[1]):null};});
+  const clear=target=>{target.setTransform(1,0,0,1,0,0);target.clearRect(0,0,target.canvas.width,target.canvas.height);};
+  function paintRow(target,row,pixelScale,input){
+    target.save();target.setTransform(pixelScale,0,0,pixelScale,-s.x*pixelScale,(row.top-s.scroll)*pixelScale);target.beginPath();target.rect(0,0,1000,row.height);target.clip();
+    const p=state.pages.find(p=>p.id===row.id),pageIndex=notebookPages().findIndex(p=>p.id===row.id),indices=observed.find(o=>o.pageIndex===pageIndex)?.indices;
+    if(input==='observed'&&!indices)throw Error('Missing observed synthetic call order');
+    for(const stroke of input==='observed'?indices.map(i=>p.strokes[i]):p.strokes){if(!stroke)throw Error('Invalid observed synthetic stroke');drawStroke(stroke,target,mediaImages)}target.restore();
+  }
+  const reference=document.createElement('canvas');reference.width=width;reference.height=height;const referenceContext=reference.getContext('2d');
+  for(const row of rows)paintRow(referenceContext,row,d*scale,'full');
+  const wanted=referenceContext.getImageData(0,0,width,height).data;
+  try{
+    for(const kind of ['main-default','detached-default','detached-read-frequently','detached-fresh','attached-fresh'])for(const readback of [false,true])for(const input of ['full','observed']){
+      if(kind.endsWith('fresh')&&readback)continue;
+      const source=kind==='main-default'?canvas:document.createElement('canvas'),target=source===canvas?ctx:source.getContext('2d',kind==='detached-read-frequently'?{willReadFrequently:true}:undefined),destination=document.createElement('canvas');destination.width=width;destination.height=height;const output=destination.getContext('2d'),tiles=[];
+      if(kind==='attached-fresh'){const r=canvas.getBoundingClientRect();source.style.cssText=`position:fixed;left:-20000px;top:0;width:${r.width}px;height:${r.height}px;pointer-events:none`;source.setAttribute('aria-hidden','true');document.body.append(source);}
+      window.__inkTracePhase=`control: ${kind}/${readback?'readback':'no-read'}/${input}`;
+      try{
+        // Reproduce the measured physical-size history without changing CSS,
+        // notebook geometry, stored notes or application code.
+        if(!kind.endsWith('fresh'))for(const [w,h]of [[width,height],[width+584,height+164]]){source.width=w;source.height=h;clear(target);for(const row of rows)paintRow(target,row,d*scale*w/width,input);}
+        source.width=width;source.height=height;
+        for(const row of rows){
+          clear(target);paintRow(target,row,d*scale,input);
+          if(readback)target.getImageData(0,0,1,1);
+          const px=d*scale,phaseX=((-s.x*px)%1+1)%1,phaseY=(((row.top-s.scroll)*px)%1+1)%1,edge=Math.min(512,Math.max(1,Math.floor(512*px)))/px;
+          const left=Math.max(0,s.x),right=Math.min(1000,s.x+width/px),top=Math.max(0,s.scroll-row.top),end=Math.min(row.height,s.scroll+height/px-row.top);
+          for(let iy=Math.floor(top/edge);iy<Math.ceil(end/edge);iy++)for(let ix=Math.floor(left/edge);ix<Math.ceil(right/edge);ix++){
+            const x=ix*edge,y=iy*edge,w=Math.min(edge,1000-x),h=Math.min(edge,row.height-y),bw=x+w>=1000-1e-7?Math.ceil(w*px+phaseX):Math.round(w*px),bh=y+h>=row.height-1e-7?Math.ceil(h*px+phaseY):Math.round(h*px),bx=Math.round((x-s.x)*px-phaseX),by=Math.round((row.top-s.scroll+y)*px-phaseY),dx=Math.max(0,bx),dy=Math.max(0,by),dw=Math.min(width,bx+bw)-dx,dh=Math.min(height,by+bh)-dy;
+            if(dw<=0||dh<=0)continue;const tile=document.createElement('canvas');tile.width=bw;tile.height=bh;const cropX=dx-bx,cropY=dy-by;tile.getContext('2d').drawImage(source,dx,dy,dw,dh,cropX,cropY,dw,dh);tiles.push({tile,cropX,cropY,dx,dy,dw,dh});
+          }
+        }
+        for(const t of tiles)output.drawImage(t.tile,t.cropX,t.cropY,t.dw,t.dh,t.dx,t.dy,t.dw,t.dh);
+        const actual=output.getImageData(0,0,width,height).data;let alphaMax=0,whiteMax=0,unequal=0,foreground=0,whiteSum=0,over16=0;
+        for(let i=0;i<actual.length;i+=4){if(actual[i+3]||wanted[i+3])foreground++;alphaMax=Math.max(alphaMax,Math.abs(actual[i+3]-wanted[i+3]));let max=0;for(let c=0;c<4;c++)if(actual[i+c]!==wanted[i+c])unequal++;for(let c=0;c<3;c++){const diff=Math.abs(actual[i+c]*actual[i+3]/255+255-actual[i+3]-(wanted[i+c]*wanted[i+3]/255+255-wanted[i+3]));whiteSum+=diff;max=Math.max(max,diff)}whiteMax=Math.max(whiteMax,max);if(max>16)over16++;}
+        variants.push({kind,readback,input,priorReadback:source===canvas,resizeHistory:!kind.endsWith('fresh'),alphaMax,whiteMax,unequal,foreground,whiteMean:foreground?whiteSum/(3*foreground):0,outlierFraction:foreground?over16/foreground:0,contextAttributes:target.getContextAttributes?.()||null,tiles:tiles.length,affected:points.filter(([x,y])=>x<width&&y<height).map(([x,y])=>{const i=(y*width+x)*4;return{x,y,actual:Array.from(actual.slice(i,i+4)),reference:Array.from(wanted.slice(i,i+4))};})});
+      }finally{for(const {tile}of tiles)tile.width=tile.height=1;destination.width=destination.height=1;if(source!==canvas){source.width=source.height=1;source.remove();}}
+    }
+  }finally{canvas.width=width;canvas.height=height;ctx.setTransform(base.a,base.b,base.c,base.d,base.e,base.f);window.__inkTracePhase=phase;reference.width=reference.height=1;}
+  return{purpose:'Controlled intervention AFTER preserved original result; neither acceptance assertion nor a production fix.',width,height,transform:[d*scale,0,0,d*scale],observed,inkUnchanged:inkBefore===JSON.stringify(state.pages.map(p=>p.strokes)),variants};
+}
+async function run(browser,engine){
+  await check(browser,engine,'dense repeated caps retain full replay quality at device scale',async({p})=>{
+    await importSlides(p,100);await p.evaluate(()=>{for(const p of notebookPages().slice(0,10)){for(let i=0;i<750;i++)p.strokes.push({tool:i%5?'pen':'marker',color:i%2?'#173b36':'#0000ff',width:3,points:Array.from({length:100},(_,j)=>({x:40+j*8,y:40+i%50*9,p:.5}))});touchPage(p);}scheduleSave();drawAll();});await save(p);await paint(p);
+    assert.equal(await p.evaluate(()=>ctx.getTransform().a),dpr,'Actual canvas DPR');
+    await scrollTo(p,94.8687350835);await stroke(p,'pen',[[230,180],[270,195]]);await paint(p);
+    const checks=[];
+    for(const [label,zoom,scroll] of [['dense',1],['pan fractional',1,137.31],['pan tile entry',1,328.73],['pan tile exit',1,601.47],['zoom',1.5],['zoom fractional',1.5,739.19],['zoom horizontal',1.5,739.19],['vertical caps',1.5]]){
+      if(zoom!==(await geometry(p)).zoom){await p.evaluate(z=>setViewZoom(z),zoom);await paint(p);}
+      if(scroll!==undefined)await scrollTo(p,scroll);
+      if(label==='zoom horizontal'){await p.evaluate(()=>{BilgeSlideFlow.setX(217.37);drawAll()});await paint(p);}
+      if(label==='vertical caps'){await p.evaluate(()=>{for(const p of notebookPages().slice(0,10)){p.strokes=p.strokes.slice(0,750).map((s,i)=>({...s,points:Array.from({length:100},(_,j)=>({x:40+i%50*15,y:40+j*4.5,p:j%3*.3+.2}))}));touchPage(p)}drawAll()});await scrollTo(p,231.83);}
+      const result=await p.evaluate(()=>{
+        drawAll();const original=drawStroke;let calls=0;drawStroke=function(...a){calls++;return original(...a)};const started=performance.now();try{drawAll();drawAll();drawAll()}finally{drawStroke=original}const warmMs=(performance.now()-started)/3;
+        const s=BilgeSlideFlow.snapshot(),scale=BilgeSlideFlow.scale(),d=ctx.getTransform().a,reference=document.createElement('canvas');reference.width=canvas.width;reference.height=canvas.height;const target=reference.getContext('2d');
+        for(const row of s.rows.filter(x=>s.visible.includes(x.id))){target.save();target.setTransform(d*scale,0,0,d*scale,-s.x*d*scale,(row.top-s.scroll)*d*scale);target.beginPath();target.rect(0,0,1000,row.height);target.clip();for(const st of state.pages.find(x=>x.id===row.id).strokes)original(st,target,mediaImages);target.restore()}
+        const a=ctx.getImageData(0,0,canvas.width,canvas.height).data,b=target.getImageData(0,0,reference.width,reference.height).data;let alphaMax=0,compositedMax=0,compositedSum=0,compositedOver16=0,foregroundPixels=0,opaqueLost=0;const extremes=[];
+        for(let i=0;i<a.length;i+=4){if(a[i+3]||b[i+3])foregroundPixels++;if(b[i+3]===255&&a[i+3]<240)opaqueLost++;alphaMax=Math.max(alphaMax,Math.abs(a[i+3]-b[i+3]));let max=0;for(let c=0;c<3;c++){const diff=Math.abs(a[i+c]*a[i+3]/255+255-a[i+3]-(b[i+c]*b[i+3]/255+255-b[i+3]));compositedMax=Math.max(compositedMax,diff);compositedSum+=diff;max=Math.max(max,diff)}if(max>16){compositedOver16++;if(extremes.length<100)extremes.push({x:i/4%canvas.width,y:Math.floor(i/4/canvas.width),a:Array.from(a.slice(i,i+4)),b:Array.from(b.slice(i,i+4))})}}
+        const images={actual:canvas.toDataURL('image/png'),reference:reference.toDataURL('image/png')};reference.width=reference.height=1;return{calls,warmMs,alphaMax,compositedMax,compositedMeanForeground:compositedSum/(3*foregroundPixels),compositedOver16,foregroundPixels,opaqueLost,extremes,images,stats:s,d,scale};
+      });
+      for(const [kind,data] of Object.entries(result.images))fs.writeFileSync(path.join(out,`${engine}-${label}-${kind}.png`),Buffer.from(data.split(',')[1],'base64'));delete result.images;checks.push({label,...result});
+    }
+    fs.writeFileSync(path.join(out,`${engine}-dense-parity.json`),JSON.stringify(checks,null,2));
+    for(const x of checks){assert.equal(x.calls,0,x.label+': warm view replays no geometry');assert.ok(x.stats.inkPixels<=8000000);assert.ok(x.foregroundPixels>0);assert.equal(x.opaqueLost,0,x.label+': no opaque reference pixels disappear');assert.ok(x.alphaMax<=32,x.label+': alpha maximum '+x.alphaMax);assert.ok(x.compositedMax<=32,x.label+': white-composite maximum '+x.compositedMax);assert.ok(x.compositedMeanForeground<=1,x.label+': foreground mean');assert.ok(x.compositedOver16/x.foregroundPixels<=.002,x.label+': outlier fraction');}
+    return{checks};
+  });
+  await check(browser,engine,'initial width fit and one notebook toolbar',async({p})=>{
+    await importSlides(p);const g=await geometry(p);assert.equal(g.zoom,1);assert.ok(Math.abs(g.scale-g.width/1000)<.001);assert.equal(g.scroll,0);assert.equal(await p.locator('#pdfNavigation').isVisible(),false);assert.equal(await p.locator('section.workspace').evaluate(e=>e.classList.contains('has-pdf')),false);colorNear(await pixel(p,'pdfCanvas',g.width/2,100),[220,70,40,255]);return{geometry:g,screenshot:await screenshot(p,engine,'initial-fit')};
+  });
+  await check(browser,engine,'global readiness and write conflict guards block new pen input',async({p})=>{
+    await importSlides(p);const before=await p.evaluate(()=>JSON.stringify(state.pages));await p.evaluate(()=>{ready=false;});assert.equal(await p.evaluate(()=>BilgeSlideFlow.enabled()),false);await pointer(p,'pointerdown',180,100);await pointer(p,'pointerup',220,120);assert.equal(await p.evaluate(()=>JSON.stringify(state.pages)),before);await p.evaluate(()=>{ready=true;saveConflict=true;});await pointer(p,'pointerdown',180,100);await pointer(p,'pointerup',220,120);assert.equal(await p.evaluate(()=>JSON.stringify(state.pages)),before);await p.evaluate(()=>{saveConflict=false;drawAll();});assert.equal(await p.evaluate(()=>BilgeSlideFlow.enabled()),true);return{readinessAndConflictProtected:true};
+  });
+  await check(browser,engine,'PPTX navigation stays hidden independently of continuous flow availability',async({p})=>{
+    await importSlides(p,2);const values=await p.evaluate(()=>{const originalFlow=window.BilgeSlideFlow,originalReady=ready,originalPdf={...page().pdf},values=[];const inspect=label=>{updatePdfNavigation();const nav=document.querySelector('#pdfNavigation'),workspace=document.querySelector('section.workspace');values.push({label,enabled:!!window.BilgeSlideFlow?.enabled(),hidden:nav.hidden,display:getComputedStyle(nav).display,navHeight:nav.getBoundingClientRect().height,hasPdf:workspace.classList.contains('has-pdf'),rows:getComputedStyle(workspace).gridTemplateRows});};try{ready=false;inspect('not-ready');ready=true;page().pdf={...originalPdf,name:'Eski ders.PPTX',width:1200,height:675};inspect('legacy-size-uppercase');window.BilgeSlideFlow=undefined;inspect('flow-api-unavailable');}finally{window.BilgeSlideFlow=originalFlow;ready=originalReady;page().pdf=originalPdf;updatePdfNavigation();drawAll();}return values;});for(const v of values){assert.equal(v.enabled,false,v.label);assert.equal(v.hidden,true,v.label);assert.equal(v.display,'none',v.label);assert.equal(v.navHeight,0,v.label);assert.equal(v.hasPdf,false,v.label);assert.equal(v.rows.trim().split(/\s+/).length,1,`${v.label}: extra grid row ${v.rows}`);}assert.equal(await p.evaluate(()=>BilgeSlideFlow.enabled()),true);return{states:values,screenshot:await screenshot(p,engine,'pptx-navigation-independent')};
+  });
+  await check(browser,engine,'wheel continuously paints two adjacent pages',async({p})=>{
+    await importSlides(p);const start=await geometry(p),delta=(start.rows[1].top-220)*start.scale;await p.locator('#canvas').dispatchEvent('wheel',{deltaY:delta,deltaMode:0});await paint(p);const g=await geometry(p);assert.ok(Math.abs(g.scroll-delta/start.scale)<2);assert.ok(g.visible.length>=2);const y=(g.rows[1].top-g.scroll)*g.scale;colorNear(await pixel(p,'pdfCanvas',g.width/2,50),[220,70,40,255]);colorNear(await pixel(p,'pdfCanvas',g.width/2,y+60),[50,180,90,255]);return{geometry:g,screenshot:await screenshot(p,engine,'adjacent-wheel')};
+  });
+  await check(browser,engine,'two finger pan freezes active page until gesture end',async({p})=>{
+    const ids=await importSlides(p,4),start=await geometry(p);await p.evaluate(()=>document.querySelector('#penOnly').checked=true);await pointer(p,'pointerdown',200,500,11,'touch');await pointer(p,'pointerdown',350,500,12,'touch');const samples=[];
+    for(const dy of [90,230,430,650]){await pointer(p,'pointermove',200,500-dy,11,'touch');await pointer(p,'pointermove',350,500-dy,12,'touch');await paint(p);samples.push(await p.evaluate(()=>({id:activeId,pan:!!pan,scroll:BilgeSlideFlow.snapshot().scroll})));}
+    assert.ok(samples.every(x=>x.id===ids[0]&&x.pan));assert.ok(samples.every((x,i)=>!i||x.scroll>samples[i-1].scroll));await pointer(p,'pointerup',200,-150,11,'touch');await pointer(p,'pointerup',350,-150,12,'touch');await paint(p);assert.notEqual(await p.evaluate(()=>activeId),ids[0]);assert.equal(await p.evaluate(()=>notebookPages().reduce((n,x)=>n+x.strokes.length,0)),0);return{start,samples,end:await geometry(p)};
+  });
+  await check(browser,engine,'pen targets second visible slide and stays pinned across boundary',async({p})=>{
+    const ids=await importSlides(p);const g=await adjacent(p),top=(g.rows[1].top-g.scroll)*g.scale;await p.evaluate(()=>selectTool('pen'));await pointer(p,'pointerdown',250,top+75);assert.equal(await p.evaluate(()=>activeId),ids[1]);await pointer(p,'pointermove',300,top-80);assert.equal(await p.evaluate(()=>activeId),ids[1]);await pointer(p,'pointerup',350,top-100);await paint(p);const state=await p.evaluate(()=>notebookPages().map(x=>({id:x.id,strokes:x.strokes})));assert.equal(state[0].strokes.length,0);assert.equal(state[1].strokes.length,1);assert.equal(state[2].strokes.length,0);assert.ok(state[1].strokes[0].points.every(pt=>pt.y>=0),'Pinned points remain schema-valid');assert.equal((await pixel(p,'canvas',310,top-80))[3],0,'Second-page pen is clipped out of preceding slide');await save(p);return{state,screenshot:await screenshot(p,engine,'pen-pinned')};
+  });
+  await check(browser,engine,'neighbor cache miss never clears held active ink',async({p})=>{
+    const ids=await importSlides(p,3);assert.ok((await geometry(p)).visible.includes(ids[1]));await p.evaluate(()=>selectTool('pen'));
+    await pointer(p,'pointerdown',150,120);await pointer(p,'pointermove',230,120);assert.equal(await p.evaluate(()=>drawing),true);
+    const before=(await pixel(p,'canvas',190,120))[3];assert.ok(before>200,'Held pen is visible before neighbor miss');
+    await p.evaluate(()=>{const neighbor=notebookPages()[1];neighbor.strokes.push({tool:'marker',color:'#ff0000',width:12,points:[{x:100,y:80,p:.5},{x:300,y:80,p:.5}]});touchPage(neighbor);drawAll()});
+    assert.equal(await p.evaluate(()=>drawing),true);assert.equal(await p.evaluate(()=>activeId),ids[0]);assert.ok((await pixel(p,'canvas',190,120))[3]>200,'Scratch work must not erase the already-held first-page ink');
+    const g=await geometry(p),y=(g.rows[1].top-g.scroll+80)*g.scale;assert.ok((await pixel(p,'canvas',200*g.scale,y))[3]>30,'Neighbor cache miss actually paints its marker');
+    await pointer(p,'pointerup',230,120);await save(p);return{heldInkPreserved:true,neighborPainted:true};
+  });
+  await check(browser,engine,'independent miss surface is bounded disposable warm free and fails safely',async({p})=>{
+    await importSlides(p,3);await p.evaluate(()=>{for(const p of notebookPages()){p.strokes=[{tool:'marker',color:'#173b36',width:14,points:[{x:300,y:80},{x:420,y:80}]},{tool:'pen',color:'#0000ff',width:5,points:[{x:300,y:90,p:.5},{x:420,y:90,p:.5}]},{tool:'eraser',width:3,points:[{x:350,y:70},{x:350,y:100}]}];touchPage(p)}drawAll()});await paint(p);
+    const result=await p.evaluate(()=>{
+      const nativeCreate=document.createElement,nativeContext=HTMLCanvasElement.prototype.getContext,nativeStroke=drawStroke,ink=JSON.stringify(state.pages.map(p=>p.strokes));
+      function run(cold,failContext){
+        const created=new Set(),surfaces=[],width=canvas.width,height=canvas.height;let calls=0;
+        document.createElement=function(...args){const el=nativeCreate.apply(this,args);if(el instanceof HTMLCanvasElement)created.add(el);return el;};
+        HTMLCanvasElement.prototype.getContext=function(...args){if(created.has(this)&&args[0]==='2d'&&this.width===width&&this.height===height){surfaces.push({canvas:this,width:this.width,height:this.height,options:args[1]||null,connected:this.isConnected});if(failContext)return null;}return nativeContext.apply(this,args);};
+        drawStroke=function(...args){calls++;return nativeStroke(...args)};
+        try{if(cold)for(const p of BilgeSlideFlow.visiblePages())touchPage(p);drawAll();}finally{document.createElement=nativeCreate;HTMLCanvasElement.prototype.getContext=nativeContext;drawStroke=nativeStroke;}
+        return{calls,created:created.size,surfaces:surfaces.map(x=>({width:x.width,height:x.height,options:x.options,connected:x.connected,disposed:x.canvas.width===1&&x.canvas.height===1})),stats:BilgeSlideFlow.snapshot()};
+      }
+      function parity(){
+        const snap=BilgeSlideFlow.snapshot(),scale=BilgeSlideFlow.scale(),d=ctx.getTransform().a,reference=nativeCreate.call(document,'canvas');reference.width=canvas.width;reference.height=canvas.height;const target=reference.getContext('2d');
+        for(const row of snap.rows.filter(row=>snap.visible.includes(row.id))){target.save();target.setTransform(d*scale,0,0,d*scale,-snap.x*d*scale,(row.top-snap.scroll)*d*scale);target.beginPath();target.rect(0,0,1000,row.height);target.clip();for(const stroke of state.pages.find(p=>p.id===row.id).strokes)nativeStroke(stroke,target,mediaImages);target.restore();}
+        const a=ctx.getImageData(0,0,canvas.width,canvas.height).data,b=target.getImageData(0,0,reference.width,reference.height).data;let alphaMax=0,whiteMax=0,sum=0,fg=0,over16=0;
+        for(let i=0;i<a.length;i+=4){if(a[i+3]||b[i+3])fg++;alphaMax=Math.max(alphaMax,Math.abs(a[i+3]-b[i+3]));let max=0;for(let c=0;c<3;c++){const diff=Math.abs(a[i+c]*a[i+3]/255+255-a[i+3]-(b[i+c]*b[i+3]/255+255-b[i+3]));sum+=diff;max=Math.max(max,diff)}whiteMax=Math.max(whiteMax,max);if(max>16)over16++;}reference.width=reference.height=1;return{alphaMax,whiteMax,mean:sum/(3*fg),ratio:over16/fg,fg};
+      }
+      const cold=run(true,false),warm=run(false,false),cachedParity=parity(),unavailable=run(true,true),fallbackParity=parity(),expectedCalls=BilgeSlideFlow.visiblePages().reduce((n,p)=>n+p.strokes.length,0);
+      return{cold,warm,cachedParity,unavailable,fallbackParity,expectedCalls,inkUnchanged:ink===JSON.stringify(state.pages.map(p=>p.strokes))};
+    });fs.writeFileSync(path.join(out,`${engine}-independent-surface.json`),JSON.stringify(result,null,2));
+    assert.equal(result.cold.surfaces.length,1,'One independent viewport surface for all cold page misses');assert.ok(result.cold.calls>0);const surface=result.cold.surfaces[0];assert.ok(surface.width*surface.height<=8000000);assert.equal(surface.options,null,'No readback/CPU hint');assert.equal(surface.connected,false);assert.equal(surface.disposed,true);assert.equal(result.warm.created,0);assert.equal(result.warm.calls,0);assert.equal(result.unavailable.surfaces.length,1);assert.equal(result.unavailable.surfaces[0].disposed,true);assert.equal(result.unavailable.calls,result.expectedCalls,'Null context replays complete visible rows');assert.equal(result.unavailable.stats.inkPixels,0);assert.ok(result.cold.stats.inkPixels<=8000000);assert.ok(result.inkUnchanged);for(const quality of [result.cachedParity,result.fallbackParity]){assert.ok(quality.fg>0);assert.ok(quality.alphaMax<=32);assert.ok(quality.whiteMax<=32);assert.ok(quality.mean<=1);assert.ok(quality.ratio<=.002);}return result;
+  });
+  await check(browser,engine,'physical bitmap resize rebuilds ink before warm reuse',async({p})=>{
+    await importSlides(p,3);await p.evaluate(()=>{for(const p of notebookPages()){p.strokes=[{tool:'marker',color:'#173b36',width:14,points:[{x:300,y:80},{x:420,y:80}]},{tool:'pen',color:'#0000ff',width:5,points:[{x:300,y:90,p:.5},{x:420,y:90,p:.5}]},{tool:'eraser',width:3,points:[{x:350,y:70},{x:350,y:100}]}];touchPage(p)}drawAll()});await paint(p);
+    const results=await p.evaluate(()=>{
+      const original=drawStroke,baseWidth=canvas.width,baseHeight=canvas.height,d=ctx.getTransform().a,ink=JSON.stringify(state.pages.map(p=>p.strokes)),results=[];
+      const counted=()=>{let calls=0;drawStroke=function(...args){calls++;return original(...args)};try{drawAll()}finally{drawStroke=original}return calls;};
+      // Model the real ResizeObserver interval: CSS geometry is unchanged while
+      // the actual bitmap changes. No cache limit or production hook is altered.
+      for(const [label,width,height]of [['width',baseWidth+64,baseHeight],['height',baseWidth+64,baseHeight+64],['restore',baseWidth,baseHeight]]){
+        canvas.width=width;canvas.height=height;ctx.setTransform(d,0,0,d,0,0);const coldCalls=counted(),warmCalls=counted(),snap=BilgeSlideFlow.snapshot(),scale=BilgeSlideFlow.scale(),ref=document.createElement('canvas');ref.width=width;ref.height=height;const target=ref.getContext('2d');
+        for(const row of snap.rows.filter(row=>snap.visible.includes(row.id))){target.save();target.setTransform(d*scale,0,0,d*scale,-snap.x*d*scale,(row.top-snap.scroll)*d*scale);target.beginPath();target.rect(0,0,1000,row.height);target.clip();for(const stroke of state.pages.find(p=>p.id===row.id).strokes)original(stroke,target,mediaImages);target.restore();}
+        const a=ctx.getImageData(0,0,width,height).data,b=target.getImageData(0,0,width,height).data;let alphaMax=0,whiteMax=0,sum=0,fg=0,over16=0;for(let i=0;i<a.length;i+=4){if(a[i+3]||b[i+3])fg++;alphaMax=Math.max(alphaMax,Math.abs(a[i+3]-b[i+3]));let max=0;for(let c=0;c<3;c++){const diff=Math.abs(a[i+c]*a[i+3]/255+255-a[i+3]-(b[i+c]*b[i+3]/255+255-b[i+3]));whiteMax=Math.max(whiteMax,diff);sum+=diff;max=Math.max(max,diff)}if(max>16)over16++;}ref.width=ref.height=1;results.push({label,width,height,coldCalls,warmCalls,alphaMax,whiteMax,mean:sum/(3*fg),ratio:over16/fg,inkPixels:snap.inkPixels,inkUnchanged:ink===JSON.stringify(state.pages.map(p=>p.strokes))});
+      }return results;
+    });fs.writeFileSync(path.join(out,`${engine}-bitmap-resize.json`),JSON.stringify(results,null,2));for(const result of results){assert.ok(result.coldCalls>0,result.label+': a different raster surface must rebuild cached geometry');assert.equal(result.warmCalls,0,result.label+': unchanged surface stays warm');assert.ok(result.inkUnchanged);assert.ok(result.inkPixels<=8000000);assert.ok(result.alphaMax<=32);assert.ok(result.whiteMax<=32);assert.ok(result.mean<=1);assert.ok(result.ratio<=.002);}return{results};
+  });
+  await check(browser,engine,'oversized viewport preserves reference pixels at cache budget fallback',async({p})=>{
+    // Size the real constrained paper, not a guessed screen/paper ratio. Only
+    // viewport dimensions change; application CSS and the 8M limit stay intact.
+    await p.setViewportSize({width:1800,height:1500});await importSlides(p,30);
+    for(let i=0;i<3;i++){const g=await geometry(p),pixels=g.canvasWidth*g.canvasHeight;if(pixels>=9000000)break;await p.setViewportSize({width:1800,height:p.viewportSize().height+Math.ceil((9000000-pixels)/(g.width*dpr*dpr))+100});await paint(p);}
+    await p.evaluate(()=>{for(const p of notebookPages()){for(let i=0;i<45;i++)p.strokes.push({tool:i%3?'pen':'marker',color:i%2?'#173b36':'#0000ff',width:3,points:Array.from({length:50},(_,j)=>({x:40+j*18,y:40+i%15*25,p:.5}))});p.strokes.push({tool:'eraser',width:13,points:[{x:90,y:100},{x:250,y:100}]});touchPage(p)}drawAll()});await paint(p);
+    const result=await p.evaluate(()=>{const original=drawStroke;let calls=0;drawStroke=function(...a){calls++;return original(...a)};try{drawAll()}finally{drawStroke=original}const snap=BilgeSlideFlow.snapshot(),s=BilgeSlideFlow.scale(),d=ctx.getTransform().a,ref=document.createElement('canvas');ref.width=canvas.width;ref.height=canvas.height;const target=ref.getContext('2d');
+      for(const row of snap.rows.filter(x=>snap.visible.includes(x.id))){target.save();target.setTransform(d*s,0,0,d*s,-snap.x*d*s,(row.top-snap.scroll)*d*s);target.beginPath();target.rect(0,0,1000,row.height);target.clip();for(const st of state.pages.find(p=>p.id===row.id).strokes)original(st,target,mediaImages);target.restore()}
+      const a=ctx.getImageData(0,0,canvas.width,canvas.height).data,b=target.getImageData(0,0,ref.width,ref.height).data;let alphaMax=0,whiteMax=0,whiteSum=0,fg=0,over16=0;for(let i=0;i<a.length;i+=4){if(a[i+3]||b[i+3])fg++;alphaMax=Math.max(alphaMax,Math.abs(a[i+3]-b[i+3]));let maximum=0;for(let c=0;c<3;c++){const diff=Math.abs(a[i+c]*a[i+3]/255+255-a[i+3]-(b[i+c]*b[i+3]/255+255-b[i+3]));whiteMax=Math.max(whiteMax,diff);whiteSum+=diff;maximum=Math.max(maximum,diff)}if(maximum>16)over16++}const pixels=ref.width*ref.height;ref.width=ref.height=1;return{calls,pixels,alphaMax,whiteMax,mean:whiteSum/(3*fg),ratio:over16/fg,snap};
+    });fs.writeFileSync(path.join(out,`${engine}-budget-fallback.json`),JSON.stringify(result,null,2));assert.ok(result.pixels>8000000,'Actually exceeds the cache budget: '+result.pixels);assert.ok(result.snap.inkPixels<=8000000);assert.ok(result.calls>0,'Uncached visible row really takes direct replay');assert.ok(result.alphaMax<=32);assert.ok(result.whiteMax<=32);assert.ok(result.mean<=1);assert.ok(result.ratio<=.002);return result;
+  });
+  await check(browser,engine,'accepted legacy pressure remains visible through safe direct replay',async({p})=>{
+    await importSlides(p,3);await p.evaluate(()=>{page().strokes=[{tool:'pen',color:'#173b36',width:12,points:[{x:120,y:30,p:4}]}];touchPage(page());drawAll()});await scrollTo(p,50);
+    const compare=()=>p.evaluate(()=>{drawAll();const snap=BilgeSlideFlow.snapshot(),s=BilgeSlideFlow.scale(),d=ctx.getTransform().a,p=page(),row=snap.rows.find(x=>x.id===p.id),ref=document.createElement('canvas');ref.width=canvas.width;ref.height=canvas.height;const target=ref.getContext('2d');target.setTransform(d*s,0,0,d*s,-snap.x*d*s,(row.top-snap.scroll)*d*s);target.beginPath();target.rect(0,0,1000,row.height);target.clip();for(const stroke of p.strokes)drawStroke(stroke,target,mediaImages);const a=ctx.getImageData(0,0,canvas.width,canvas.height).data,b=target.getImageData(0,0,ref.width,ref.height).data;let max=0,visible=0;for(let i=0;i<a.length;i++){max=Math.max(max,Math.abs(a[i]-b[i]));if(i%4===3&&a[i])visible++}ref.width=ref.height=1;return{max,visible,valid:validState(state),pressure:p.strokes[0].points[0].p}});
+    const idle=await compare();assert.equal(idle.valid,true,'Legacy data remains accepted');assert.equal(idle.pressure,4,'No normalization/migration');assert.ok(idle.visible>100,'Large cap above the viewport remains visibly present');assert.equal(idle.max,0,'Unusual-pressure row matches direct replay exactly');
+    await pointer(p,'pointerdown',600,150,83,'pen');assert.equal(await p.evaluate(()=>drawing),true);const held=await compare();assert.equal(held.pressure,4);assert.ok(held.visible>=idle.visible,'Starting a native stroke does not hide accepted old ink');assert.equal(held.max,0,'Held-pen direct path preserves the unusual-pressure cap');await pointer(p,'pointerup',600,150,83,'pen');return{idle,held};
+  });
+  await check(browser,engine,'realistic pointerup before touchend settles the visible slide',async({p})=>{
+    const ids=await importSlides(p,6);await p.evaluate(()=>document.querySelector('#penOnly').checked=true);
+    await pointer(p,'pointerdown',200,550,11,'touch');await pointer(p,'pointerdown',350,550,12,'touch');await touch(p,'touchstart',[[11,200,550],[12,350,550]]);
+    await pointer(p,'pointermove',200,-350,11,'touch');await pointer(p,'pointermove',350,-350,12,'touch');assert.equal(await p.evaluate(()=>activeId),ids[0]);assert.equal(await p.evaluate(()=>!!pinchT),true);
+    await pointer(p,'pointerup',200,-350,11,'touch');await touch(p,'touchend',[[12,350,-350]]);await pointer(p,'pointerup',350,-350,12,'touch');await touch(p,'touchend',[]);await paint(p);
+    const s=await geometry(p);assert.notEqual(s.activeId,ids[0]);assert.ok(s.visible.includes(s.activeId));assert.equal(await p.evaluate(()=>!!pinchT||!!pan),false);return s;
+  });
+  await check(browser,engine,'repeated bottom edge strokes never grow the slide',async({p})=>{
+    await importSlides(p);await scrollTo(p,200);const initial=await geometry(p),heights=[initial.rows[0].height];
+    for(let i=0;i<4;i++){const g=await geometry(p),bottom=(g.rows[0].height-g.scroll)*g.scale;await stroke(p,'pen',[[180+i*25,bottom-10],[190+i*25,bottom+30]]);heights.push((await geometry(p)).rows[0].height);}
+    assert.deepEqual(heights,Array(5).fill(initial.rows[0].height));await save(p);return{heights};
+  });
+  await check(browser,engine,'eraser is clipped and never mutates neighbor notes or background',async({p})=>{
+    await importSlides(p);await p.evaluate(()=>{for(const p of notebookPages())p.strokes.push({tool:'pen',color:'#0000ff',width:18,points:[{x:250,y:80,p:.5},{x:380,y:80,p:.5}]});scheduleSave();drawAll();});const g=await adjacent(p),top=(g.rows[1].top-g.scroll)*g.scale;const before=await p.evaluate(()=>JSON.stringify(notebookPages()[0].strokes));await stroke(p,'eraser',[[280*g.scale,top+80*g.scale],[300*g.scale,top+80*g.scale],[300*g.scale,top-80]]);assert.equal(await p.evaluate(()=>JSON.stringify(notebookPages()[0].strokes)),before);assert.equal(await p.evaluate(()=>notebookPages()[1].strokes.at(-1).tool),'eraser');colorNear(await pixel(p,'pdfCanvas',g.width/2,top+100),[50,180,90,255]);await save(p);return{neighborPreserved:true};
+  });
+  await check(browser,engine,'legacy notes below slide remain visible and preserved',async({p})=>{
+    await importSlides(p);await p.evaluate(()=>{page().strokes.push({tool:'pen',color:'#0000ff',width:14,points:[{x:200,y:710,p:.5},{x:350,y:710,p:.5}]});scheduleSave();drawAll();});await paint(p);const g=await geometry(p);assert.ok(g.rows[0].height>=710,'Legacy ink extends layout');await scrollTo(p,500);const s=await geometry(p),y=(710-s.scroll)*s.scale;const px=await pixel(p,'canvas',280*s.scale,y);assert.ok(px[2]>180&&px[3]>180,JSON.stringify(px));await save(p);assert.equal(await p.evaluate(()=>notebookPages()[0].strokes[0].points[0].y),710);return{geometry:s,screenshot:await screenshot(p,engine,'legacy-below-slide')};
+  });
+  await check(browser,engine,'100 slides keep decoded cache and viewport canvases bounded',async({p})=>{
+    await importSlides(p,100);const samples=[];for(const index of [0,10,30,60,98]){const g=await geometry(p);await scrollTo(p,g.rows[index].top);await p.waitForFunction(()=>pdfBackgroundReady());const s=await geometry(p);assert.ok(s.cachedImages<=s.visible.length+2,JSON.stringify(s));assert.ok(s.visible.length<=5);assert.equal(s.canvasWidth,s.backgroundWidth);assert.equal(s.canvasHeight,s.backgroundHeight);assert.ok(s.canvasWidth<=Math.ceil(s.width*2)+2&&s.canvasHeight<=Math.ceil(s.height*2)+2);samples.push({index,cachedImages:s.cachedImages,visible:s.visible.length,width:s.canvasWidth,height:s.canvasHeight,totalHeight:s.totalHeight});}return{samples,screenshot:await screenshot(p,engine,'100-slides-bounded')};
+  });
+  await check(browser,engine,'short slides all paint even when more than twelve are visible',async({p})=>{
+    await p.setViewportSize({width:390,height:1800});await importSlides(p,100,100);await paint(p);const g=await geometry(p);assert.ok(g.visible.length>12);assert.ok(g.cachedImages<=g.visible.length+2);for(const id of g.visible){const row=g.rows.find(x=>x.id===id),index=g.rows.indexOf(row),y=(row.top-g.scroll+50)*g.scale;if(y<g.height)colorNear(await pixel(p,'pdfCanvas',g.width/2,y),index%2?[50,180,90,255]:[220,70,40,255]);}return{visible:g.visible.length,cachedImages:g.cachedImages,screenshot:await screenshot(p,engine,'short-slides-tall-viewport')};
+  });
+  await check(browser,engine,'touch pinch zoom keeps anchor continuous and ends cleanly',async({p})=>{
+    await importSlides(p,4);await adjacent(p);const before=await geometry(p);await touch(p,'touchstart',[[11,200,220],[12,400,220]]);await touch(p,'touchmove',[[11,150,220],[12,450,220]]);await paint(p);const during=await geometry(p);assert.ok(Math.abs(during.zoom-1.5)<.01);assert.ok(Math.abs((before.scroll+220/before.scale)-(during.scroll+220/during.scale))<1);await touch(p,'touchend',[]);assert.equal(await p.evaluate(()=>!!pinchT),false);await save(p);return{before,during,after:await geometry(p)};
+  });
+  await check(browser,engine,'zoom horizontal bounds and resize preserve width fit',async({p})=>{
+    await importSlides(p);await adjacent(p);await p.evaluate(()=>setViewZoom(2));await paint(p);let g=await geometry(p);assert.equal(g.zoom,2);assert.ok(Math.abs(g.scale-g.width/500)<.001);await p.evaluate(()=>{BilgeSlideFlow.setX(99999);drawAll();});assert.ok(await p.evaluate(()=>BilgeSlideFlow.x()<=BilgeSlideFlow.maxX()));await p.evaluate(()=>setViewZoom(1));await p.setViewportSize({width:768,height:1024});await paint(p);g=await geometry(p);assert.equal(g.zoom,1);assert.equal(g.x,0);assert.ok(Math.abs(g.scale-g.width/1000)<.001);assert.equal(await p.locator('#pdfNavigation').isVisible(),false);return{geometry:g,screenshot:await screenshot(p,engine,'tablet-resize')};
+  });
+  await check(browser,engine,'save reload retains page schema original notes and target ink',async({p,goto})=>{
+    const ids=await importSlides(p);const original=await p.evaluate(()=>JSON.stringify(state.pages.find(x=>!x.pdf)));const g=await adjacent(p),top=(g.rows[1].top-g.scroll)*g.scale;await stroke(p,'pen',[[180,top+60],[220,top+80]]);await save(p);const expected=await p.evaluate(()=>({ink:JSON.stringify(notebookPages().map(x=>x.strokes)),count:state.pages.length,version:state.version,valid:validState(state)}));assert.equal(expected.valid,true);await goto();await p.waitForFunction(()=>pdfBackgroundReady());const actual=await p.evaluate(()=>({ink:JSON.stringify(notebookPages().map(x=>x.strokes)),count:state.pages.length,version:state.version,valid:validState(state)}));assert.deepEqual(actual,expected);assert.equal(await p.evaluate(()=>JSON.stringify(state.pages.find(x=>!x.pdf))),original);assert.ok(ids.includes(await p.evaluate(()=>activeId)));return actual;
+  });
+  await check(browser,engine,'plain and PDF navigation retain original independent modes',async({p})=>{
+    assert.equal(await p.evaluate(()=>BilgeSlideFlow.enabled()),false);await stroke(p,'pen',[[120,120],[180,140]]);assert.equal(await p.evaluate(()=>page().strokes.length),1);await importSlides(p,2);await p.evaluate(()=>{for(const p of notebookPages())p.pdf.name='original.pdf';drawAll();renderPages();});await p.waitForFunction(()=>pdfBackgroundReady());assert.equal(await p.evaluate(()=>BilgeSlideFlow.enabled()),false);assert.equal(await p.locator('#pdfNavigation').isVisible(),true);assert.equal(await p.locator('section.workspace').evaluate(e=>e.classList.contains('has-pdf')),true);const first=await p.evaluate(()=>activeId);await p.locator('#pdfNext').click();assert.notEqual(await p.evaluate(()=>activeId),first);await p.waitForFunction(()=>pdfBackgroundReady());await save(p);return{pdfNavigationPreserved:true};
+  });
+  await check(browser,engine,'non presentation page splits continuous run',async({p})=>{
+    const ids=await importSlides(p,4);await p.evaluate(()=>{notebookPages()[2].pdf.name='boundary.pdf';drawAll();renderPages();});const g=await geometry(p);assert.deepEqual(g.rows.map(x=>x.id),ids.slice(0,2));await p.evaluate(()=>{activeId=notebookPages()[3].id;drawAll();renderPages();});assert.deepEqual((await geometry(p)).rows.map(x=>x.id),ids.slice(3));return{runBoundaries:true};
+  });
+  await check(browser,engine,'media drag selects second visible page without changing neighbor',async({p})=>{
+    const ids=await importSlides(p);await p.evaluate(()=>{state.version=3;for(const p of notebookPages())p.strokes.push({tool:'text',text:'Fixture note',fontSize:30,width:300,color:'#0000ff',points:[{x:160,y:100}]});scheduleSave();drawAll();});let g=await adjacent(p);const before=await p.evaluate(()=>JSON.stringify(notebookPages()[0].strokes));await p.evaluate(()=>document.querySelector('#mediaEdit').click());await paint(p);g=await geometry(p);const y=(g.rows[1].top-g.scroll+115)*g.scale;await pointer(p,'pointerdown',190*g.scale,y);assert.equal(await p.evaluate(()=>activeId),ids[1]);await pointer(p,'pointermove',250*g.scale,y+40);await pointer(p,'pointerup',250*g.scale,y+40);assert.equal(await p.evaluate(()=>JSON.stringify(notebookPages()[0].strokes)),before);assert.ok(await p.evaluate(()=>notebookPages()[1].strokes[0].points[0].x>160));await p.evaluate(()=>cancelMediaMode());await save(p);return{target:ids[1]};
+  });
+  await check(browser,engine,'pending text remains pinned when another slide is clicked',async({p})=>{
+    const ids=await importSlides(p);await adjacent(p);await p.evaluate(()=>beginPendingMedia({tool:'text',text:'Draft',fontSize:24,width:250,color:'#0000ff',points:[{x:100,y:100}]}));await paint(p);const g=await geometry(p),y=(g.rows[1].top-g.scroll+100)*g.scale;await pointer(p,'pointerdown',200,y);await pointer(p,'pointerup',200,y);assert.equal(await p.evaluate(()=>activeId),ids[0]);assert.equal(await p.evaluate(()=>mediaPending.pageId),ids[0]);assert.equal(await p.evaluate(()=>notebookPages().reduce((n,x)=>n+x.strokes.length,0)),0);await p.evaluate(()=>cancelMediaMode());return{draftPinned:true};
+  });
+  await check(browser,engine,'failed image blocks ink but never traps two finger navigation',async({p})=>{
+    const ids=await importSlides(p,4);await p.evaluate(()=>{page().pdf.image='data:image/png;base64,AAAA';drawAll();});await paint(p);assert.equal(await p.evaluate(()=>pdfBackgroundReady()),false);await pointer(p,'pointerdown',150,100);await pointer(p,'pointerup',160,110);assert.equal(await p.evaluate(()=>page().strokes.length),0);await p.evaluate(()=>document.querySelector('#penOnly').checked=true);await pointer(p,'pointerdown',200,550,11,'touch');await pointer(p,'pointerdown',300,550,12,'touch');await pointer(p,'pointermove',200,-100,11,'touch');await pointer(p,'pointermove',300,-100,12,'touch');assert.ok((await geometry(p)).scroll>0);await pointer(p,'pointerup',200,-100,11,'touch');await pointer(p,'pointerup',300,-100,12,'touch');assert.notEqual(await p.evaluate(()=>activeId),ids[0]);await p.waitForFunction(()=>pdfBackgroundReady());return{navigationRecovered:true};
+  });
+  await check(browser,engine,'warm ink cache preserves bounded full replay quality after edits undo and zoom',async({p})=>{
+    await importSlides(p,4);await p.evaluate(()=>{state.version=3;for(const p of notebookPages()){for(let i=0;i<220;i++)p.strokes.push({tool:i%5?'pen':'marker',color:i%2?'#173b36':'#0000ff',width:3,points:[{x:40+i%40*19,y:40+Math.floor(i/40)*35,p:.5},{x:52+i%40*19,y:60+Math.floor(i/40)*35,p:.5}]});p.strokes.push({tool:'text',text:'Cache note',fontSize:24,width:240,color:'#0000ff',points:[{x:300,y:320}]});}scheduleSave();drawAll();});await save(p);await paint(p);
+    const checks=[],diagnostic={purpose:'Read-only surface trace; cold replay is diagnostic only and never replaces the original result.',coldAfterMediaUndoFailure:null,trace:[]};
+    await p.evaluate(()=>{window.__inkSurfaceTrace=[];window.__recordInkSurface=label=>{window.__inkTracePhase=label;const t=ctx.getTransform();window.__inkSurfaceTrace.push({label,width:canvas.width,height:canvas.height,transform:[t.a,t.b,t.c,t.d,t.e,t.f],mediaSelecting,mediaGesture:!!mediaGesture,drawing});};window.__recordInkSurface('before audits');});await p.evaluate(traceInkFixture);
+    async function audit(label,diagnosticOnly=false){await paint(p);const result=await p.evaluate(label=>{
+      window.__inkTracePhase='audit: '+label;
+      drawAll();const original=drawStroke;let warmCalls=0;drawStroke=function(...args){warmCalls++;return original(...args);};try{drawAll();drawAll();drawAll();}finally{drawStroke=original;}
+      const s=BilgeSlideFlow.snapshot(),scale=BilgeSlideFlow.scale(),reference=document.createElement('canvas');reference.width=canvas.width;reference.height=canvas.height;const target=reference.getContext('2d'),d=ctx.getTransform().a;
+      for(const row of s.rows.filter(x=>s.visible.includes(x.id))){target.save();target.setTransform(d*scale,0,0,d*scale,-s.x*d*scale,(row.top-s.scroll)*d*scale);target.beginPath();target.rect(0,0,1000,row.height);target.clip();for(const stroke of state.pages.find(p=>p.id===row.id).strokes)original(stroke,target,mediaImages);target.restore();}
+      const a=ctx.getImageData(0,0,canvas.width,canvas.height).data,b=target.getImageData(0,0,reference.width,reference.height).data;let unequal=0,maxDelta=0,totalDelta=0,alphaMax=0,alphaSum=0,compositedMax=0,compositedSum=0,compositedOver16=0,foregroundPixels=0;const rows=[];
+      for(let i=0;i<a.length;i++){const delta=Math.abs(a[i]-b[i]);if(delta)unequal++;maxDelta=Math.max(maxDelta,delta);totalDelta+=delta;}
+      for(let i=0;i<a.length;i+=4){if(a[i+3]||b[i+3])foregroundPixels++;const da=Math.abs(a[i+3]-b[i+3]);alphaMax=Math.max(alphaMax,da);alphaSum+=da;let max=0;for(let c=0;c<3;c++){const ac=a[i+c]*a[i+3]/255+255-a[i+3],bc=b[i+c]*b[i+3]/255+255-b[i+3],diff=Math.abs(ac-bc);compositedMax=Math.max(compositedMax,diff);compositedSum+=diff;max=Math.max(max,diff);}if(max>16)compositedOver16++;const y=Math.floor(i/4/canvas.width);if(!rows[y])rows[y]={alpha:0,white:0};rows[y].alpha+=da;rows[y].white+=max;}
+      const r=canvas.getBoundingClientRect(),t=ctx.getTransform(),surface={width:canvas.width,height:canvas.height,cssWidth:r.width,cssHeight:r.height,dpr:devicePixelRatio,transform:[t.a,t.b,t.c,t.d,t.e,t.f],rowTransforms:s.rows.filter(row=>s.visible.includes(row.id)).map(row=>({id:row.id,transform:[d*scale,0,0,d*scale,-s.x*d*scale,(row.top-s.scroll)*d*scale],revision:pageRevs.get(state.pages.find(p=>p.id===row.id))||0}))};
+      const visibleInk=JSON.stringify(s.visible.map(id=>({id,strokes:state.pages.find(p=>p.id===id).strokes}))),images={actual:canvas.toDataURL('image/png'),reference:reference.toDataURL('image/png')};reference.width=reference.height=1;return{warmCalls,unequal,maxDelta,totalDelta,alphaMax,alphaSum,compositedMax,compositedSum,compositedOver16,foregroundPixels,compositedMeanForeground:compositedSum/(3*foregroundPixels),changedRows:rows.map((v,y)=>({y,...v})).filter(v=>v.alpha||v.white),images,stats:s,surface,visibleInk};
+    },label);for(const [kind,data] of Object.entries(result.images))fs.writeFileSync(path.join(out,`${engine}-ink-${label}-${kind}.png`),Buffer.from(data.split(',')[1],'base64'));delete result.images;result.inkSha256=sha(result.visibleInk);delete result.visibleInk;
+      if(diagnosticOnly)return{label,...result};
+      checks.push({label,...result});assert.equal(result.warmCalls,0,label+': warm viewport must not replay strokes');assert.ok(result.stats.inkPixels<=8000000,label+': bounded ink pixels');assert.ok(result.stats.cachedInkTiles>0,label+': cache exercised');return result;
+    }
+    try{
+    const region=()=>p.evaluate(()=>{const r=canvas.getBoundingClientRect(),d=canvas.width/r.width,data=ctx.getImageData(Math.round(156*d),Math.round(249*d),Math.round(8*d),Math.round(8*d)).data;let alpha=0;for(let i=3;i<data.length;i+=4)alpha+=data[i];return alpha;});
+    await audit('initial');assert.equal(await region(),0,'New-pen probe region starts empty');await stroke(p,'pen',[[130,240],[190,265]]);await audit('pen');assert.ok(await region()>500,'New pen appears in its exact small region');await stroke(p,'eraser',[[140,245],[180,260]]);await audit('eraser');assert.equal(await region(),0,'Eraser clears the same exact small region');
+    await p.evaluate(()=>{window.__recordInkSurface('before media open');document.querySelector('#mediaEdit').click();window.__recordInkSurface('after media open sync');});await paint(p);let g=await geometry(p);await pointer(p,'pointerdown',330*g.scale,330*g.scale);await pointer(p,'pointermove',370*g.scale,355*g.scale);await pointer(p,'pointerup',370*g.scale,355*g.scale);assert.ok(await p.evaluate(()=>page().strokes.find(s=>s.tool==='text').points[0].x>300),'Media move actually occurred');await p.evaluate(()=>{window.__recordInkSurface('before undo');document.querySelector('#layoutUndo').click();window.__recordInkSurface('after undo sync');});assert.equal(await p.evaluate(()=>page().strokes.find(s=>s.tool==='text').points[0].x),300);await p.evaluate(()=>{window.__recordInkSurface('before media close');cancelMediaMode();window.__recordInkSurface('after media close sync');});const undo=await audit('media undo');
+    const undoFailed=undo.alphaMax>32||undo.compositedMax>32||undo.compositedMeanForeground>1||undo.compositedOver16/undo.foregroundPixels>.002;
+    if(undoFailed){
+      // Preserve the failed warm image/check above. Only fixture page revisions
+      // change here; the notes, view and thresholds remain unchanged. Do not
+      // substitute this independent cold result for the original assertion.
+      try{await p.evaluate(()=>{window.__recordInkSurface('before diagnostic invalidation');for(const item of BilgeSlideFlow.visiblePages())touchPage(item);drawAll();window.__recordInkSurface('after diagnostic invalidation');});diagnostic.coldAfterMediaUndoFailure=await audit('media undo cold diagnostic',true);diagnostic.inkUnchanged=undo.inkSha256===diagnostic.coldAfterMediaUndoFailure.inkSha256;}catch(e){diagnostic.error=String(e.stack||e);}
+    }
+    if(undoFailed||diagnoseInk){
+      // End observation before the intentionally interventionist experiment.
+      // --diagnose-ink only exercises this extra branch locally; it does not
+      // change the original metric or the assertions below.
+      diagnostic.operations=await p.evaluate(()=>window.__finishInkTrace?.());
+      try{diagnostic.controlledRaster=await p.evaluate(controlledInkRaster);}catch(e){diagnostic.controlledError=String(e.stack||e);}
+    }
+    await p.evaluate(()=>setViewZoom(1.5));await paint(p);await audit('zoom');await save(p);
+    // Parent's independent visual review accepted a narrowly bounded raster
+    // round-trip envelope, not exact RGBA. Pre-phase evidence (mean2.58/13.4,
+    // max54/88 in Chromium) fails this gate; whole lost strokes cannot hide in
+    // a full-canvas denominator because the union of inked pixels is used.
+    for(const result of checks){assert.ok(result.foregroundPixels>0);assert.ok(result.alphaMax<=32,result.label+': alpha deviation');assert.ok(result.compositedMax<=32,result.label+': composite maximum');assert.ok(result.compositedMeanForeground<=1,result.label+': foreground average');assert.ok(result.compositedOver16/result.foregroundPixels<=.002,result.label+': foreground outlier fraction');}
+    return{checks,screenshot:await screenshot(p,engine,'ink-cache')};
+    }finally{try{diagnostic.trace=await p.evaluate(()=>window.__inkSurfaceTrace||[]);if(!diagnostic.operations)diagnostic.operations=await p.evaluate(()=>window.__finishInkTrace?.());}catch(e){diagnostic.traceError=String(e.message||e);}fs.writeFileSync(path.join(out,`${engine}-ink-parity.json`),JSON.stringify(checks,null,2));fs.writeFileSync(path.join(out,`${engine}-ink-surface-diagnostic.json`),JSON.stringify(diagnostic,null,2));}
+  });
+}
+(async()=>{fs.mkdirSync(out,{recursive:true});for(const [name,type]of Object.entries({chromium,webkit})){if(engineFilter&&name!==engineFilter)continue;const browser=await type.launch({headless:true});try{await run(browser,name);}finally{await browser.close();}}report.completedAt=new Date().toISOString();report.passed=report.results.filter(x=>x.passed).length;report.failed=report.results.length-report.passed;report.drift=[...hashes].filter(([name,digest])=>!fs.existsSync(path.join(root,name))||sha(fs.readFileSync(path.join(root,name)))!==digest).map(([name])=>name);const filename=path.join(out,`report${engineFilter?'-'+engineFilter:''}${caseFilter?'-'+caseFilter.replace(/[^a-z0-9]+/gi,'-'):''}.json`);fs.writeFileSync(filename,JSON.stringify(report,null,2));console.log(JSON.stringify({passed:report.passed,failed:report.failed,drift:report.drift,report:filename}));if(report.failed||report.drift.length)process.exitCode=1;})().catch(e=>{console.error(e);process.exitCode=1;});
