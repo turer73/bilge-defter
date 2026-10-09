@@ -66,6 +66,11 @@ jobs:
         run: |
           node --test work/test-ink-stamp.cjs
           node work/diagnose-ink-stamp.cjs
+      - name: Diagnostic only - list replacement before versus after media close
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        run: |
+          node --test work/test-ink-close-timing.cjs
+          node work/diagnose-ink-close-timing.cjs
       - name: Diagnostic only - standalone Canvas2D reduction
         if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
         run: |
@@ -170,6 +175,7 @@ jobs:
             outputs/ink-return-diagnostic/
             outputs/ink-two-commit-diagnostic/
             outputs/ink-stamp-diagnostic/
+            outputs/ink-close-timing-diagnostic/
             outputs/marker-icons/
             outputs/theme-logo/
             outputs/pptx-v78-release/notebook-compat/
