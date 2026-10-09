@@ -56,6 +56,11 @@ jobs:
         run: |
           node --test work/test-ink-return.cjs
           node work/diagnose-ink-return.cjs
+      - name: Diagnostic only - one versus two commits at the same endpoint
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        run: |
+          node --test work/test-ink-two-commit.cjs
+          node work/diagnose-ink-two-commit.cjs
       - name: Diagnostic only - standalone Canvas2D reduction
         if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
         run: |
@@ -158,6 +163,7 @@ jobs:
             outputs/ink-gesture-diagnostic/
             outputs/ink-endpoint-diagnostic/
             outputs/ink-return-diagnostic/
+            outputs/ink-two-commit-diagnostic/
             outputs/marker-icons/
             outputs/theme-logo/
             outputs/pptx-v78-release/notebook-compat/
