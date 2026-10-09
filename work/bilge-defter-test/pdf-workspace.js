@@ -648,7 +648,11 @@ window.BilgeSlideFlow=(()=>{
     let scratch=null,raster=null,rasterFailed=canvas.width*canvas.height>INK_PIXEL_BUDGET;
     for(const row of rows){
       const phaseX=pixelPhase(-flow.x*pixelScale),phaseY=pixelPhase((row.top-flow.scroll)*pixelScale);
-      const direct=rasterFailed||row.page.id===activeId&&(drawing||mediaGesture||mediaPending),stamp=direct?null:inkStamp(row.page,pixelScale,phaseX,phaseY);
+      // Media commits/undo replace the stroke list while this layout is temporary.
+      // Replay the active page until selection closes instead of rebuilding its
+      // tiles after each edit; idle selection redraws trade that replay for no
+      // throwaway cache. Neighbor pages keep their normal bounded tile reuse.
+      const direct=rasterFailed||row.page.id===activeId&&(drawing||mediaGesture||mediaPending||mediaSelecting),stamp=direct?null:inkStamp(row.page,pixelScale,phaseX,phaseY);
       const left=Math.max(0,flow.x),right=Math.min(WIDTH,flow.x+r.width/s),top=Math.max(0,flow.scroll-row.top),end=Math.min(row.height,bottom-row.top),tiles=[];
       if(!direct&&stamp.cacheable&&right>left&&end>top){
         for(let iy=Math.floor(top/edge);iy<Math.ceil(end/edge);iy++)for(let ix=Math.floor(left/edge);ix<Math.ceil(right/edge);ix++){
@@ -706,7 +710,9 @@ window.BilgeSlideFlow=(()=>{
       if(direct||fallback){
         ctx.save();ctx.setTransform(d*s,0,0,d*s,-flow.x*d*s,(row.top-flow.scroll)*d*s);
         ctx.beginPath();ctx.rect(0,0,WIDTH,row.height);ctx.clip();
-        for(const original of row.page.strokes){const stroke=mediaVisualStroke(original);if(fallback||visibleStroke(stroke,top,end))drawStroke(stroke)}
+        // Selection replays the full active row: visibleStroke's half-width
+        // margin can omit high-pressure pen caps that still touch the viewport.
+        for(const original of row.page.strokes){const stroke=mediaVisualStroke(original);if(fallback||row.page.id===activeId&&mediaSelecting||visibleStroke(stroke,top,end))drawStroke(stroke)}
         if(row.page.id===activeId)drawPendingMedia();ctx.restore();
       }else for(const box of tiles){
         const tile=inkTiles.get(box.key);

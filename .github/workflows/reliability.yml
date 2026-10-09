@@ -26,6 +26,14 @@ jobs:
       - run: npx playwright install --with-deps chromium webkit
       - run: python -m pip install -r server-candidate/v49/requirements.txt pytest
       - run: npm run build
+      - name: Historical diagnostic pins (never a quality gate)
+        id: legacy_pins
+        run: |
+          node -e "const fs=require('fs'),c=require('crypto');const h=c.createHash('sha256').update(fs.readFileSync('work/bilge-defter-invited-v78/SHA256SUMS')).digest('hex');fs.appendFileSync(process.env.GITHUB_OUTPUT,'matches='+(h==='6f172d47680d93b9d39e316a1f1512ee0e0c2e4645b95af9aab33890b34890f9')+'\n')"
+      - name: Media selection cache and immediate save lifecycle
+        run: |
+          node work/verify-media-cache-pairs.cjs --self-test
+          node work/verify-media-cache-lifecycle.cjs
       # Fail fast on drawing quality before the longer historical suite.
       # These are the same mandatory DPR checks, not a diagnostic bypass.
       - name: Retina continuous flow and strict raster quality (DPR 2)
@@ -34,58 +42,58 @@ jobs:
         env:
           BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
       - name: Diagnostic only - scratch lifetime in the original failed scenario
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: node work/diagnose-ink-lifetime.cjs
       - name: Diagnostic only - original-case prior history contrasts
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: |
           node --test work/test-ink-history.cjs
           node work/diagnose-ink-history.cjs
       - name: Diagnostic only - media gesture phase contrasts
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: |
           node --test work/test-ink-gesture.cjs
           node work/diagnose-ink-gesture.cjs
       - name: Diagnostic only - commit and undo terminal endpoints
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: |
           node --test work/test-ink-endpoint.cjs
           node work/diagnose-ink-endpoint.cjs
       - name: Diagnostic only - same-content return gesture
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: |
           node --test work/test-ink-return.cjs
           node work/diagnose-ink-return.cjs
       - name: Diagnostic only - one versus two commits at the same endpoint
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: |
           node --test work/test-ink-two-commit.cjs
           node work/diagnose-ink-two-commit.cjs
       - name: Diagnostic only - cache stamp components without another gesture
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: |
           node --test work/test-ink-stamp.cjs
           node work/diagnose-ink-stamp.cjs
       - name: Diagnostic only - list replacement before versus after media close
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: |
           node --test work/test-ink-close-timing.cjs
           node work/diagnose-ink-close-timing.cjs
       - name: Diagnostic only - standalone Canvas2D reduction
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: |
           node --test work/test-ink-mini.cjs
           node work/diagnose-ink-mini.cjs
       - name: Diagnostic only - post-audit scratch tile and main samples
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: |
           node work/diagnose-ink-stages.cjs --self-test
           node work/diagnose-ink-stages.cjs
       - name: Diagnostic only - one replay on the same held scratch
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: node work/diagnose-ink-stages.cjs --replay
       - name: Diagnostic only - isolated final-geometry media close candidate
-        if: failure() && steps.slide_flow_dpr2.outcome == 'failure'
+        if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: |
           node work/diagnose-media-close.cjs --self-test
           node work/diagnose-media-close.cjs --variant=candidate --probe
@@ -146,6 +154,7 @@ jobs:
           name: synthetic-reliability-evidence
           path: |
             outputs/reliability-1/
+            outputs/media-cache-fix/lifecycle-*/
             outputs/presentations/
             outputs/page-limit/
             outputs/page-limit-sw/
@@ -183,3 +192,54 @@ jobs:
           retention-days: 7
 # No secrets, live accounts, deployment, self-hosted runner or paid API.
 # This supplements (does not replace) the historical release/device test matrix.
+  media-cache-pairs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        pair: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run build
+      - name: Fixed baseline and candidate full DPR2 pair
+        run: |
+          node work/verify-media-cache-pairs.cjs --self-test
+          node work/verify-media-cache-pairs.cjs --pair=${{ matrix.pair }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: media-cache-pair-${{ matrix.pair }}
+          path: |
+            outputs/media-cache-fix/
+            outputs/slide-flow/
+          retention-days: 7
+  media-cache-acceptance:
+    runs-on: ubuntu-latest
+    needs: [media-cache-pairs, synthetic-checks]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: media-cache-pair-*
+          path: paired-evidence
+      - name: All three pairs and broad regression are required
+        env:
+          BROAD_RESULT: ${{ needs.synthetic-checks.result }}
+          PAIRS_RESULT: ${{ needs.media-cache-pairs.result }}
+        run: |
+          node work/verify-media-cache-pairs.cjs --aggregate=paired-evidence
+          test "$BROAD_RESULT" = success
+          test "$PAIRS_RESULT" = success

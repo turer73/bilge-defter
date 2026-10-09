@@ -212,7 +212,20 @@ function commitMedia(remove=false){
 }
 document.querySelector('#mediaForm').onsubmit=e=>{e.preventDefault();commitMedia()};document.querySelector('#mediaDelete').onclick=()=>{if(confirm('Bu metin/görsel silinsin mi? Bu oturumda Geri al kullanılabilir.'))commitMedia(true)};
 function undoMedia(){const h=mediaUndo.get(activeId),last=h?.at(-1);if(!last||JSON.stringify(page().strokes)!==JSON.stringify(last.after))return false;page().strokes=last.before;h.pop();return true}
-function cancelMediaMode(){const placing=mediaPlacement,creating=!!mediaPending;cancelMediaGesture();mediaPending=null;mediaSelection=null;layoutTouches.clear();layoutMulti=false;mediaPlacement=false;mediaSelecting=false;mediaCancelMode.hidden=true;drawAll();if(creating)document.querySelector('#inputState').textContent='Kalemle yazın · iki parmakla yukarı/aşağı kaydırın';if(placing&&mediaDraft&&activeId===mediaPage)showMedia()}
+function redrawClosedMediaMode(){
+  if(!window.BilgeSlideFlow?.enabled()){drawAll();return;}
+  refreshMediaSelection();
+  const workspace=document.querySelector('.workspace'),host=workspace.closest('bilge-defter-ui');
+  // V2 normally mirrors this class in a MutationObserver. Mirror only this
+  // workspace's actual owning host now, before resize reads the final layout.
+  if(host)host.classList.toggle('layout-active',workspace.classList.contains('layout-active'));
+  const width=canvas.width,height=canvas.height,scale=ctx.getTransform().a;
+  resize();
+  // resize already draws when its bitmap dimensions or DPR transform change.
+  // Its no-op path still needs one draw to remove a cancelled draft/selection.
+  if(canvas.width===width&&canvas.height===height&&ctx.getTransform().a===scale)drawAll();
+}
+function cancelMediaMode(){const placing=mediaPlacement,creating=!!mediaPending;cancelMediaGesture();mediaPending=null;mediaSelection=null;layoutTouches.clear();layoutMulti=false;mediaPlacement=false;mediaSelecting=false;mediaCancelMode.hidden=true;redrawClosedMediaMode();if(creating)document.querySelector('#inputState').textContent='Kalemle yazın · iki parmakla yukarı/aşağı kaydırın';if(placing&&mediaDraft&&activeId===mediaPage)showMedia()}
 mediaCancelMode.onclick=cancelMediaMode;
 document.querySelector('#mediaPlace').onclick=()=>{syncMediaDraft();mediaPlacement=true;mediaDialog.close();mediaCancelMode.hidden=false;document.querySelector('#inputState').textContent='Metin/görselin sol üst köşesi için kalem veya fareyle sayfaya dokunun. Dokunma için avuç korumasını kapatın.'};
 document.querySelector('#mediaEdit').onclick=()=>{if(!mediaAvailable())return;closeTools();setSidebarOpen(false);mediaSelecting=true;mediaCancelMode.hidden=true;drawAll();document.querySelector('#inputState').textContent='Öğeye dokunun ve sürükleyin. ↘ tutamacıyla boyutlandırın. Bu modda tek parmak, kalem veya fare kullanılabilir.'};
