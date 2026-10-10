@@ -29,7 +29,7 @@
   }
   function pendingEdit() {
     return (typeof drawing !== 'undefined' && drawing) || (typeof pan !== 'undefined' && pan) ||
-      (typeof pinchT !== 'undefined' && pinchT) || (typeof mediaPending !== 'undefined' && mediaPending) ||
+      (typeof mediaPending !== 'undefined' && mediaPending) ||
       (typeof mediaGesture !== 'undefined' && mediaGesture) || (typeof plannerDirty !== 'undefined' && plannerDirty) ||
       (typeof importing !== 'undefined' && importing) || (typeof pdfBusy !== 'undefined' && pdfBusy) ||
       (typeof pdfExportBusy !== 'undefined' && pdfExportBusy);

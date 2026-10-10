@@ -135,6 +135,7 @@ function drawPdfBackground(){
   const c=pdfCanvas.getContext('2d'),scale=paperScale(),d=canvas.width/Math.max(1,canvas.getBoundingClientRect().width);c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,pdfCanvas.width,pdfCanvas.height);c.setTransform(d*scale,0,0,d*scale,-viewX()*d*scale,-viewY()*d*scale);c.drawImage(pdfImage,0,0,bg.width,bg.height);
 }
 function updatePdfNavigation(){
+  window.BilgePageNavigation?.refresh();
   updatePdfZoom();
   const bg=page()?.pdf;
   // A presentation uses the notebook controls, even during startup/account
@@ -489,7 +490,7 @@ window.BilgeSlideFlow=(()=>{
     if(!same){
       reset();let top=0;
       const rows=pages.map(p=>{const row={page:p,top,height:pageHeight(p)};top+=row.height+GAP;return row});
-      flow={state,db:DB,notebook:activeNotebook,rows,byId:new Map(rows.map(row=>[row.page.id,row])),total:top-GAP,scroll:0,x:0,zoom:1,activeId,frozenScale:null};
+      flow={state,db:DB,notebook:activeNotebook,rows,byId:new Map(rows.map(row=>[row.page.id,row])),total:top-GAP,scroll:0,x:0,zoom:1,activeId,navigationId:activeId,frozenScale:null};
       const row=rowFor();flow.scroll=clampScroll(row.top+Math.min(row.height,Math.max(0,currentPage.viewY||0)));
     }else if(!frozen()){
       const oldRow=rowFor(flow.activeId),local=oldRow?flow.scroll-oldRow.top:0;
@@ -499,7 +500,7 @@ window.BilgeSlideFlow=(()=>{
       if(changed&&oldRow)flow.scroll=clampScroll(oldRow.top+local);
       if(flow.activeId!==activeId){
         // Sidebar/page actions selected a page, not a scroll-driven hand-off.
-        flow.activeId=activeId;const row=rowFor();
+        flow.activeId=activeId;flow.navigationId=activeId;const row=rowFor();
         const saved=Math.max(0,currentPage.viewY||0);
         flow.scroll=clampScroll(row.top+(saved<row.height?saved:0));
       }
@@ -564,8 +565,12 @@ window.BilgeSlideFlow=(()=>{
     persist();markViewChanged();scheduleViewSave();refreshChrome();updatePdfNavigation();return true;
   }
   function settle(){
-    if(!ensure()||!canEdit()||selectionBusy()||pinchT||saveConflict||importing)return false;
-    const row=flow.rows.find(item=>item.top+item.height>flow.scroll)||flow.rows.at(-1);
+    if(!ensure()||!canEdit()||selectionBusy()||saveConflict||importing)return false;
+    // A last-page jump may be clamped with the previous page still visible.
+    // Blur/save must not undo that explicit selection. A real vertical scroll
+    // releases the runtime-only anchor and resumes the usual visible-page owner.
+    const pinned=flow.navigationId===activeId?rowFor():null;
+    const row=pinned&&pinned.top+pinned.height>flow.scroll&&pinned.top<flow.scroll+rect().height/scale()?pinned:flow.rows.find(item=>item.top+item.height>flow.scroll)||flow.rows.at(-1);
     const selected=select(row),viewChanged=persist();if(viewChanged&&!selected){markViewChanged();scheduleViewSave()}if(selected)queueViewportRender();return selected;
   }
   function preparePointer(event){
@@ -595,6 +600,7 @@ window.BilgeSlideFlow=(()=>{
     if(!ensure()||!canEdit()||drawing||mediaGesture||!Number.isFinite(nextLocal)||!Number.isFinite(nextX))return false;
     const next=clampScroll(rowFor().top+nextLocal),x=clampX(nextX);
     if(next===flow.scroll&&x===flow.x)return false;
+    if(next!==flow.scroll)flow.navigationId=null;
     flow.scroll=next;flow.x=x;changed();
     const status=document.querySelector('#inputState');if(status)status.textContent='Slaytlar · iki parmakla aşağı/yukarı kaydırın';return true;
   }
@@ -607,17 +613,22 @@ window.BilgeSlideFlow=(()=>{
     changed();updatePdfZoom();return true;
   }
   function setZoom(value){
-    if(!ensure()||pan||pinchT||!Number.isFinite(value))return false;
+    if(!ensure()||pan||!Number.isFinite(value))return false;
     const r=rect(),result=applyZoom(Math.round(value*4)/4,r.width/2,r.height/2);
     if(result){settle();drawAll();refreshChrome()}return result;
   }
-  function pinch(value,mx,my){
-    const result=applyZoom(value,mx,my);
-    if(result&&pan){
-      const a=touchPoints.get(pan.ids[0]),b=touchPoints.get(pan.ids[1]);
-      if(a&&b){pan.startY=(a.y+b.y)/2;pan.startX=(a.x+b.x)/2;pan.startOffset=flow.scroll-rowFor().top;pan.startOffsetX=flow.x;pan.pageId=activeId}
-    }
-    return result;
+  function jumpTo(id,zoomValue){
+    // Navigation may only target the live notebook's current continuous run.
+    // Persist the departing view before changing ownership; no ink or history changes.
+    if(!initialized()||!canEdit()||selectionBusy()||mediaSelecting||mediaBusy||saveConflict||importing||!ensure())return false;
+    const row=flow.byId.get(id);
+    if(!row||!notebookPages().includes(row.page)||(zoomValue!==undefined&&(!Number.isFinite(zoomValue)||zoomValue<1||zoomValue>3)))return false;
+    persist();
+    if(zoomValue!==undefined)flow.zoom=zoomValue;
+    flow.frozenScale=null;flow.x=0;
+    activeId=row.page.id;state.active=activeId;flow.activeId=activeId;
+    flow.navigationId=activeId;row.page.viewY=0;flow.scroll=clampScroll(row.top);persist();
+    markViewChanged();scheduleViewSave();refreshChrome();updatePdfNavigation();queueViewportRender();return true;
   }
   function drawBackground(){
     if(!ensure())return;
@@ -782,7 +793,7 @@ window.BilgeSlideFlow=(()=>{
   // save it. Release decoders without resetting that viewport or its owner.
   addEventListener('pagehide',()=>{for(const entry of pictures.values())disposePicture(entry);pictures.clear();clearInk()});
   return Object.freeze({
-    enabled:ensure,scale,ready:imageReadyForActive,preparePointer,point,clip,scroll,settle,setZoom,pinch,drawBackground,drawInk,
+    enabled:ensure,scale,ready:imageReadyForActive,preparePointer,point,clip,scroll,settle,setZoom,jumpTo,drawBackground,drawInk,
     y:()=>ensure()?flow.scroll-rowFor().top:0,x:()=>ensure()?flow.x:0,zoom:()=>ensure()?flow.zoom:1,maxX,
     setX:value=>{if(ensure()&&Number.isFinite(value)){const next=clampX(value);if(next!==flow.x){flow.x=next;changed()}else if(persist()){markViewChanged();scheduleViewSave()}}},
     visiblePages:()=>visibleRows().map(row=>row.page),

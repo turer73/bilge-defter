@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v78</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v79</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -163,7 +163,7 @@ let DB='bilge-defter-test-v1'; const STORE='state'; let db,state,activeId,tool='
 let storedJSON=null,editRevision=0,savedRevision=0,savePromise=null,saveFailed=false,saveConflict=false,importing=false,allowLeave=false,failureMessage='',failureCode='';
 // v69: a short local log of save failures and lifecycle events, kept in localStorage because
 // IndexedDB may be what is failing. No note content: names, sizes, durations, visibility only.
-const APP_VERSION='v78',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
+const APP_VERSION='v79',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
 let lastSaveBytes=null,failStreak=0,failSince=0,saveRetrying=false,retryTimer=null,retryWhenVisible=false,hiddenAt=0,lastShownAt=0;
 function diag(ev,extra={}){try{const list=JSON.parse(localStorage.getItem(DIAG_KEY)||'[]');list.push({t:new Date().toISOString(),ev,vis:document.visibilityState,...extra});while(list.length>80)list.shift();localStorage.setItem(DIAG_KEY,JSON.stringify(list))}catch{}}
 function errorInfo(e){return {name:String(e?.name||'Error').slice(0,40),msg:String(e?.message||'').slice(0,160)}}
@@ -183,7 +183,7 @@ const NEW_MARKER_OPACITY=0.4;
 const toolColors={pen:'#173b36',marker:'#f5c400'};
 let preferencesReady=false;
 function penColor(){return tool==='pen'?document.querySelector('#color').value:toolColors.pen}
-const touchPoints=new Map(),strokeBounds=new WeakMap();let pan=null,suppressTouch=false,activeInputType=null,pinchT=null,pinchDirty=false;
+const touchPoints=new Map(),strokeBounds=new WeakMap();let pan=null,suppressTouch=false,activeInputType=null;
 let viewportFrame=null;
 function queueViewportRender(){if(viewportFrame!==null)return;viewportFrame=requestAnimationFrame(()=>{viewportFrame=null;drawAll({viewportOnly:true})})}
 function finishViewportRender(){if(viewportFrame!==null)drawAll({viewportOnly:true})}
@@ -229,27 +229,8 @@ const writingSurface=canvas.closest('.paper-wrap');
 function preventWritingMenu(e){if(e.cancelable)e.preventDefault()}
 for(const type of ['contextmenu','selectstart','dragstart'])writingSurface.addEventListener(type,preventWritingMenu);
 for(const type of ['touchstart','touchmove','gesturestart','gesturechange'])writingSurface.addEventListener(type,preventWritingMenu,{passive:false});
-// Pinch zoom on PDF pages: touch events carry every active finger at once,
-// so the gesture distance is measured consistently (pointer events arrive
-// one finger at a time and would confuse a two-finger pan with a pinch).
-writingSurface.addEventListener('touchstart',e=>{if(!canEdit()||!page()?.pdf||e.touches.length!==2||(drawing&&activeInputType!=='touch')){return}const [a,b]=e.touches;pinchT={startDist:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),startZoom:pdfZoom(),startMidX:(a.clientX+b.clientX)/2,startMidY:(a.clientY+b.clientY)/2};pinchDirty=false},{passive:true});
-writingSurface.addEventListener('touchmove',e=>{
-  if(!pinchT||!page()?.pdf||e.touches.length!==2)return;
-  const [a,b]=e.touches,dist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
-  if(!pinchT.startDist||Math.abs(dist-pinchT.startDist)<=2)return;
-  const zoom=Math.max(1,Math.min(3,pinchT.startZoom*dist/pinchT.startDist));
-  if(Math.abs(zoom-pdfZoom())<=0.0005)return;
-  if(window.BilgeSlideFlow?.enabled()){
-    const r=canvas.getBoundingClientRect();
-    window.BilgeSlideFlow.pinch(zoom,(a.clientX+b.clientX)/2-r.left,(a.clientY+b.clientY)/2-r.top);
-    pinchDirty=true;return;
-  }
-  const r=canvas.getBoundingClientRect(),oldScale=paperScale(),mx=(a.clientX+b.clientX)/2-r.left,my=(a.clientY+b.clientY)/2-r.top,cx=viewX()+mx/oldScale,cy=viewY()+my/oldScale;
-  page().pdfZoom=zoom;const scale=paperScale();
-  page().viewX=Math.max(0,Math.min(maxViewX(),cx-mx/scale));page().viewY=Math.max(0,cy-my/scale);
-  updatePdfZoom();drawAll();pinchDirty=true;
-},{passive:true});
-for(const type of ['touchend','touchcancel'])writingSurface.addEventListener(type,e=>{if(pinchT&&e.touches.length<2){pinchT=null;if(pinchDirty){pinchDirty=false;markViewChanged();scheduleViewSave()}window.BilgeSlideFlow?.settle()}},{passive:true});
+// Two fingers only pan through the pointer handlers below. Finger spacing
+// must never change zoom; the footer minus / percentage / plus controls do that.
 function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>{const c=r.result;c.onclose=()=>{if(db===c)db=null};c.onversionchange=()=>{c.close();if(db===c)db=null};db=c;ok()};r.onerror=()=>no(r.error)})}
 // WebKit can drop an IndexedDB connection (app in the background, storage process evicted under
 // memory pressure). A lost connection is reopened and the step retried once.
@@ -410,7 +391,7 @@ function scheduleSave(){if(!ready||saveConflict)return;markChanged();void flushS
 // save rebuilds the notebook text on this thread and was the stutter between swipes.
 let viewSaveTimer=null;
 function markViewChanged(){if(!ready)return;const clean=!isDirty();state.active=activeId;editRevision++;if(typeof window.markSyncDirty==='function')window.markSyncDirty();if(clean)renderSaveStatus()}
-function scheduleViewSave(){if(!ready||saveConflict)return;clearTimeout(viewSaveTimer);viewSaveTimer=setTimeout(()=>{viewSaveTimer=null;if(pan||drawing||pinchT){scheduleViewSave();return}void flushSave(true)},1500)}
+function scheduleViewSave(){if(!ready||saveConflict)return;clearTimeout(viewSaveTimer);viewSaveTimer=setTimeout(()=>{viewSaveTimer=null;if(pan||drawing){scheduleViewSave();return}void flushSave(true)},1500)}
 function scheduleInkSave(){
   if(!ready||saveConflict)return;
   markChanged();clearTimeout(inkSaveTimer);
@@ -610,7 +591,7 @@ function flushSave(auto=false){
 document.querySelector('#retrySave').onclick=()=>{if(!importing)void flushSave()};
 document.querySelector('#reloadSaved').onclick=()=>{if(confirm('Bu sekmedeki kaydedilmemiş değişiklikler kapanacak. Yedeğinizi aldıysanız kayıtlı defter yeniden açılsın mı?')){allowLeave=true;location.reload()}};
 const FULL_LEAVE_LIMIT=8*1024*1024;
-function flushOnLeave(){if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear();if(!importing)window.BilgeSlideFlow?.settle();lifeWrite(true);if(importing)return;
+function flushOnLeave(){if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;suppressTouch=false;touchPoints.clear();if(!importing)window.BilgeSlideFlow?.settle();lifeWrite(true);if(importing)return;
   // iPadOS gives a hidden page little time and memory. Only a small notebook (≤ 8 MB) still gets the
   // full check and rewrite here; a large one saves just what changed and is checked when idle (v69).
   if((lastSaveBytes??0)<=FULL_LEAVE_LIMIT&&!storedAssets.size){if(!isDirty()&&!saveConflict&&pageCacheStale())markChanged();if(isDirty())saveFullNext=true}
@@ -623,11 +604,11 @@ document.addEventListener('visibilitychange',()=>{
 });
 window.addEventListener('pagehide',flushOnLeave);
 // Losing focus (Control Center, a file picker, Slide Over) only ends the current gesture.
-window.addEventListener('blur',()=>{if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;pinchT=null;suppressTouch=false;touchPoints.clear();window.BilgeSlideFlow?.settle()});
+window.addEventListener('blur',()=>{if(!ready)return;finishViewportRender();if(drawing)finishStroke();pan=null;suppressTouch=false;touchPoints.clear();window.BilgeSlideFlow?.settle()});
 window.addEventListener('beforeunload',e=>{if(!allowLeave&&(isDirty()||drawing||importing||pdfBusy||mediaPending||plannerDirty)){e.preventDefault();e.returnValue=''}});
 function pageContentWidth(p){let max=0;for(const s of p?.strokes||[]){if(isMedia(s)){max=Math.max(max,mediaBounds(s).right)}else{let m=0;for(const pt of s.points)m=Math.max(m,pt.x);max=Math.max(max,m+(s.width||2)/2)}}return max}
 function fitPageToWidth(){const p=page();if(!p||p.pdf)return false;const w=canvas.getBoundingClientRect().width;if(!Number.isFinite(w)||w<60)return false;const content=pageContentWidth(p),target=Math.max(1,w-16);const next=content>target?Math.max(0.2,Math.min(1,target/content)):1;if(Math.abs((p.fitScale||1)-next)<1e-4)return false;p.fitScale=next;drawAll();return true}
-function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(r.width*d)),h=Math.max(1,Math.round(r.height*d));if(canvas.width===w&&canvas.height===h&&ctx.getTransform().a===d)return;if(window.BilgeSlideFlow?.enabled()){if(drawing)finishStroke();pan=null;pinchT=null;touchPoints.clear();suppressTouch=false;}canvas.width=w;canvas.height=h;ctx.setTransform(d,0,0,d,0,0);if(!fitPageToWidth())drawAll()}
+function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(r.width*d)),h=Math.max(1,Math.round(r.height*d));if(canvas.width===w&&canvas.height===h&&ctx.getTransform().a===d)return;if(window.BilgeSlideFlow?.enabled()){if(drawing)finishStroke();pan=null;touchPoints.clear();suppressTouch=false;}canvas.width=w;canvas.height=h;ctx.setTransform(d,0,0,d,0,0);if(!fitPageToWidth())drawAll()}
 function drawStroke(s,target=ctx,images=mediaImages){
   if(isMedia(s)){drawMediaStroke(s,target,images);return}
   if(!s.points.length)return;
@@ -758,7 +739,7 @@ canvas.addEventListener('pointerdown',e=>{
       // A fresh pen contact supersedes a palm/pan gesture, including a missing
       // touchend. A new down also recovers a pen whose end event was lost.
       if(drawing)finishStroke();
-      pan=null;pinchT=null;pinchDirty=false;suppressTouch=false;touchPoints.clear();
+      pan=null;suppressTouch=false;touchPoints.clear();
     }else if(pan||suppressTouch)return;
   }
   if(!allowed(e)){document.querySelector('#inputState').textContent='Dokunma engellendi; kaleminiz yazmıyorsa avuç içi korumasını kapatın';return}
@@ -1098,6 +1079,7 @@ new ResizeObserver(resize).observe(canvas.parentElement);init().catch(()=>showSt
 <script src="ui-v2/bilge-defter-ui.js"></script>
 <script src="ui-v2/mount.js"></script>
 <script src="ui-v2/ui-v2-bridge.js"></script>
+<script src="page-navigation.js"></script>
 <script>
   if (typeof window.initBilgeDefterV2 === 'function') {
     window.initBilgeDefterV2();

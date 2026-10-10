@@ -476,6 +476,13 @@ dialog.panel[data-panel=library] .panel-body{flex:0 1 auto}
 dialog.panel[data-pointer-focus=true] #bdx-panel-title:focus{outline:none}
 .navgroup{min-width:0;flex-wrap:wrap}
 .nav-button{flex-shrink:0}
+/* Zoom is explicit: two fingers pan, and these controls stay available even
+   when a short landscape viewport hides secondary footer information. */
+.zoom button{min-width:44px;height:44px}
+@media(max-height:520px) and (orientation:landscape){
+ .footer{display:flex;justify-content:center;min-height:48px;padding:2px max(12px,env(safe-area-inset-right)) max(2px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+ .footer-start,.footer-help{display:none}
+}
 @media(max-width:700px){.navrow .navgroup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;width:100%}.navrow .nav-button{width:100%;min-width:0;min-height:44px;white-space:normal}.navrow .nav-button svg{flex-shrink:0}}
 @media(min-width:701px) and (max-width:1399px){
  .shell{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto auto minmax(0,1fr) auto}

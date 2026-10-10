@@ -5,6 +5,10 @@ const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),
 const {chromium,webkit}=require('playwright');
 const repo=path.resolve(__dirname,'..'),root=path.resolve(process.env.BILGE_TEST_ROOT||path.join(__dirname,'bilge-defter-test'));
 const dpr=Number(process.argv.find(x=>x.startsWith('--dpr='))?.slice(6)||1),tag=process.argv.find(x=>x.startsWith('--tag='))?.slice(6)||'',diagnoseInk=process.argv.includes('--diagnose-ink');
+// A pinned historical baseline still promises pinch. The current product
+// explicitly promises scroll-only; never infer the expected contract from code.
+const gestureMode=process.argv.find(x=>x.startsWith('--gesture='))?.slice(10)||'scroll-only';
+assert.ok(['pinch','scroll-only'].includes(gestureMode),'Explicit gesture contract');
 assert.ok([1,2].includes(dpr),'DPR must be 1 or 2');assert.match(tag,/^[a-z0-9-]*$/,'Output tag is a simple local filename');
 const out=path.join(repo,'outputs/slide-flow',`dpr-${dpr}${tag?'-'+tag:''}`),engineFilter=process.argv.find(x=>x.startsWith('--engine='))?.slice(9),caseFilter=process.argv.find(x=>x.startsWith('--case='))?.slice(7);
 assert.ok(!engineFilter||['chromium','webkit'].includes(engineFilter));
@@ -12,7 +16,7 @@ const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),files=new Map()
 function snapshot(dir,prefix=''){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())snapshot(p,prefix+e.name+'/');else files.set('/'+prefix+e.name,fs.readFileSync(p));}}
 snapshot(root);
 const hashes=new Map([...files].map(([name,bytes])=>[name,sha(bytes)]));
-const report={startedAt:new Date().toISOString(),root,dpr,diagnoseInk,runnerSha256:sha(fs.readFileSync(__filename)),source:Object.fromEntries(hashes),results:[],boundaries:[
+const report={startedAt:new Date().toISOString(),root,dpr,diagnoseInk,gestureMode,runnerSha256:sha(fs.readFileSync(__filename)),source:Object.fromEntries(hashes),results:[],boundaries:[
   'Synthetic approved account, deterministic colored page.pdf PNGs and existing raster import helper; no real PPTX decoding in this suite.',
   'Pointer/touch/pinch events are browser automation, not physical iPad/Pencil/palm acceptance.',
   'Decoded background cache and canvas dimensions are measured, not operating-system memory pressure.',
@@ -250,9 +254,10 @@ async function run(browser,engine){
   await check(browser,engine,'realistic pointerup before touchend settles the visible slide',async({p})=>{
     const ids=await importSlides(p,6);await p.evaluate(()=>document.querySelector('#penOnly').checked=true);
     await pointer(p,'pointerdown',200,550,11,'touch');await pointer(p,'pointerdown',350,550,12,'touch');await touch(p,'touchstart',[[11,200,550],[12,350,550]]);
-    await pointer(p,'pointermove',200,-350,11,'touch');await pointer(p,'pointermove',350,-350,12,'touch');assert.equal(await p.evaluate(()=>activeId),ids[0]);assert.equal(await p.evaluate(()=>!!pinchT),true);
+    await pointer(p,'pointermove',200,-350,11,'touch');await pointer(p,'pointermove',350,-350,12,'touch');assert.equal(await p.evaluate(()=>activeId),ids[0]);assert.equal(await p.evaluate(()=>!!pan),true);
+    if(gestureMode==='pinch')assert.equal(await p.evaluate(()=>!!pinchT),true);
     await pointer(p,'pointerup',200,-350,11,'touch');await touch(p,'touchend',[[12,350,-350]]);await pointer(p,'pointerup',350,-350,12,'touch');await touch(p,'touchend',[]);await paint(p);
-    const s=await geometry(p);assert.notEqual(s.activeId,ids[0]);assert.ok(s.visible.includes(s.activeId));assert.equal(await p.evaluate(()=>!!pinchT||!!pan),false);return s;
+    const s=await geometry(p);assert.notEqual(s.activeId,ids[0]);assert.ok(s.visible.includes(s.activeId));assert.equal(await p.evaluate(()=>!!pan||touchPoints.size>0||suppressTouch),false);return s;
   });
   await check(browser,engine,'repeated bottom edge strokes never grow the slide',async({p})=>{
     await importSlides(p);await scrollTo(p,200);const initial=await geometry(p),heights=[initial.rows[0].height];
@@ -271,8 +276,18 @@ async function run(browser,engine){
   await check(browser,engine,'short slides all paint even when more than twelve are visible',async({p})=>{
     await p.setViewportSize({width:390,height:1800});await importSlides(p,100,100);await paint(p);const g=await geometry(p);assert.ok(g.visible.length>12);assert.ok(g.cachedImages<=g.visible.length+2);for(const id of g.visible){const row=g.rows.find(x=>x.id===id),index=g.rows.indexOf(row),y=(row.top-g.scroll+50)*g.scale;if(y<g.height)colorNear(await pixel(p,'pdfCanvas',g.width/2,y),index%2?[50,180,90,255]:[220,70,40,255]);}return{visible:g.visible.length,cachedImages:g.cachedImages,screenshot:await screenshot(p,engine,'short-slides-tall-viewport')};
   });
-  await check(browser,engine,'touch pinch zoom keeps anchor continuous and ends cleanly',async({p})=>{
-    await importSlides(p,4);await adjacent(p);const before=await geometry(p);await touch(p,'touchstart',[[11,200,220],[12,400,220]]);await touch(p,'touchmove',[[11,150,220],[12,450,220]]);await paint(p);const during=await geometry(p);assert.ok(Math.abs(during.zoom-1.5)<.01);assert.ok(Math.abs((before.scroll+220/before.scale)-(during.scroll+220/during.scale))<1);await touch(p,'touchend',[]);assert.equal(await p.evaluate(()=>!!pinchT),false);await save(p);return{before,during,after:await geometry(p)};
+  await check(browser,engine,'explicit gesture contract preserves navigation and footer zoom',async({p})=>{
+    await importSlides(p,4);await adjacent(p);const before=await geometry(p);
+    await touch(p,'touchstart',[[11,200,220],[12,400,220]]);await touch(p,'touchmove',[[11,150,220],[12,450,220]]);await paint(p);
+    const during=await geometry(p);
+    if(gestureMode==='pinch'){
+      assert.ok(Math.abs(during.zoom-1.5)<.01);assert.ok(Math.abs((before.scroll+220/before.scale)-(during.scroll+220/during.scale))<1);
+      await touch(p,'touchend',[]);assert.equal(await p.evaluate(()=>!!pinchT),false);await save(p);return{before,during,after:await geometry(p)};
+    }
+    assert.equal(during.zoom,before.zoom);assert.equal(during.scroll,before.scroll);await touch(p,'touchend',[]);
+    await p.locator('[data-zoom="in"]').click();await paint(p);assert.equal((await geometry(p)).zoom,1.25);
+    await p.locator('[data-zoom="fit"]').click();await paint(p);assert.equal((await geometry(p)).zoom,1);
+    assert.equal(await p.evaluate(()=>!!pan||touchPoints.size>0||suppressTouch),false);await save(p);return{before,during,after:await geometry(p)};
   });
   await check(browser,engine,'zoom horizontal bounds and resize preserve width fit',async({p})=>{
     await importSlides(p);await adjacent(p);await p.evaluate(()=>setViewZoom(2));await paint(p);let g=await geometry(p);assert.equal(g.zoom,2);assert.ok(Math.abs(g.scale-g.width/500)<.001);await p.evaluate(()=>{BilgeSlideFlow.setX(99999);drawAll();});assert.ok(await p.evaluate(()=>BilgeSlideFlow.x()<=BilgeSlideFlow.maxX()));await p.evaluate(()=>setViewZoom(1));await p.setViewportSize({width:768,height:1024});await paint(p);g=await geometry(p);assert.equal(g.zoom,1);assert.equal(g.x,0);assert.ok(Math.abs(g.scale-g.width/1000)<.001);assert.equal(await p.locator('#pdfNavigation').isVisible(),false);return{geometry:g,screenshot:await screenshot(p,engine,'tablet-resize')};

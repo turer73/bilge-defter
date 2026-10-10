@@ -2,6 +2,8 @@ name: Reliability candidate
 on:
   pull_request:
   workflow_dispatch:
+env:
+  BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
 permissions:
   contents: read
 concurrency:
@@ -29,18 +31,24 @@ jobs:
       - name: Historical diagnostic pins (never a quality gate)
         id: legacy_pins
         run: |
-          node -e "const fs=require('fs'),c=require('crypto');const h=c.createHash('sha256').update(fs.readFileSync('work/bilge-defter-invited-v78/SHA256SUMS')).digest('hex');fs.appendFileSync(process.env.GITHUB_OUTPUT,'matches='+(h==='6f172d47680d93b9d39e316a1f1512ee0e0c2e4645b95af9aab33890b34890f9')+'\n')"
+          node -e "const fs=require('fs'),c=require('crypto');const h=c.createHash('sha256').update(fs.readFileSync('work/bilge-defter-invited-v79/SHA256SUMS')).digest('hex');fs.appendFileSync(process.env.GITHUB_OUTPUT,'matches='+(h==='6f172d47680d93b9d39e316a1f1512ee0e0c2e4645b95af9aab33890b34890f9')+'\n')"
       - name: Media selection cache and immediate save lifecycle
         run: |
           node work/verify-media-cache-pairs.cjs --self-test
           node work/verify-media-cache-lifecycle.cjs
+      - name: Footer zoom controls and touch-only scrolling
+        run: npm run test:footer-zoom
+        env:
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
+      - name: Numbered PDF and presentation navigation
+        run: npm run test:page-navigation
       # Fail fast on drawing quality before the longer historical suite.
       # These are the same mandatory DPR checks, not a diagnostic bypass.
       - name: Retina continuous flow and strict raster quality (DPR 2)
         id: slide_flow_dpr2
         run: npm run test:slide-flow-dpr2
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
       - name: Diagnostic only - scratch lifetime in the original failed scenario
         if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: node work/diagnose-ink-lifetime.cjs
@@ -100,7 +108,7 @@ jobs:
       - name: Continuous slide flow and guarded ink cache
         run: npm run test:slide-flow
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
       - run: npm run prepare:baselines
       - name: Prepare historical and actual published v77 baselines
         run: |
@@ -114,8 +122,8 @@ jobs:
           node work/prepare-v71-baseline.cjs
           node work/prepare-v72-baseline.cjs
           npm run prepare:compat-reader
-      - name: Historical behavior against current v78, updates from actual v77
-        run: node work/verify-v78.cjs
+      - name: Historical behavior against current v79, updates from actual v78
+        run: node work/verify-v79.cjs
       - run: npm run test:reliability
       - run: npm run test:presentations
       - run: npm run test:page-limit
@@ -128,19 +136,19 @@ jobs:
       - name: Ordinary notebook PPTX imports, UI and guarded storage (synthetic only)
         run: node work/verify-pptx-notebook.cjs
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
       - name: Native raster safety and image readiness (synthetic only)
         run: node work/verify-pptx-raster.cjs
-      - name: Real published v77 reader accepts v78 notebook pages (synthetic only)
-        run: node work/verify-pptx-notebook-compat.cjs
+      - name: Real published v78 reader accepts v79 notebook pages (synthetic only)
+        run: node work/verify-v79-check.cjs compat
       - name: Marker opacity, persistence and Tabler icons
         run: npm run test:marker-icons
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
       - name: Frame-linked logo contrast, preferences and fallback
         run: npm run test:theme-logo
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v78
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
       - run: python -m pytest server-candidate/v49/tests -q
       - run: python -m pytest worker -q
       - run: python -B work/test_deploy_v73.py
@@ -148,6 +156,7 @@ jobs:
       - run: python -B work/test_deploy_v76.py
       - run: python -B work/test_deploy_v77.py
       - run: npm run test:deploy-v78
+      - run: npm run test:deploy-v79
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -155,10 +164,14 @@ jobs:
           path: |
             outputs/reliability-1/
             outputs/media-cache-fix/lifecycle-*/
+            outputs/footer-zoom/
+            outputs/page-navigation/
+            outputs/pptx-v79-release/
             outputs/presentations/
             outputs/page-limit/
             outputs/page-limit-sw/
             outputs/v78/
+            outputs/v79/
             outputs/pptx-v78-release/integration-*.json
             outputs/pptx-v78-release/*native-pptx-ready.png
             outputs/pptx-v78-release/v77-baseline/build-proof.json
