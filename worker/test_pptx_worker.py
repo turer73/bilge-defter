@@ -212,17 +212,21 @@ def server(tmp_path, runner):
 
 def request(path, body=MAGIC + b'ok', headers=None, method='POST', target='/convert'):
     connection = UnixConnection(path)
-    connection.request(method, target, body, headers or {'Content-Type': worker.PPTX_TYPE})
-    response = connection.getresponse()
-    result = response.status, response.read(), dict(response.getheaders())
-    connection.close()
-    return result
+    try:
+        connection.request(method, target, body, headers or {'Content-Type': worker.PPTX_TYPE})
+        response = connection.getresponse()
+        return response.status, response.read(), dict(response.getheaders())
+    finally:
+        connection.close()
 
 
 @LINUX
 def test_http_success_health_and_failure_retry(server, runner):
     service, path = server
-    assert request(path, method='GET', target='/health')[0] == 200
+    # Match the real health check: GET has no presentation body. The handler
+    # deliberately responds and closes without waiting for an upload.
+    status, data, _ = request(path, body=None, method='GET', target='/health')
+    assert (status, data) == (200, b'Ready\n')
     assert request(path, MAGIC + b'error')[0] == 422
     status, data, headers = request(path)
     assert status == 200 and data == PDF and headers['Content-Type'] == 'application/pdf'
@@ -234,7 +238,8 @@ def test_one_job_and_connection_cap(server):
     service, path = server
     assert service.job_lock.acquire(False)
     try:
-        assert request(path)[0] == 429
+        assert request(path, body=None, headers={
+            'Content-Type': worker.PPTX_TYPE, 'Content-Length': '6'})[0] == 429
     finally:
         service.job_lock.release()
     # The client can consume the response before the server thread executes its
@@ -293,8 +298,10 @@ def test_unknown_cleanup_state_fail_closed(server):
         raise worker.CleanupError()
     service.run_job = failed
     assert request(path)[0] == 503
-    assert request(path, method='GET', target='/health')[0] == 503
-    assert request(path)[0] == 503
+    assert request(path, body=None, method='GET', target='/health')[:2] == (503, b'Unavailable\n')
+    # Already-unhealthy requests are rejected before reading a body.
+    assert request(path, body=None, headers={
+        'Content-Type': worker.PPTX_TYPE, 'Content-Length': '6'})[0] == 503
 
 
 @LINUX
@@ -317,7 +324,8 @@ def test_cleanup_failure_between_health_check_and_lock_is_fail_closed(server):
         calls.append(True)
         return PDF
     service.run_job = forbidden
-    assert request(path)[0] == 503
+    assert request(path, body=None, headers={
+        'Content-Type': worker.PPTX_TYPE, 'Content-Length': '6'})[0] == 503
     deadline = time.monotonic() + 3
     while actual.locked() and time.monotonic() < deadline:
         time.sleep(.01)
