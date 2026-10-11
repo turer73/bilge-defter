@@ -41,7 +41,13 @@ async function fixture(browser){
   return{p,context,origin,requests,external,errors,goto,finish:async()=>{await context.close();server.closeAllConnections();await new Promise(r=>server.close(r));}};
 }
 async function save(p){await p.evaluate(async()=>{if(!await flushSave())throw Error('Save failed');if(typeof ensureAssets==='function')await ensureAssets();if(!await flushSave())throw Error('Post-asset save failed');});}
-async function paint(p){await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));}
+async function paint(p){
+  // The viewport reader decodes serially. Wait for the actual requested visible
+  // pages, not an assumed two-frame parallel Image load. Error pages still reach
+  // the unchanged readiness/colour/ink assertions; none is counted as a pass here.
+  await p.waitForFunction(()=>{const r=window.BilgeSlideFlow?.snapshot()?.reader;return !r||!r.scope||r.visible.every(id=>r.resident.some(x=>x.key===id)||r.errors.some(x=>x.key===id))});
+  await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+}
 async function importSlides(p,count=3,height=563){
   await save(p);
   const result=await p.evaluate(async ({count,height})=>{

@@ -90,9 +90,9 @@ function pdfImageSize(src){
     if(m===216||m===1||(m>=208&&m<=215)){i+=2;continue}i+=2+c(i+2)*256+c(i+3)}
   return null;
 }
-function validPdfBackground(b){
+function validPdfBackground(b,imageSizes){
   if(!b||b.width!==1000||!Number.isSafeInteger(b.height)||b.height<100||b.height>3000||typeof b.name!=='string'||b.name.length>200||!Number.isSafeInteger(b.number)||!Number.isSafeInteger(b.total)||b.number<1||b.number>b.total||b.total>PDF_PAGE_LIMIT||typeof b.image!=='string'||b.image.length>6*1024*1024)return false;
-  try{const size=pdfImageSize(b.image);return !!size&&size.width===b.width&&size.height===b.height}catch{return false}
+  try{let size;if(imageSizes?.has(b.image))size=imageSizes.get(b.image);else{size=pdfImageSize(b.image);if(imageSizes&&imageSizes.size<128)imageSizes.set(b.image,size)}return !!size&&size.width===b.width&&size.height===b.height}catch{return false}
 }
 async function validatePdfImages(book){
   const images=new Set([...book.pages,...(book.trash||[]).map(t=>t.page)].filter(p=>p.pdf).map(p=>p.pdf.image));
@@ -235,6 +235,36 @@ window.BilgeRasterImport=(()=>{
   }
   const stale=()=>Object.assign(new Error('Hesap, defter veya kayıt değişti. Sunum eklenmedi; pencereyi yeniden açın.'),{name:'ImportStale'});
   function check(lease){if(!isCurrent(lease))throw stale()}
+  // Prepare only the validated import, not the old runtime notebook. Keep these
+  // mappings private until the notebook commit is known to have succeeded.
+  async function prepareAssets(pages,checkOwner){
+    const prepared=new Map();
+    if(!ASSET_WRITE)return prepared;
+    for(const src of new Set(pages.map(p=>p.pdf.image))){
+      checkOwner();const ref=ASSET_PREFIX+await sha256Hex(src);checkOwner();
+      await new Promise((ok,no)=>{
+        const tx=db.transaction(STORE,'readwrite');let failure;
+        tx.oncomplete=()=>{try{checkOwner();ok()}catch(error){no(error)}};
+        tx.onabort=()=>no(failure||tx.error||new DOMException('Görsel kaydı iptal edildi.','AbortError'));
+        tx.onerror=()=>{};
+        try{
+          checkOwner();
+          // Upsert even a known hash: hints do not prove disk existence, and a
+          // fresh timestamp protects this not-yet-referenced row from old GC.
+          tx.objectStore(STORE).put({data:src,t:Date.now()},ref);
+        }catch(error){failure=error;try{tx.abort()}catch{no(error)}}
+      });
+      prepared.set(src,ref);
+    }
+    return prepared;
+  }
+  function importJSON(book,prepared){
+    const compact=compactBook(book);
+    return latin1JSON(JSON.stringify({...compact,pages:compact.pages.map((p,i)=>{
+      const ref=prepared.get(book.pages[i].pdf?.image);
+      return ref?{...p,pdf:{...p.pdf,image:ref}}:p;
+    })}));
+  }
   async function commit(candidate,lease){
     check(lease);
     if(busy||importing||pdfBusy||pdfExportBusy||drawing||pan||mediaBusy||mediaPlacement||mediaSelecting||
@@ -292,16 +322,27 @@ window.BilgeRasterImport=(()=>{
         pages:[...state.pages,...pages],active:pages[0].id,activeNotebook:id};
       if(!validState(next))throw Error('Sunum kayıt yapısı doğrulanamadı.');
       check(lease);
-      try{await dbPut(next,{preservePrevious:true,guard:()=>isCurrent(lease)})}catch(error){
+      // A connection change during preparation is a definite, retryable import
+      // failure. Do not silently switch accounts/connections or publish hints.
+      if(!db){await openDB();check(lease)}
+      const connection=db,ownerCurrent=()=>isCurrent(lease)&&db===connection&&connection?.name===lease.scope;
+      const checkOwner=()=>{if(!ownerCurrent())throw stale()};checkOwner();
+      const prepared=await prepareAssets(added,checkOwner);checkOwner();
+      // Final writes retain the existing scope/lease contract: native dbPut may
+      // reconnect to this same database before reporting MissingAsset.
+      try{await dbPut(next,{json:importJSON(next,prepared),preservePrevious:true,guard:()=>isCurrent(lease)})}catch(error){
         // Match ordinary save recovery if another tab collected an old asset.
+        // No preparation failure deletes assets: hashes may belong to another
+        // book. An incomplete attempt leaves harmless rows for age-based GC.
         if(error?.name!=='MissingAsset')throw error;
-        check(lease);for(const ref of String(error.message).split(','))storedAssets.delete(ref);assetEpoch++;
+        check(lease);prepared.clear();for(const ref of String(error.message).split(','))storedAssets.delete(ref);assetEpoch++;
         await dbPut(next,{preservePrevious:true,guard:()=>isCurrent(lease)});
       }
       persisted=true;
       // An already submitted IDB transaction cannot be recalled. Never install
       // its result into a different/locked UI, or invite a duplicate retry.
       if(!isCurrent(lease))throw Object.assign(new Error('Sunum önceki hesabın defterine kaydedildi. Hesabı yeniden açıp kontrol edin; tekrar eklemeyin.'),{name:'ImportCommitted'});
+      if(prepared.size){for(const [src,ref] of prepared){assetRefs.set(src,ref);storedAssets.add(ref)}assetEpoch++}
       leases.delete(lease);state=next;activeId=next.active;activeNotebook=id;editRevision++;savedRevision=editRevision;
       saveFailed=false;failureMessage='';failureCode='';scheduleAssetSweep();
       if(typeof window.markSyncDirty==='function')window.markSyncDirty();
@@ -309,9 +350,10 @@ window.BilgeRasterImport=(()=>{
       document.querySelector('#inputState').textContent=`${count} slayt deftere eklendi · normal kalem araçlarıyla yazın`;
       return {ok:true,count,notebookId:id};
     }catch(error){
-      if(persisted)throw Object.assign(new Error('Sunum kaydedildi ancak ekran yenilenemedi. Defteri yeniden açıp kontrol edin; tekrar eklemeyin.'),{name:'ImportCommitted'});
+      if(persisted)error=Object.assign(new Error('Sunum kaydedildi ancak ekran yenilenemedi. Defteri yeniden açıp kontrol edin; tekrar eklemeyin.'),{name:'ImportCommitted'});
       if(error?.name==='NotebookConflict')saveError(error);
-      if(error?.name==='SaveWorkerLost')throw Object.assign(new Error('Kayıt işlemcisinden kesin sonuç alınamadı. Defteri yeniden açıp sunumun eklenip eklenmediğini kontrol edin; hemen tekrar eklemeyin.'),{name:'ImportCommitUnknown'});
+      if(error?.name==='SaveWorkerLost')error=Object.assign(new Error('Kayıt işlemcisinden kesin sonuç alınamadı. Defteri yeniden açıp sunumun eklenip eklenmediğini kontrol edin; hemen tekrar eklemeyin.'),{name:'ImportCommitUnknown'});
+      if(error?.name==='ImportCommitted'||error?.name==='ImportCommitUnknown')quarantineImport(lease.scope,error);
       throw error;
     }
     finally{busy=false;importing=false;try{renderSaveStatus()}catch{/* Persisted outcome must not be hidden by a failed UI repaint. */}}
@@ -424,9 +466,24 @@ async function presentationErrorMessage(response){
 // and a bounded set of decoded pictures. The separate PPTX reader is unaffected.
 window.BilgeSlideFlow=(()=>{
   const WIDTH=1000,GAP=24,PREFETCH_PIXEL_BUDGET=12000000,INK_PIXEL_BUDGET=8000000;
-  const pictures=new Map(),heights=new WeakMap(),inkTiles=new Map(),inkStamps=new WeakMap(),inkBounds=new WeakMap(),inkPressures=new WeakMap();
+  const pictureVersions=new WeakMap(),heights=new WeakMap(),inkTiles=new Map(),inkStamps=new WeakMap(),inkBounds=new WeakMap(),inkPressures=new WeakMap();
   let inkPixels=0;
-  let flow=null;
+  let flow=null,flowSequence=0,pictureSequence=0,suspended=false;
+  // Keep one scheduler for the entire page lifetime. A reset invalidates its
+  // scope, but does not free a still-running native decode's reservation.
+  const pictureReader=window.BilgeViewportReader.create({prefetchPixels:PREFETCH_PIXEL_BUDGET,
+    readPage(meta,scope){
+      const owner=flow;
+      if(suspended||!owner||scope!==owner.readerScope||!initialized()||state!==owner.state||DB!==owner.db||activeNotebook!==owner.notebook)return null;
+      const row=owner.byId.get(meta.key);if(!row||pictureRequest(row).version!==meta.version)return null;
+      return {image:row.page.pdf.image,width:row.page.pdf.width,height:row.page.pdf.height};
+    },
+    onChange(snapshot){
+      const owner=flow;if(suspended||!owner||snapshot.scope!==owner.readerScope)return;
+      if(!initialized()||state!==owner.state||DB!==owner.db||activeNotebook!==owner.notebook){reset();return}
+      queueViewportRender();
+    }
+  });
   pdfStyle.textContent+='#pdfBackdropState.slide-flow-status{inset:auto;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}';
 
   function initialized(){
@@ -436,10 +493,18 @@ window.BilgeSlideFlow=(()=>{
   function isSlide(p){return !!p?.pdf&&p.pdf.width===WIDTH&&/\.pptx$/i.test(p.pdf.name||'')}
   function frozen(){return drawing||!!mediaGesture}
   function selectionBusy(){return drawing||!!pan||!!mediaGesture||!!mediaPending||!!mediaPlacement}
-  function disposePicture(entry){entry.image.onload=entry.image.onerror=null;entry.image.src=''}
+  function pictureRequest(row){
+    const p=row.page,bg=p.pdf,previous=pictureVersions.get(p);
+    let version=previous?.version;
+    if(!previous||previous.background!==bg||previous.source!==bg.image||previous.width!==bg.width||previous.height!==bg.height){
+      version=++pictureSequence;pictureVersions.set(p,{background:bg,source:bg.image,width:bg.width,height:bg.height,version});
+    }
+    return {key:p.id,version,width:bg.width,height:bg.height};
+  }
+  function pictureStatus(row){if(!row||suspended)return null;const meta=pictureRequest(row);return pictureReader.status(meta.key,meta.version)}
   function dropInk(key){const tile=inkTiles.get(key);if(!tile)return;inkPixels-=tile.pixels;tile.canvas.width=tile.canvas.height=1;inkTiles.delete(key)}
   function clearInk(){for(const key of inkTiles.keys())dropInk(key)}
-  function reset(){for(const entry of pictures.values())disposePicture(entry);pictures.clear();clearInk();flow=null}
+  function reset(){pictureReader.clear();clearInk();flow=null}
   function rect(){return canvas.getBoundingClientRect()}
   function rawScale(){return Math.max(1,rect().width)/WIDTH*flow.zoom}
   function scale(){
@@ -490,7 +555,7 @@ window.BilgeSlideFlow=(()=>{
     if(!same){
       reset();let top=0;
       const rows=pages.map(p=>{const row={page:p,top,height:pageHeight(p)};top+=row.height+GAP;return row});
-      flow={state,db:DB,notebook:activeNotebook,rows,byId:new Map(rows.map(row=>[row.page.id,row])),total:top-GAP,scroll:0,x:0,zoom:1,activeId,navigationId:activeId,frozenScale:null};
+      flow={state,db:DB,notebook:activeNotebook,readerScope:`slide-flow-${++flowSequence}`,rows,byId:new Map(rows.map(row=>[row.page.id,row])),total:top-GAP,scroll:0,x:0,zoom:1,activeId,navigationId:activeId,frozenScale:null};
       const row=rowFor();flow.scroll=clampScroll(row.top+Math.min(row.height,Math.max(0,currentPage.viewY||0)));
     }else if(!frozen()){
       const oldRow=rowFor(flow.activeId),local=oldRow?flow.scroll-oldRow.top:0;
@@ -540,24 +605,13 @@ window.BilgeSlideFlow=(()=>{
     return wanted;
   }
   function warm(){
-    if(!ensure())return;
-    const owner=flow,wanted=desiredRows(),ids=new Set(wanted.map(row=>row.page.id));
-    for(const [id,entry] of pictures)if(!ids.has(id)||entry.source!==rowFor(id)?.page.pdf.image){disposePicture(entry);pictures.delete(id)}
-    for(const row of wanted){
-      if(pictures.has(row.page.id))continue;
-      const image=new Image(),entry={source:row.page.pdf.image,image,status:'loading'};
-      pictures.set(row.page.id,entry);
-      const finish=status=>{
-        if(flow!==owner||pictures.get(row.page.id)!==entry)return;
-        entry.status=status;
-        if(!initialized()||state!==owner.state||DB!==owner.db){reset();return}
-        queueViewportRender();
-      };
-      image.onload=()=>finish(image.naturalWidth>0?'ready':'error');
-      image.onerror=()=>finish('error');image.src=entry.source;
-    }
+    if(!ensure()||suspended)return;
+    if(pictureReader.snapshot().scope!==flow.readerScope)pictureReader.open(flow.readerScope);
+    const visible=visibleRows(),wanted=desiredRows();
+    pictureReader.setViewport(wanted.filter(row=>visible.includes(row)).map(pictureRequest),wanted.filter(row=>!visible.includes(row)).map(pictureRequest));
   }
-  function imageReady(row){const entry=row&&pictures.get(row.page.id);return !!entry&&entry.source===row.page.pdf.image&&entry.status==='ready'&&entry.image.complete&&entry.image.naturalWidth>0}
+  function imageReady(row){return pictureStatus(row)==='ready'}
+  function retryImage(id=activeId){if(!ensure()||suspended)return false;warm();const row=rowFor(id);if(pictureStatus(row)!=='error')return false;pictureReader.retry(id);return true}
   function imageReadyForActive(){if(!ensure())return false;warm();return imageReady(rowFor())}
   function select(row){
     if(!row||row.page.id===activeId)return false;
@@ -579,7 +633,7 @@ window.BilgeSlideFlow=(()=>{
     if(x<0||x>WIDTH)return false;
     const row=flow.rows.find(item=>y>=item.top&&y<=item.top+item.height);
     if(!row)return false;
-    warm();if(!imageReady(row))return false;
+    warm();if(!imageReady(row)){if(pictureStatus(row)==='error')retryImage(row.page.id);return false}
     if(select(row)){drawAll();warm()}
     return true;
   }
@@ -641,14 +695,13 @@ window.BilgeSlideFlow=(()=>{
     for(const row of visibleRows()){
       c.save();c.setTransform(d*s,0,0,d*s,-flow.x*d*s,(row.top-flow.scroll)*d*s);
       c.beginPath();c.rect(0,0,WIDTH,row.height);c.clip();c.fillStyle=row.page.paperColor||'#fffdf8';c.fillRect(0,0,WIDTH,row.height);
-      const entry=pictures.get(row.page.id);
-      if(imageReady(row))c.drawImage(entry.image,0,0,WIDTH,row.page.pdf.height);
-      else{c.fillStyle='#46645b';c.font='24px sans-serif';c.textAlign='center';c.fillText(entry?.status==='error'?'Slayt açılamadı — notlar korunuyor':'Slayt hazırlanıyor…',WIDTH/2,Math.min(row.page.pdf.height/2,120))}
+      const meta=pictureRequest(row);
+      if(!pictureReader.draw(meta.key,meta.version,c,0,0,WIDTH,row.page.pdf.height)){c.fillStyle='#46645b';c.font='24px sans-serif';c.textAlign='center';c.fillText(pictureStatus(row)==='error'?'Slayt açılamadı — kalem veya fareyle dokunarak yeniden deneyin':'Slayt hazırlanıyor…',WIDTH/2,Math.min(row.page.pdf.height/2,120))}
       c.restore();
     }
-    const active=rowFor(),entry=pictures.get(active.page.id);
+    const active=rowFor();
     pdfBackdropState.classList.add('slide-flow-status');pdfBackdropState.hidden=imageReady(active);
-    const message=entry?.status==='error'?'Bu slayt görüntüsü açılamadı. Notlar korunuyor; bu sayfada yazı durduruldu.':'Slayt görüntüsü hazırlanıyor.';
+    const message=pictureStatus(active)==='error'?'Bu slayt görüntüsü açılamadı. Notlar korunuyor; kalem veya fareyle dokunarak yeniden deneyin.':'Slayt görüntüsü hazırlanıyor.';
     if(pdfBackdropState.textContent!==message)pdfBackdropState.textContent=message;
   }
   function drawInk(){
@@ -791,12 +844,14 @@ window.BilgeSlideFlow=(()=>{
   addEventListener('bilge-account-locked',reset);
   // The main pagehide handler still has to finish/settle its active gesture and
   // save it. Release decoders without resetting that viewport or its owner.
-  addEventListener('pagehide',()=>{for(const entry of pictures.values())disposePicture(entry);pictures.clear();clearInk()});
+  addEventListener('pagehide',()=>{suspended=true;pictureReader.suspend();clearInk()});
+  addEventListener('pageshow',()=>{suspended=false;if(initialized())queueViewportRender()});
   return Object.freeze({
-    enabled:ensure,scale,ready:imageReadyForActive,preparePointer,point,clip,scroll,settle,setZoom,jumpTo,drawBackground,drawInk,
+    enabled:ensure,scale,ready:imageReadyForActive,preparePointer,point,clip,scroll,settle,setZoom,jumpTo,drawBackground,drawInk,retryImage,
+    whenIdle:()=>{warm();return pictureReader.whenIdle()},
     y:()=>ensure()?flow.scroll-rowFor().top:0,x:()=>ensure()?flow.x:0,zoom:()=>ensure()?flow.zoom:1,maxX,
     setX:value=>{if(ensure()&&Number.isFinite(value)){const next=clampX(value);if(next!==flow.x){flow.x=next;changed()}else if(persist()){markViewChanged();scheduleViewSave()}}},
     visiblePages:()=>visibleRows().map(row=>row.page),
-    snapshot:()=>ensure()?{scroll:flow.scroll,x:flow.x,zoom:flow.zoom,activeId,totalHeight:flow.total,rows:flow.rows.map(row=>({id:row.page.id,top:row.top,height:row.height})),visible:visibleRows().map(row=>row.page.id),cachedImages:pictures.size,cachedInkTiles:inkTiles.size,inkPixels}:null
+    snapshot:()=>{if(!ensure())return null;const reader=pictureReader.snapshot();return {scroll:flow.scroll,x:flow.x,zoom:flow.zoom,activeId,totalHeight:flow.total,rows:flow.rows.map(row=>({id:row.page.id,top:row.top,height:row.height})),visible:visibleRows().map(row=>row.page.id),cachedImages:reader.totalCount,cachedInkTiles:inkTiles.size,inkPixels,reader}}
   });
 })();

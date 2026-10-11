@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="app">
-  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v79</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
+  <header><button class="btn" id="sidebarToggle" aria-controls="pageSidebar" aria-expanded="false">☰ Sayfalar</button><h1>Bilge Defter <span class="badge">v80</span></h1><span id="currentNotebook"></span><span id="saveState" role="status">Hazırlanıyor…</span></header>
   <main>
     <aside class="side" id="pageSidebar" aria-label="Sayfalar" hidden><div class="side-heading"><strong>Defterler ve sayfalar</strong><button class="btn" id="sidebarClose" aria-label="Sayfaları kapat">× Kapat</button></div><div class="notebook-controls"><label for="notebookSelect">Defter / ders</label><select id="notebookSelect"></select><div class="notebook-buttons"><button class="btn" id="newNotebook">+ Yeni defter</button><button class="btn" id="editNotebook">Defteri düzenle</button></div></div><button class="btn primary" id="newPage">+ Yeni sayfa</button><div id="pages"></div><button class="btn" id="openTrash" aria-haspopup="dialog">Çöp Kutusu (0)</button><p class="empty">Sayfa seçtiğinizde veya yazmaya başladığınızda bu alan kapanır.</p><p class="empty">Veriler yalnızca bu tarayıcıda tutulur. Sunucu eşitlemesi yoktur.</p></aside>
     <section class="workspace">
@@ -156,14 +156,18 @@
 <link rel="stylesheet" href="account.css">
 <script src="account-workspace.js"></script>
 <script src="media-workspace.js"></script>
+<script src="viewport-reader.js"></script>
 <script src="pdf-workspace.js"></script>
 <script src="planner-workspace.js"></script>
 <script>
 let DB='bilge-defter-test-v1'; const STORE='state'; let db,state,activeId,tool='pen',drawing=false,current=null,saveTimer,inkSaveTimer,activePointer=null,ready=false;
 let storedJSON=null,editRevision=0,savedRevision=0,savePromise=null,saveFailed=false,saveConflict=false,importing=false,allowLeave=false,failureMessage='',failureCode='';
+// A committed or uncertain import must never reopen writes against stale UI state.
+// This scope-bound quarantine is cleared only by loading the saved notebook again.
+let importRecovery=null;
 // v69: a short local log of save failures and lifecycle events, kept in localStorage because
 // IndexedDB may be what is failing. No note content: names, sizes, durations, visibility only.
-const APP_VERSION='v79',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
+const APP_VERSION='v80',DIAG_KEY='bilge-diag-v1',LIFE_KEY='bilge-life-v1';
 let lastSaveBytes=null,failStreak=0,failSince=0,saveRetrying=false,retryTimer=null,retryWhenVisible=false,hiddenAt=0,lastShownAt=0;
 function diag(ev,extra={}){try{const list=JSON.parse(localStorage.getItem(DIAG_KEY)||'[]');list.push({t:new Date().toISOString(),ev,vis:document.visibilityState,...extra});while(list.length>80)list.shift();localStorage.setItem(DIAG_KEY,JSON.stringify(list))}catch{}}
 function errorInfo(e){return {name:String(e?.name||'Error').slice(0,40),msg:String(e?.message||'').slice(0,160)}}
@@ -234,7 +238,7 @@ for(const type of ['touchstart','touchmove','gesturestart','gesturechange'])writ
 function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>{const c=r.result;c.onclose=()=>{if(db===c)db=null};c.onversionchange=()=>{c.close();if(db===c)db=null};db=c;ok()};r.onerror=()=>no(r.error)})}
 // WebKit can drop an IndexedDB connection (app in the background, storage process evicted under
 // memory pressure). A lost connection is reopened and the step retried once.
-async function withDB(run){for(let attempt=0;;attempt++){if(!db)await openDB();try{return await run(db)}catch(e){if(attempt||e?.name==='NotebookConflict')throw e;try{db?.close()}catch{}db=null}}}
+async function withDB(run,canRetry=()=>true){for(let attempt=0;;attempt++){if(!db)await openDB();try{return await run(db)}catch(e){if(attempt||e?.name==='NotebookConflict'||!canRetry(e))throw e;try{db?.close()}catch{}db=null}}}
 function dbGet(key='app'){return withDB(d=>new Promise((ok,no)=>{const r=d.transaction(STORE).objectStore(STORE).get(key);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))}
 // The pen thread validates and serializes the snapshot once; save-worker.js parses,
 // reads back, compares and writes the notebook. No worker: the original path below.
@@ -283,10 +287,10 @@ async function dbPutWorker(json,preservePrevious,guard=()=>true){
   }
 }
 function dbPut(snapshot,{preservePrevious=false,json,cached=false,guard=()=>true}={}){
-  const scope=DB,check=()=>{if(DB!==scope||!guard())throw Object.assign(new Error('Hesap veya defter değişti; kayıt gönderilmedi.'),{name:'ImportStale'})};
+  const scope=DB,check=()=>{assertImportWritable(scope);if(DB!==scope||!guard())throw Object.assign(new Error('Hesap veya defter değişti; kayıt gönderilmedi.'),{name:'ImportStale'})};
   try{check()}catch(error){return Promise.reject(error)}
   if(!(cached?validStateCached(snapshot):validState(snapshot)))return Promise.reject(Object.assign(new Error('Geçersiz kayıt engellendi. Son sağlam kayıt korundu.'),{name:'InvalidNotebook'}));
-  if(saveWorker||workerLost)return dbPutWorker(json??storedText(snapshot),preservePrevious,()=>DB===scope&&guard());
+  if(saveWorker||workerLost)return dbPutWorker(json??storedText(snapshot),preservePrevious,()=>{assertImportWritable(scope);return DB===scope&&guard()});
   const nextJSON=json??storedText(snapshot),payload=JSON.parse(nextJSON),expected=storedJSON,marker={writer:saveWriter,seq:++saveSeq,length:nextJSON.length};
   return withDB(d=>new Promise((ok,no)=>{
     try{check();if(d.name!==scope)throw Object.assign(new Error('Kayıt hesabı değişti.'),{name:'ImportStale'})}catch(error){no(error);return}
@@ -299,17 +303,23 @@ function dbPut(snapshot,{preservePrevious=false,json,cached=false,guard=()=>true
       if(actual!==expected){conflict=new Error('Başka bir sekme kayıtlı defteri değiştirdi');conflict.name='NotebookConflict';tx.abort();return}
       const refs=[...recordRefs(payload)];let pending=refs.length,missing=[];
       const go=()=>{if(missing.length){conflict=Object.assign(new Error(missing.join(',')),{name:'MissingAsset'});tx.abort();return}const meta=store.get('sync-state-v2');
-      meta.onsuccess=()=>{try{if(preservePrevious&&read.result!==undefined)store.put(read.result,'before-import');store.put(payload,'app');store.put({...meta.result,dirty:true},'sync-state-v2');store.put(marker,'app-writer')}catch(e){conflict=e;try{tx.abort()}catch{}}}};if(!pending)go();else for(const r of refs){const c=store.count(r);c.onsuccess=()=>{if(!c.result)missing.push(r);if(!--pending)go()}}
+      meta.onsuccess=()=>{try{check();if(preservePrevious&&read.result!==undefined)store.put(read.result,'before-import');store.put(payload,'app');store.put({...meta.result,dirty:true},'sync-state-v2');store.put(marker,'app-writer')}catch(e){conflict=e;try{tx.abort()}catch{}}}};if(!pending)go();else for(const r of refs){const c=store.count(r);c.onsuccess=()=>{if(!c.result)missing.push(r);if(!--pending)go()}}
     };
-  }));
+  }),()=>DB===scope&&importRecovery?.scope!==scope);
 }
 // The receipt and dirty flag are committed atomically with a comparison against
 // the exact notebook that was sent. A late upload must not acknowledge later edits.
-function dbAcknowledgeSync(expected,receipt){const want=assetRefs.size?JSON.stringify(compactBook(JSON.parse(expected))):expected;return withDB(d=>new Promise((ok,no)=>{
-  const tx=d.transaction(STORE,'readwrite'),store=tx.objectStore(STORE),read=store.get('app');let dirty=true;
-  read.onsuccess=()=>{dirty=JSON.stringify(read.result)!==want;store.put({...receipt,dirty},'sync-state-v2')};
-  tx.oncomplete=()=>ok(dirty);tx.onabort=()=>no(tx.error||new Error('Eşitleme kaydı tamamlanamadı'));tx.onerror=()=>{};
-}))}
+function dbAcknowledgeSync(expected,receipt){
+  const scope=DB,check=()=>{assertImportWritable(scope);if(DB!==scope)throw Object.assign(new Error('Kayıt hesabı değişti.'),{name:'ImportStale'})};
+  try{check()}catch(error){return Promise.reject(error)}
+  const want=assetRefs.size?JSON.stringify(compactBook(JSON.parse(expected))):expected;
+  return withDB(d=>new Promise((ok,no)=>{
+    try{check();if(d.name!==scope)throw Object.assign(new Error('Kayıt hesabı değişti.'),{name:'ImportStale'})}catch(error){no(error);return}
+    const tx=d.transaction(STORE,'readwrite'),store=tx.objectStore(STORE),read=store.get('app');let dirty=true,failure;
+    read.onsuccess=()=>{try{check();dirty=JSON.stringify(read.result)!==want;store.put({...receipt,dirty},'sync-state-v2')}catch(error){failure=error;tx.abort()}};
+    tx.oncomplete=()=>ok(dirty);tx.onabort=()=>no(failure||tx.error||new Error('Eşitleme kaydı tamamlanamadı'));tx.onerror=()=>{};
+  }),()=>DB===scope&&importRecovery?.scope!==scope);
+}
 // Existence only: the recovery button no longer decodes a whole notebook copy (it is validated on use).
 function dbHas(key){return withDB(d=>new Promise((ok,no)=>{const r=d.transaction(STORE).objectStore(STORE).count(key);r.onsuccess=()=>ok(r.result>0);r.onerror=()=>no(r.error)}))}
 function newPageId(){
@@ -368,22 +378,39 @@ function validPage(p){return typeof p?.id==='string'&&typeof p.title==='string'&
 function validState(x){
   if(!([1,2,3,4,5,6].includes(x?.version)&&Array.isArray(x.pages)&&x.pages.length>0&&x.pages.every(validPage))||!validPlannerBook(x))return false;
   if(x.trash!==undefined&&(!Array.isArray(x.trash)||!x.trash.every(t=>validPage(t?.page)&&typeof t.notebookTitle==='string'&&typeof t.deletedAt==='string'&&Number.isFinite(Date.parse(t.deletedAt))&&Number.isSafeInteger(t.position)&&t.position>=0)))return false;
-  const allPages=[...x.pages,...(x.trash||[]).map(t=>t.page)];if(!validMediaBook(x)||allPages.some(p=>!validPdfView(p)||(p.pdf!==undefined&&(!validPdfBackground(p.pdf)||x.version<2))))return false;
+  // Repeated backgrounds are parsed once within this validation only. Do not
+  // retain encoded images or reuse a page verdict across calls/metadata changes.
+  const imageSizes=new Map(),allPages=[...x.pages,...(x.trash||[]).map(t=>t.page)];if(!validMediaBook(x)||allPages.some(p=>!validPdfView(p)||(p.pdf!==undefined&&(!validPdfBackground(p.pdf,imageSizes)||x.version<2))))return false;
   const pageIds=allPages.map(p=>p.id);if(new Set(pageIds).size!==pageIds.length)return false;
   if(x.notebooks!==undefined&&(!Array.isArray(x.notebooks)||!x.notebooks.every(n=>typeof n?.id==='string'&&n.id.length>0&&n.id!==GENERAL&&typeof n.title==='string'&&n.title.trim().length>0&&n.title.length<=80)))return false;
   const ids=notebooks(x).map(n=>n.id);return new Set(ids).size===ids.length&&(x.activeNotebook===undefined||ids.includes(x.activeNotebook))&&x.pages.every(p=>p.notebookId===undefined||ids.includes(p.notebookId));
 }
 function isDirty(){return editRevision!==savedRevision}
 function renderSaveStatus(){
-  const nextSaveText=saveConflict?'Başka sekmede değişiklik var — yedek alın':saveFailed?'Kaydedilemedi — yedek alın':saveRetrying?'Kayıt yeniden deneniyor…':importing?'Yedek kaydediliyor…':drawing||isDirty()?'Kaydediliyor…':'Bu cihazda kaydedildi';
+  const recovery=importRecovery?.scope===DB?importRecovery:null;
+  const nextSaveText=recovery?'Sunum kaydını kontrol etmek için defteri yeniden açın':saveConflict?'Başka sekmede değişiklik var — yedek alın':saveFailed?'Kaydedilemedi — yedek alın':saveRetrying?'Kayıt yeniden deneniyor…':importing?'Yedek kaydediliyor…':drawing||isDirty()?'Kaydediliyor…':'Bu cihazda kaydedildi';
   if(saveEl.textContent!==nextSaveText)saveEl.textContent=nextSaveText;
   document.querySelector('#saveRecovery').hidden=!saveFailed&&!saveConflict;
-  document.querySelector('#saveRecoveryMessage').textContent=(saveConflict?'Başka bir sekme defteri değiştirdi. Üzerine yazmamak için bu sekmede düzenleme durduruldu. Önce bu sekmenin yedeğini alın, sonra kayıtlı defteri yeniden açın.':failureMessage||'Son değişiklikler henüz kaydedilemedi. Ekrandaki notlar korunuyor; yeniden deneyin veya bu sekmenin yedeğini alın. Kaydetmeden kapatmayın.')+(failureCode?` Ayrıntı: ${failureCode}.`:'');
+  document.querySelector('#saveRecoveryMessage').textContent=(recovery?recovery.message:saveConflict?'Başka bir sekme defteri değiştirdi. Üzerine yazmamak için bu sekmede düzenleme durduruldu. Önce bu sekmenin yedeğini alın, sonra kayıtlı defteri yeniden açın.':failureMessage||'Son değişiklikler henüz kaydedilemedi. Ekrandaki notlar korunuyor; yeniden deneyin veya bu sekmenin yedeğini alın. Kaydetmeden kapatmayın.')+(failureCode?` Ayrıntı: ${failureCode}.`:'');
   document.querySelector('#retrySave').hidden=saveConflict;document.querySelector('#retrySave').disabled=!!savePromise||importing;
   document.querySelector('#reloadSaved').hidden=!saveConflict;
   if(plannerDialog.open)renderPlannerStatus();
 }
 function saveError(e,message=''){saveFailed=true;failureMessage=message;failureCode=(e?.name==='NotebookConflict'?(e.message==='Başka bir sekme kayıtlı defteri değiştirdi'?'':e.message||''):e?.name&&e.name!=='Error'?e.name:'').replace(/\.$/,'');if(e?.name==='NotebookConflict')saveConflict=true;renderSaveStatus();console.error(e)}
+function assertImportWritable(scope=DB){
+  if(importRecovery?.scope===scope)throw Object.assign(new Error(importRecovery.message),{name:'ImportRecoveryRequired'});
+}
+function quarantineImport(scope,error){
+  // A late completion from another account must not lock the current account.
+  if(DB!==scope)return;
+  const message=(error?.name==='ImportCommitted'?'Sunum kaydedildi ancak ekran yenilenemedi.':'Sunum kaydının sonucu kesinleşmedi.')+' Kayıtlı notların üzerine yazmamak için düzenleme ve eşitleme durduruldu. Kayıtlı defteri yeniden açıp kontrol edin; sunumu hemen tekrar eklemeyin. Bu sekmenin yedeği son eklenen slaytları içermeyebilir.';
+  importRecovery=Object.freeze({scope,message});saveConflict=true;saveFailed=true;
+  failureMessage=message;failureCode=error?.name||'ImportCommitUnknown';saveRetrying=false;retryWhenVisible=false;
+  clearTimeout(saveTimer);saveTimer=null;clearTimeout(inkSaveTimer);inkSaveTimer=null;clearTimeout(viewSaveTimer);viewSaveTimer=null;
+  clearTimeout(retryTimer);retryTimer=null;clearTimeout(pageVerifyTimer);pageVerifyTimer=null;
+  dispatchEvent(new CustomEvent('bilge-import-quarantined',{detail:{scope}}));
+  try{renderSaveStatus()}catch{/* The write barrier must survive a failed UI repaint. */}
+}
 function markChanged(refresh=true){if(!ready)return;if(page()){page().updated=new Date().toISOString();touchPage(page())}state.active=activeId;editRevision++;if(typeof window.markSyncDirty==='function')window.markSyncDirty();if(refresh)renderSaveStatus()}
 function scheduleSave(){if(!ready||saveConflict)return;markChanged();void flushSave(true)}
 // Scrolling and pinch zoom change only where the page is shown. They are not edits (no updated
@@ -444,7 +471,47 @@ function compactBook(o){
 }
 // The exact text a save of this notebook writes (same as the cached path, built from scratch).
 function storedText(o){return latin1JSON(JSON.stringify(compactBook(o)))}
-function dbGetMany(keys){return withDB(d=>new Promise((ok,no)=>{const tx=d.transaction(STORE),store=tx.objectStore(STORE),out=new Map();for(const k of keys){const r=store.get(k);r.onsuccess=()=>out.set(k,r.result)}tx.oncomplete=()=>ok(out);tx.onabort=()=>no(tx.error||new Error('Kayıt okunamadı'));tx.onerror=()=>{}}))}
+// A single readonly transaction gives one consistent asset snapshot. Queue the
+// next request synchronously in onsuccess: awaiting here can close a WebKit
+// transaction. Only one encoded asset request is pending, not the entire book.
+let assetReadGeneration=0;
+addEventListener('bilge-account-locked',()=>{assetReadGeneration++});
+function assetReadScope(){
+  const scope=DB,generation=assetReadGeneration;
+  const current=()=>DB===scope&&generation===assetReadGeneration&&!window.BilgeAccount?.locked;
+  const check=()=>{if(!current())throw Object.assign(new Error('Hesap değişti; görseller yüklenmedi. Kayıtlı notlar korundu.'),{name:'AssetReadStale'})};
+  return {scope,current,check};
+}
+function dbReadAssetImages(keys,owner){
+  owner.check();
+  let connection;
+  return withDB(d=>new Promise((ok,no)=>{
+    connection=d;
+    let tx,problem,index=0;const images=new Map();
+    const fail=error=>{problem=error;try{tx.abort()}catch{images.clear();no(problem)}};
+    try{
+      owner.check();if(d.name!==owner.scope)throw Object.assign(new Error('Görsel hesabı değişti.'),{name:'AssetReadStale'});
+      tx=d.transaction(STORE);
+      tx.oncomplete=()=>{try{owner.check();ok(images)}catch(error){images.clear();no(error)}};
+      tx.onabort=()=>{images.clear();no(problem||tx.error||new Error('Kayıt okunamadı'))};tx.onerror=()=>{};
+      const store=tx.objectStore(STORE);
+      const next=()=>{
+        try{
+          owner.check();if(index===keys.length)return;
+          const key=keys[index++],request=store.get(key);
+          request.onsuccess=()=>{
+            try{
+              owner.check();const data=request.result?.data;
+              if(typeof data!=='string'||!data.startsWith('data:image/'))throw Object.assign(new Error('Kayıtlı bir görsel bulunamadı; kayıt korunuyor.'),{name:'MissingAsset'});
+              images.set(key,data);next();
+            }catch(error){fail(error)}
+          };
+        }catch(error){fail(error)}
+      };
+      next();
+    }catch(error){if(tx)fail(error);else no(error)}
+  }),error=>owner.current()&&(db===connection||db==null)&&['InvalidStateError','UnknownError','AbortError'].includes(error?.name));
+}
 // Reading: keys in a stored record become images again. A missing asset makes the record
 // unreadable (startup recovery keeps everything) rather than silently dropping an image.
 async function inflateRecord(rec){
@@ -452,10 +519,18 @@ async function inflateRecord(rec){
   const isRef=v=>typeof v==='string'&&ASSET_REF.test(v),all=[...rec.pages,...(Array.isArray(rec.trash)?rec.trash.map(t=>t?.page):[])].filter(p=>p&&typeof p==='object'),refs=new Set();
   for(const p of all){if(isRef(p.pdf?.image))refs.add(p.pdf.image);if(Array.isArray(p.strokes))for(const s of p.strokes)if(s?.tool==='image'&&isRef(s.image))refs.add(s.image)}
   if(!refs.size)return rec;
-  const found=await dbGetMany([...refs]);
-  const image=r=>{const v=found.get(r);if(typeof v?.data!=='string'||!v.data.startsWith('data:image/'))throw Object.assign(new Error('Kayıtlı bir görsel bulunamadı; kayıt korunuyor.'),{name:'MissingAsset'});assetRefs.set(v.data,r);if(!storedAssets.has(r)){storedAssets.add(r);assetEpoch++}return v.data};
-  const page=p=>{if(!p||typeof p!=='object'||!Array.isArray(p.strokes))return p;let q=p;if(isRef(p.pdf?.image))q={...q,pdf:{...p.pdf,image:image(p.pdf.image)}};if(p.strokes.some(s=>s?.tool==='image'&&isRef(s.image)))q={...q,strokes:p.strokes.map(s=>s?.tool==='image'&&isRef(s.image)?{...s,image:image(s.image)}:s)};return q};
-  return {...rec,pages:rec.pages.map(page),...(Array.isArray(rec.trash)?{trash:rec.trash.map(t=>t!==null&&typeof t==='object'&&!Array.isArray(t)&&t.page!==undefined?{...t,page:page(t.page)}:t)}:{})};
+  const owner=assetReadScope(),slots=[],used=new Map();
+  const copyImage=source=>{const target={...source};slots.push({target,ref:source.image});return target};
+  const page=p=>{if(!p||typeof p!=='object'||!Array.isArray(p.strokes))return p;let q=p;if(isRef(p.pdf?.image))q={...q,pdf:copyImage(p.pdf)};if(p.strokes.some(s=>s?.tool==='image'&&isRef(s.image)))q={...q,strokes:p.strokes.map(s=>s?.tool==='image'&&isRef(s.image)?copyImage(s):s)};return q};
+  const result={...rec,pages:rec.pages.map(page),...(Array.isArray(rec.trash)?{trash:rec.trash.map(t=>t!==null&&typeof t==='object'&&!Array.isArray(t)&&t.page!==undefined?{...t,page:page(t.page)}:t)}:{})};
+  // Fix both the read set and its detached destinations before the first await.
+  // An external caller changing its input cannot inject an unread asset key.
+  const found=await dbReadAssetImages([...refs],owner);owner.check();
+  for(const {target,ref} of slots){const data=found.get(ref);target.image=data;used.set(data,ref)}
+  // Publish only a complete read. Missing assets, aborts, or an old account must
+  // not leave half-populated save/GC registries behind. The raw record is intact.
+  owner.check();for(const [data,ref] of used){assetRefs.set(data,ref);if(!storedAssets.has(ref)){storedAssets.add(ref);assetEpoch++}}
+  return result;
 }
 // Writing (ASSET_WRITE, on since v71): each inline image gets its key and is stored once in its own
 // small transaction; saves switch to the key only after that commit, so a record never names an
@@ -531,7 +606,7 @@ const pageValidity=new WeakMap(),pdfValidity=new WeakMap();
 function validStateCached(x){
   const page=validPage,pdf=typeof validPdfBackground==='function'?validPdfBackground:null;
   validPage=p=>{if(p===null||typeof p!=='object'||!Array.isArray(p.strokes))return page(p);const sig=pageSignature(p),hit=pageValidity.get(p);if(hit&&hit.sig===sig)return hit.ok;const ok=page(p);pageValidity.set(p,{sig,ok});return ok};
-  if(pdf)validPdfBackground=b=>{if(b===null||typeof b!=='object')return pdf(b);const key=[b.width,b.height,b.name,b.number,b.total].join('|'),hit=pdfValidity.get(b);if(hit&&hit.key===key&&hit.image===b.image)return hit.ok;const ok=pdf(b);pdfValidity.set(b,{key,image:b.image,ok});return ok};
+  if(pdf)validPdfBackground=(b,imageSizes)=>{if(b===null||typeof b!=='object')return pdf(b,imageSizes);const hit=pdfValidity.get(b);if(hit&&hit.width===b.width&&hit.height===b.height&&hit.name===b.name&&hit.number===b.number&&hit.total===b.total&&hit.image===b.image)return hit.ok;const ok=pdf(b,imageSizes);pdfValidity.set(b,{width:b.width,height:b.height,name:b.name,number:b.number,total:b.total,image:b.image,ok});return ok};
   try{return validState(x)}finally{validPage=page;if(pdf)validPdfBackground=pdf}
 }
 function schedulePageVerify(){clearTimeout(pageVerifyTimer);pageVerifyTimer=setTimeout(verifyPageCache,4000)}
@@ -553,8 +628,9 @@ function verifyPageCache(){
 // 2-4-8-16-30 s and wait for the page to be visible (v69).
 const QUOTA_TEXT='Cihaz depolaması dolu; son değişiklikler kaydedilemedi. Ekrandaki notlar korunuyor. iPad Ayarlar › Genel › iPad Saklama Alanı bölümünden yer açın; uygulama kendisi yeniden dener. Bu arada JSON yedeği alın.';
 function saveSucceeded(ms){if(failStreak)diag('save-recovered',{after:failStreak,len:lastSaveBytes});else if(ms>3000)diag('slow-save',{ms:Math.round(ms),len:lastSaveBytes});failStreak=0;failSince=0;saveRetrying=false;clearTimeout(retryTimer);retryTimer=null;retryWhenVisible=false}
-function scheduleRetry(){clearTimeout(retryTimer);const delay=Math.min(30000,2000*2**Math.min(4,failStreak-1));retryTimer=setTimeout(()=>{retryTimer=null;if(document.visibilityState!=='visible'){retryWhenVisible=true;return}void flushSave()},delay)}
+function scheduleRetry(){clearTimeout(retryTimer);retryTimer=null;if(importRecovery?.scope===DB)return;const delay=Math.min(30000,2000*2**Math.min(4,failStreak-1));retryTimer=setTimeout(()=>{retryTimer=null;if(document.visibilityState!=='visible'){retryWhenVisible=true;return}void flushSave()},delay)}
 function saveFailure(e,info){
+  if(importRecovery?.scope===DB){renderSaveStatus();return}
   failStreak++;if(!failSince)failSince=Date.now();diag('save-fail',{...errorInfo(e),streak:failStreak,...info});
   const name=e?.name,lasting=name==='NotebookConflict'||name==='QuotaExceededError'||name==='InvalidNotebook';
   if(lasting||failStreak>=2||Date.now()-failSince>15000){saveRetrying=false;saveError(e,name==='QuotaExceededError'?QUOTA_TEXT:'')}else{saveRetrying=true;renderSaveStatus();console.error(e)}
@@ -880,7 +956,7 @@ function restoreTrashedPage(id){
 function deleteTrashedPage(id){
   if(!canEdit()||drawing||pan)return;const item=state.trash?.find(t=>t.page.id===id);if(!item)return;
   if(!confirm(`“${item.page.title}” Çöp Kutusundan kalıcı olarak silinsin mi? Bu işlem geri alınamaz. Önceden indirdiğiniz yedekler değişmez.`))return;
-  state.trash=state.trash.filter(t=>t!==item);trashDialog.close();renderPages();scheduleSave();document.querySelector('#inputState').textContent='Sayfa Çöp Kutusundan kalıcı olarak silindi';
+  state.trash=state.trash.filter(t=>t!==item);mediaUndo.delete(id);trashDialog.close();renderPages();scheduleSave();document.querySelector('#inputState').textContent='Sayfa Çöp Kutusundan kalıcı olarak silindi';
 }
 function renderTrash(){
   const list=document.querySelector('#trashList');list.replaceChildren();
@@ -897,7 +973,11 @@ function renderTrash(){
   }
 }
 document.querySelector('#openTrash').onclick=()=>{if(!canEdit()||drawing||pan)return;renderTrash();trashDialog.showModal();trashDialog.scrollTop=0;document.querySelector('#trashClose').focus({preventScroll:true})};
-document.querySelector('#trashClose').onclick=()=>trashDialog.close();trashDialog.addEventListener('close',()=>sidebarToggle.focus({preventScroll:true}));
+document.querySelector('#trashClose').onclick=()=>trashDialog.close();trashDialog.addEventListener('close',()=>{
+  // The close event is queued: do not clear a newly reopened dialog.
+  if(trashDialog.open)return;
+  document.querySelector('#trashList').replaceChildren();sidebarToggle.focus({preventScroll:true});
+});
 function selectTool(next){
   if(drawing||pan||!['pen','marker','eraser'].includes(next))return;
   toolWidths[tool]=+document.querySelector('#width').value;tool=next;document.querySelector('#width').max=tool==='eraser'?64:24;document.querySelector('#width').value=toolWidths[tool];if(tool!=='eraser')document.querySelector('#color').value=toolColors[tool];
@@ -957,8 +1037,10 @@ async function replaceNotebook(candidate,successText,{preservePrevious=true}={})
 }
 document.querySelector('#restorePrevious').onclick=async()=>{
   if(!canEdit())return;
+  // A cancelled recovery must not load/register the previous book's images.
+  if(!confirm('Son yüklemeden önceki defter açılsın mı? Şimdiki defter de yerel geri dönüş kopyası olarak saklanacak.'))return;
   try{const previous=await inflateRecord(await dbGet('before-import'));if(!validState(previous)){alert('Geçerli bir yükleme öncesi kopya bulunamadı.');return}
-    if(confirm('Son yüklemeden önceki defter açılsın mı? Şimdiki defter de yerel geri dönüş kopyası olarak saklanacak.'))await replaceNotebook(previous,'Önceki defter geri getirildi');
+    await replaceNotebook(previous,'Önceki defter geri getirildi');
   }catch(e){saveError(e)}
 };
 function parseBackup(x){

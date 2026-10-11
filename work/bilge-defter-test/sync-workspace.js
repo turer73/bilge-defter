@@ -40,13 +40,18 @@
   function setSyncStatus(text){document.querySelector('#syncStatus').textContent=text}
   async function syncApi(path,options={}){
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+    const scope=DB,writing=!['GET','HEAD'].includes(String(options.method||'GET').toUpperCase());
+    const quarantined=event=>{if(event.detail?.scope===scope)controller.abort()};
     try{
+      if(writing){assertImportWritable(scope);addEventListener('bilge-import-quarantined',quarantined)}
+      // Account.fetch awaits whoami before native fetch. Keep this signal tied
+      // to the write quarantine throughout that await, not just before it.
       const res=await (window.BilgeAccount?.fetch||fetch)(path,{...options,cache:'no-store',signal:controller.signal});
       const type=res.headers.get('content-type')||'';
       if(res.redirected||type.includes('text/html'))throw Error('Giriş oturumunu yenileyin.');
       if(!res.ok&&res.status!==304){const error=Error(res.status===404?'Sunucuda yedek yok.':`Sunucu yanıtı ${res.status}.`);error.status=res.status;error.response=res;throw error}
       return res;
-    }finally{clearTimeout(timer)}
+    }finally{clearTimeout(timer);if(writing)removeEventListener('bilge-import-quarantined',quarantined)}
   }
   const BACKUP='./api/v1/bilge-defter/backup';
   const protocolMessage='Sunucunun sürüm koruması doğrulanamadı. Otomatik eşitleme ve sunucuya gönderme kapalı; yerel notlar ve JSON yedekleme çalışır.';
@@ -62,6 +67,9 @@
   }
   function requireCas(remote){if(!hasCas(remote.response)||(remote.data&&!remote.tag))throw Error(protocolMessage)}
   async function postRemote(remote,payload){
+    // Encryption may have begun before an uncertain import stopped local writes.
+    // Recheck at the last dispatch boundary; already-sent requests cannot be recalled.
+    assertImportWritable();
     requireCas(remote);
     const response=await syncApi(BACKUP,{method:'POST',headers:{'Content-Type':'application/json',...(remote.data?{'If-Match':remote.tag}:{'If-None-Match':'*'})},body:JSON.stringify(payload)});
     const tag=strongTag(response);if(!hasCas(response)||!tag)throw Error('Gönderim yanıtı doğrulanamadı; yerel değişiklikler eşitlendi sayılmadı.');remoteCache=null;return tag;

@@ -1,5 +1,14 @@
 'use strict';
 const fs=require('fs'),path=require('path'),Module=require('module'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+// Parent and direct-child invocations must never silently overwrite historical
+// release evidence. With a selected suite the override is its exact directory;
+// with the complete matrix it is a root containing one directory per suite.
+if(process.argv[3]==='--child'){
+ const requested=process.env.BILGE_TEST_OUTPUT,outputs=path.resolve(__dirname,'../outputs');
+ assert.ok(requested,'Child requires an explicit evidence directory');
+ const destination=path.resolve(requested);assert.ok(destination.startsWith(outputs+path.sep),'Evidence must stay inside repository outputs');
+ assert.ok(!fs.existsSync(destination)||fs.readdirSync(destination).length===0,'Never overwrite previous evidence: '+destination);
+}
 // Preserve the full 26-suite matrix and all historical behavior assertions.
 // Adapt the current version, real previous release, and the v79 logo wrapper.
 const baseline=path.resolve(__dirname,'../outputs/pptx-v79-release/v78-baseline/package');
@@ -67,5 +76,10 @@ if(code.split(v79LogoCompile).length!==2)throw Error('v79 logo child loader move
 code=code.replace(v79LogoCompile,"if(file==='verify-v51-login.cjs'){if(code.split("+JSON.stringify(v79LogoFrom)+").length!==2)throw Error('v79 logo assertion mapping moved');code=code.replace("+JSON.stringify(v79LogoFrom)+","+JSON.stringify(v79LogoTo)+");}\\n"+v79LogoCompile);
 `;
 const loader='const loaded=new Module(__filename,module);';assert.equal(code.split(loader).length,2,'v79 parent loader moved');
-code=code.replace(loader,pathHook+'\n'+logoHook+'\n'+loader);
+const outputHook=String.raw`
+const outputFrom="function childEnv(file){return {...process.env,BILGE_TEST_ROOT:path.join(__dirname,'bilge-defter-invited-v79'),BILGE_TEST_OUTPUT:path.join(repo,'outputs/v79',file)}}";
+const outputTo="function childEnv(file){const override=process.env.BILGE_TEST_OUTPUT;const destination=override?path.resolve(process.argv[2]?override:path.join(override,file)):path.join(repo,'outputs/v79',file);assert.ok(destination.startsWith(path.join(repo,'outputs')+path.sep),'Evidence must stay inside repository outputs');assert.ok(!fs.existsSync(destination)||fs.readdirSync(destination).length===0,'Never overwrite previous evidence: '+destination);return {...process.env,BILGE_TEST_ROOT:path.join(__dirname,'bilge-defter-invited-v79'),BILGE_TEST_OUTPUT:destination}}";
+if(code.split(outputFrom).length!==2)throw Error('v79 evidence routing moved');code=code.replace(outputFrom,outputTo);
+`;
+code=code.replace(loader,pathHook+'\n'+logoHook+'\n'+outputHook+'\n'+loader);
 const loaded=new Module(__filename,module);loaded.filename=__filename;loaded.paths=Module._nodeModulePaths(__dirname);loaded._compile(code,__filename);

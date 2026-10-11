@@ -34,6 +34,14 @@
       (typeof importing !== 'undefined' && importing) || (typeof pdfBusy !== 'undefined' && pdfBusy) ||
       (typeof pdfExportBusy !== 'undefined' && pdfExportBusy);
   }
+  function discardStage(session) {
+    const stage = session?.stage;
+    if (!stage) return;
+    session.stage = null;
+    // Cleanup must never turn a successful/uncertain notebook commit into a
+    // retryable error. Failed deletion leaves only an owned temporary orphan.
+    void stage.discard().catch(() => stage.close());
+  }
   function cleanup({restoreFocus = true} = {}) {
     generation++; opening = false;
     const previous = pilot, previousDialog = dialog, previousImport = importSession;
@@ -41,6 +49,7 @@
     if (previousImport) {
       window.BilgeRasterImport?.revoke(previousImport.lease);
       previousImport.abort?.abort(); previousImport.renderer?.dispose(); previousImport.store?.close();
+      discardStage(previousImport);
       previousImport.pages = null; previousImport.source = null;
     }
     previous?.destroy();
@@ -205,7 +214,7 @@
       <details id="pptxNotebookInfo"><summary>Yedek ve görünüm bilgisi</summary><p>Slaytlar bu cihazda hazırlanır; sunucuya gönderilmez ve PDF’e dönüştürülmez. Hazırlanan sayfalar normal JSON defter yedeğine dahildir. Özgün PPTX dosyası bu yedeğe eklenmez; dosyanızı ve varsa eski .bdpptx yedeğinizi saklayın.</p><p>Animasyon ve geçişler aktarılmaz; görünüm PowerPoint ile birebir olmayabilir.</p></details>
       <footer><button type="button" id="pptxNotebookApply" class="pptx-primary" disabled>Deftere ekle</button></footer><div id="pptxNotebookRenderer" aria-hidden="true"></div>`;
     const el = id => owner.querySelector('#' + id);
-    const session = {phase:'opening', request:0, pages:null, source:null, lease:null, abort:null, renderer:null, store:null, model:null, createRenderer:null, selectedName:'', completed:0, total:0};
+    const session = {phase:'opening', request:0, pages:null, stage:null, createStage:null, source:null, lease:null, abort:null, renderer:null, store:null, model:null, createRenderer:null, selectedName:'', completed:0, total:0};
     importSession = session;
     const valid = () => importSession === session && generation === own && current(selected);
     const validLease = () => valid() && session.lease && helper.isCurrent(session.lease);
@@ -218,7 +227,7 @@
       else { bar.removeAttribute('value'); bar.removeAttribute('aria-valuetext'); }
     }
     function controls() {
-      const blocked = ['opening','committing','uncertain'].includes(session.phase);
+      const blocked = ['opening','reading','committing','uncertain'].includes(session.phase);
       for (const id of ['pptxNotebookFile','pptxNotebookBackup','pptxNotebookChoose','pptxNotebookChooseBackup','pptxNotebookNew','pptxNotebookSaved']) el(id).disabled = blocked;
       el('pptxNotebookChoose').textContent = session.selectedName ? 'Sunumu değiştir' : 'Sunum seç';
       el('pptxNotebookChoose').classList.toggle('pptx-primary', !session.selectedName);
@@ -229,8 +238,8 @@
       el('pptxNotebookNotes').disabled = blocked || session.phase === 'preparing';
       el('pptxNotebookPrepare').hidden = !['error','selected'].includes(session.phase) || !session.source;
       el('pptxNotebookPrepare').disabled = blocked || session.phase === 'preparing' || !session.source;
-      el('pptxNotebookApply').disabled = session.phase !== 'ready' || !session.pages;
-      el('pptxNotebookApply').textContent = session.phase === 'committing' ? 'Ekleniyor…' : session.phase === 'ready' && session.pages ? `${session.pages.length} slaytı ekle` : 'Deftere ekle';
+      el('pptxNotebookApply').disabled = session.phase !== 'ready' || !session.pages || !session.stage;
+      el('pptxNotebookApply').textContent = session.phase === 'reading' ? 'Slaytlar okunuyor…' : session.phase === 'committing' ? 'Ekleniyor…' : session.phase === 'ready' && session.pages ? `${session.pages.length} slaytı ekle` : 'Deftere ekle';
       el('pptxNotebookCancel').disabled = session.phase === 'committing';
       el('pptxNotebookCancel').textContent = session.phase === 'uncertain' ? 'Kapat ve defteri kontrol et' : 'Vazgeç';
       // Keep the live status outside aria-busy so preparation updates are announced.
@@ -239,18 +248,19 @@
     }
     function stopPreparation() {
       session.request++; session.abort?.abort(); session.renderer?.dispose();
+      discardStage(session);
       session.abort = null; session.renderer = null; session.pages = null;
       session.completed = 0; session.total = 0;
       el('pptxNotebookPreview').hidden = true; el('pptxNotebookPreview').querySelector('img').removeAttribute('src');
       el('pptxNotebookWarning').hidden = true;
     }
     async function prepare(sourceReader, {reuse = false, name = ''} = {}) {
-      if (!validLease() || ['opening','committing','uncertain'].includes(session.phase)) return;
+      if (!validLease() || ['opening','reading','committing','uncertain'].includes(session.phase)) return;
       stopPreparation(); const request = session.request;
       if (!reuse) { session.source = null; session.selectedName = name; el('pptxNotebookNotesRow').hidden = true; }
       session.phase = 'preparing'; controls(); message('Sunum bu cihazda doğrulanıyor…');
       const abort = new AbortController(); session.abort = abort;
-      let renderer;
+      let renderer, stage;
       try {
         const source = await sourceReader(); check(request);
         if (!(source.bytes instanceof ArrayBuffer) || source.bytes.byteLength < 8 || source.bytes.byteLength > session.model.LIMITS.FILE_BYTES)
@@ -260,6 +270,9 @@
         const hasNotes = !!source.notes?.some(entry => entry.strokes?.length);
         el('pptxNotebookNotesRow').hidden = !hasNotes;
         if (!reuse) el('pptxNotebookNotes').checked = true;
+        stage = await session.createStage({scope:selected.scope,
+          guard:() => validLease() && session.request === request});
+        check(request); session.stage = stage;
         renderer = await session.createRenderer(el('pptxNotebookRenderer'), {signal:abort.signal});
         if (!validLease() || session.request !== request) { renderer.dispose(); return; }
         session.renderer = renderer;
@@ -278,14 +291,18 @@
             throw Error('Slayt görüntüsü güvenli aktarım sınırlarını karşılamıyor.');
           imageBytes += slide.image.length;
           if (imageBytes > 24 * 1024 * 1024) throw Error('Sunum görüntüleri 24 MB aktarım sınırını aşıyor. Sunumu bölerek deneyin.');
-          pages.push({image:slide.image, width:slide.width, height:slide.height, number:index + 1, total:meta.slideCount, strokes:ink.get(index + 1) || []});
+          await stage.add({image:slide.image, width:slide.width, height:slide.height, number:index + 1}); check(request);
+          // Only geometry and editable ink accumulate while rendering. The
+          // encoded background belongs to the temporary disk stage, not pages.
+          pages.push({width:slide.width, height:slide.height, number:index + 1, total:meta.slideCount, strokes:ink.get(index + 1) || []});
           session.completed = index + 1; progress();
           for (const warning of slide.warnings || []) warnings.add(warning);
           // Yield between slides, so cancel/account lock can stop a large deck.
           await new Promise(resolve => setTimeout(resolve, 0)); check(request);
         }
+        const first = await stage.read(1); check(request);
         session.pages = pages; session.phase = 'ready';
-        const preview = el('pptxNotebookPreview'); preview.querySelector('img').src = pages[0].image; preview.hidden = false;
+        const preview = el('pptxNotebookPreview'); preview.querySelector('img').src = first.image; preview.hidden = false;
         preview.querySelector('figcaption').textContent = hasNotes && el('pptxNotebookNotes').checked ?
           'İlk slaytın zemini. Eski kalem notları düzenlenebilir çizgiler olarak eklenecek.' : 'İlk slaytın zemini.';
         message(`${pages.length} slayt hazır · ${(imageBytes / 1024 / 1024).toFixed(1)} MB. Henüz deftere eklenmedi.`);
@@ -293,10 +310,16 @@
         el('pptxNotebookWarning').textContent = warnings.size ? 'Bazı sunum öğeleri desteklenmeyebilir. Ekledikten sonra slaytları özgün dosyayla karşılaştırın.' : '';
       } catch (error) {
         if (!valid() || session.request !== request) return;
+        discardStage(session);
         session.pages = null; session.phase = 'error';
+        el('pptxNotebookPreview').hidden = true; el('pptxNotebookPreview').querySelector('img').removeAttribute('src');
         message((error?.message || 'Sunum hazırlanamadı.') + ' Deftere hiçbir sayfa eklenmedi.');
       } finally {
         renderer?.dispose();
+        if (stage && (session.stage !== stage || !validLease() || session.request !== request || session.phase !== 'ready')) {
+          if (session.stage === stage) session.stage = null;
+          void stage.discard().catch(() => stage.close());
+        }
         if (valid() && session.request === request) { session.renderer = null; session.abort = null; controls(); }
       }
     }
@@ -346,10 +369,21 @@
       if (source) void prepare(async () => source, {reuse:true});
     };
     el('pptxNotebookApply').onclick = async () => {
-      if (session.phase !== 'ready' || !session.pages || !validLease()) return;
-      const candidate = {name:session.source.name, pages:session.pages, newNotebook:el('pptxNotebookNew').checked};
-      session.phase = 'committing'; controls(); message('Sunum tek işlemle kaydediliyor. Bu pencereyi kapatmayın…');
+      if (session.phase !== 'ready' || !session.pages || !session.stage || !validLease()) return;
+      const stage = session.stage, request = session.request, metadata = session.pages;
+      const candidate = {name:session.source.name, pages:[], newNotebook:el('pptxNotebookNew').checked};
+      session.phase = 'reading'; controls(); message('Deftere eklemek için slaytlar okunuyor… İsterseniz vazgeçebilirsiniz.');
       try {
+        if (stage.count !== metadata.length) throw Error('Geçici sunum eksik. Yeniden hazırlayın.');
+        for (const page of metadata) {
+          check(request);
+          const saved = await stage.read(page.number); check(request);
+          if (saved.number !== page.number || saved.width !== page.width || saved.height !== page.height)
+            throw Error('Geçici slayt bilgisi değişti. Yeniden hazırlayın.');
+          candidate.pages.push({...page, image:saved.image});
+        }
+        check(request);
+        session.phase = 'committing'; controls(); message('Sunum tek işlemle kaydediliyor. Bu pencereyi kapatmayın…');
         const result = await helper.commit(candidate, session.lease);
         if (!result?.ok) throw Error('Kayıt sonucu doğrulanamadı.');
         // The successful commit deliberately changes state/active notebook.
@@ -358,9 +392,16 @@
         if (importSession !== session || generation !== own) return;
         const uncertain = ['ImportCommitted','ImportCommitUnknown'].includes(error?.name);
         session.phase = uncertain ? 'uncertain' : 'error'; session.pages = null;
-        el('pptxNotebookStatus').textContent = error?.message || 'Sunum kaydedilemedi. Defteri ve yedeğinizi kontrol edin.';
+        el('pptxNotebookPreview').hidden = true;
+        el('pptxNotebookPreview').querySelector('img').removeAttribute('src');
+        const failure = error?.message || 'Sunum kaydedilemedi. Defteri ve yedeğinizi kontrol edin.';
+        el('pptxNotebookStatus').textContent = uncertain ? failure : `${failure} Deftere hiçbir sayfa eklenmedi.`;
         if (uncertain) { session.source = null; helper.revoke(session.lease); }
         controls();
+      } finally {
+        candidate.pages.length = 0;
+        if (session.stage === stage) discardStage(session);
+        else void stage.discard().catch(() => stage.close());
       }
     };
     controls(); document.body.append(owner); owner.showModal(); el('pptxNotebookCancel').focus({preventScroll:true});
@@ -370,8 +411,8 @@
       if (await selected.account.ready !== selected.scope || !valid()) throw Error('STALE');
       session.lease = helper.capture({guard:valid});
       if (!session.lease || session.lease.scope !== selected.scope || session.lease.notebook.id !== selected.notebook.id) throw Error('STALE');
-      const [model, bridge, storage] = await Promise.all([import('./pptx/model.js'), import('./pptx/renderer-bridge.js'), import('./pptx/store.js')]);
-      check(); session.model = model; session.createRenderer = bridge.createRenderer;
+      const [model, bridge, storage, staging] = await Promise.all([import('./pptx/model.js'), import('./pptx/renderer-bridge.js'), import('./pptx/store.js'), import('./pptx/import-stage.js')]);
+      check(); session.model = model; session.createRenderer = bridge.createRenderer; session.createStage = staging.createImportStage;
       session.phase = 'idle'; opening = false; controls(); message('Sunum seçtiğinizde slaytlar otomatik hazırlanır.');
       // Listing never writes a presentation. Failure must not prevent file import.
       void (async () => {
@@ -444,9 +485,16 @@
   window.BilgePptx = Object.freeze({open, importToNotebook, close, prepareToLeave, hasNotebookPresentations,
     get active() { return !!dialog; }, get opening() { return opening; },
     snapshot:() => ({active:!!dialog, opening, notebookId:context?.notebook.id || null, pilot:pilot?.snapshot() || null,
-      import:importSession ? {phase:importSession.phase, pages:importSession.pages?.length || 0} : null})
+      import:importSession ? {phase:importSession.phase, pages:importSession.pages?.length || 0,
+        staged:!!importSession.stage, preparationStorage:'disk',
+        retainedPageImages:importSession.pages?.filter(page => typeof page.image === 'string').length || 0} : null})
   });
   addEventListener('bilge-account-locked', () => { revoked = true; cleanup({restoreFocus:false}); });
+  // A suspended/restored page must not revive an unfinished preparation. An
+  // already submitted notebook write retains its existing uncertainty barrier.
+  addEventListener('pagehide', () => {
+    if (importSession && importSession.phase !== 'committing') cleanup({restoreFocus:false});
+  });
   const button = document.createElement('button'); button.id = 'pptxNotebookOpen'; button.className = 'btn';
   button.type = 'button'; button.textContent = 'Bu defterin sunumları';
   button.onclick = () => void open().then(result => { if (result?.ok === false) notify(result.message); });

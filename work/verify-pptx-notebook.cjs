@@ -244,7 +244,9 @@ async function helperTests(browser,engine) {
     const results=await p.evaluate(async()=>{const c=BilgeRasterImport.capture(),input=__rasterInput();return Promise.all([__rasterAttempt(input,c),__rasterAttempt(input,c)]);});assert.equal(results.filter(r=>!r.rejected).length,1);assert.equal(await p.evaluate(()=>state.pages.length),3);
   });
   await check(browser,engine,'in-flight real asset sweep is drained before import and cannot overwrite appended pages',async({page:p})=>{
-    assert.equal((await p.evaluate(()=>__rasterAttempt(__rasterInput(1)))).rejected,false);
+    // Explicitly seed a legacy inline import. New imports prepare their assets
+    // before commit, so they no longer leave work for this migration-race test.
+    assert.equal((await p.evaluate(async()=>{const enabled=ASSET_WRITE;ASSET_WRITE=false;try{return await __rasterAttempt(__rasterInput(1));}finally{ASSET_WRITE=enabled;}})).rejected,false);
     await p.evaluate(()=>{
       window.__assetLease=BilgeRasterImport.capture();if(!__assetLease)throw Error('Expected clean capture before asset sweep');
       clearTimeout(assetTimer);assetTimer=null;window.__assetReached=false;window.__assetDB=withDB;let first=true;
