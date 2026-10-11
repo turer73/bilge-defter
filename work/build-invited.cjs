@@ -21,14 +21,14 @@ if(prevBadge!==version||prevApp!==version)console.log(`index.html surum esitlend
 // certify the previous version's bytes and every install would fail integrity checks.
 fs.writeFileSync(path.join(src,'release.json'),JSON.stringify({version}));
 const manifest=readJson(path.join(src,'offline-assets.json'));manifest.version=version;
-for(const name of ['pptx-workspace.js',...nativeAssets.map(name=>'pptx/'+name),'pptx/NOTICES.txt'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
+for(const name of ['pptx-workspace.js',...nativeAssets.map(name=>'pptx/'+name),'pptx/NOTICES.txt','pptx/import-stage.js'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
 for(const name of ['icons/brand-horizontal-v51.png','icons/brand-stacked-v51.png','icons/brand-app-v51.png','icons/brand-mono-v51.png'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
 // Auth return files must be deployed and hashed, but never installed offline.
 manifest.files=manifest.files.filter(f=>!['auth-continue.html','auth-continue.js'].includes(f.path));
 for(const name of ['account-workspace.js','account.css'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
 for(const name of ['media-workspace.js','planner-workspace.js','ui-workspace.js','ui.css','sync-workspace.js','dictionary-data.js','dictionary-workspace.js','ocr-workspace.js','button-theme.css','button-theme.js','button-theme-workspace.js','ui-v2/bilge-defter-ui.js','ui-v2/mount.js','ui-v2/ui-v2-bridge.js'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
 const hash=(dir,file)=>crypto.createHash('sha256').update(fs.readFileSync(path.join(dir,file))).digest('hex');
-for(const name of ['terminology-data.js','terminology.js','save-worker.js','page-navigation.js'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
+for(const name of ['terminology-data.js','terminology.js','save-worker.js','page-navigation.js','viewport-reader.js'])if(!manifest.files.some(f=>f.path===name))manifest.files.push({path:name});
 for(const f of manifest.files)f.sha256=hash(src,f.path);
 fs.writeFileSync(path.join(src,'offline-assets.json'),JSON.stringify(manifest));
 function walk(dir,prefix=''){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name),prefix+e.name+'/'):[prefix+e.name])}

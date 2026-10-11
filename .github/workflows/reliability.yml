@@ -3,7 +3,7 @@ on:
   pull_request:
   workflow_dispatch:
 env:
-  BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
+  BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
 permissions:
   contents: read
 concurrency:
@@ -32,7 +32,7 @@ jobs:
       - name: Historical diagnostic pins (never a quality gate)
         id: legacy_pins
         run: |
-          node -e "const fs=require('fs'),c=require('crypto');const h=c.createHash('sha256').update(fs.readFileSync('work/bilge-defter-invited-v79/SHA256SUMS')).digest('hex');fs.appendFileSync(process.env.GITHUB_OUTPUT,'matches='+(h==='6f172d47680d93b9d39e316a1f1512ee0e0c2e4645b95af9aab33890b34890f9')+'\n')"
+          node -e "const fs=require('fs'),c=require('crypto');const h=c.createHash('sha256').update(fs.readFileSync('work/bilge-defter-invited-v80/SHA256SUMS')).digest('hex');fs.appendFileSync(process.env.GITHUB_OUTPUT,'matches='+(h==='6f172d47680d93b9d39e316a1f1512ee0e0c2e4645b95af9aab33890b34890f9')+'\n')"
       - name: Media selection cache and immediate save lifecycle
         run: |
           node work/verify-media-cache-pairs.cjs --self-test
@@ -40,7 +40,7 @@ jobs:
       - name: Footer zoom controls and touch-only scrolling
         run: npm run test:footer-zoom
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
       - name: Numbered PDF and presentation navigation
         run: npm run test:page-navigation
       # Fail fast on drawing quality before the longer historical suite.
@@ -49,7 +49,7 @@ jobs:
         id: slide_flow_dpr2
         run: npm run test:slide-flow-dpr2
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
       - name: Diagnostic only - scratch lifetime in the original failed scenario
         if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: node work/diagnose-ink-lifetime.cjs
@@ -109,7 +109,7 @@ jobs:
       - name: Continuous slide flow and guarded ink cache
         run: npm run test:slide-flow
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
       - run: npm run prepare:baselines
       - name: Prepare historical and actual published v77 baselines
         run: |
@@ -123,8 +123,8 @@ jobs:
           node work/prepare-v71-baseline.cjs
           node work/prepare-v72-baseline.cjs
           npm run prepare:compat-reader
-      - name: Historical behavior against current v79, updates from actual v78
-        run: node work/verify-v79.cjs
+      - name: Historical behavior against current v80, updates from actual v79
+        run: node work/verify-v80.cjs
       - run: npm run test:reliability
       - run: npm run test:presentations
       - run: npm run test:page-limit
@@ -133,23 +133,23 @@ jobs:
       - run: npm run test:pptx-store
       - run: npm run test:pptx-races
       - name: Native PPTX account, notebook, backup and offline integration (synthetic only)
-        run: npm run test:pptx-integration
+        run: node work/verify-v80-check.cjs integration
       - name: Ordinary notebook PPTX imports, UI and guarded storage (synthetic only)
         run: node work/verify-pptx-notebook.cjs
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
       - name: Native raster safety and image readiness (synthetic only)
         run: node work/verify-pptx-raster.cjs
-      - name: Real published v78 reader accepts v79 notebook pages (synthetic only)
-        run: node work/verify-v79-check.cjs compat
+      - name: Real published v79 reader accepts v80 notebook pages (synthetic only)
+        run: node work/verify-v80-check.cjs compat
       - name: Marker opacity, persistence and Tabler icons
         run: npm run test:marker-icons
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
       - name: Frame-linked logo contrast, preferences and fallback
         run: npm run test:theme-logo
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v79
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
       - run: python -m pytest server-candidate/v49/tests -q
       - run: python -B work/test_deploy_v73.py
       - run: python -B work/test_deploy_v75.py
@@ -157,6 +157,7 @@ jobs:
       - run: python -B work/test_deploy_v77.py
       - run: npm run test:deploy-v78
       - run: npm run test:deploy-v79
+      - run: python -B work/test_deploy_v80.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -167,11 +168,13 @@ jobs:
             outputs/footer-zoom/
             outputs/page-navigation/
             outputs/pptx-v79-release/
+            outputs/pptx-v80-release/
             outputs/presentations/
             outputs/page-limit/
             outputs/page-limit-sw/
             outputs/v78/
             outputs/v79/
+            outputs/v80/
             outputs/pptx-v78-release/integration-*.json
             outputs/pptx-v78-release/*native-pptx-ready.png
             outputs/pptx-v78-release/v77-baseline/build-proof.json
@@ -205,6 +208,35 @@ jobs:
           retention-days: 7
 # No secrets, live accounts, deployment, self-hosted runner or paid API.
 # This supplements (does not replace) the historical release/device test matrix.
+  large-document-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [viewport-reader, asset-reading, pptx-staging, import-recovery-sync, import-assets, image-lifetime, pdf-validation]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # The real published v79 rollback reader comes from pinned Git blobs.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run build
+      # Each runner uses both complete engines. Keep these direct invocations:
+      # the npm staging alias also chains other suites and would duplicate them.
+      - name: Mandatory local large-document safety - ${{ matrix.suite }}
+        run: node work/verify-${{ matrix.suite }}.cjs --out=outputs/v80-safety/ci-${{ github.run_id }}-${{ github.run_attempt }}/${{ matrix.suite }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v80-safety-${{ matrix.suite }}
+          path: outputs/v80-safety/ci-${{ github.run_id }}-${{ github.run_attempt }}/${{ matrix.suite }}/
+          if-no-files-found: error
+          retention-days: 7
   media-cache-pairs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -226,7 +258,7 @@ jobs:
       - name: Fixed baseline and candidate full DPR2 pair
         run: |
           node work/verify-media-cache-pairs.cjs --self-test
-          node work/verify-media-cache-pairs.cjs --pair=${{ matrix.pair }}
+          node work/verify-media-cache-pairs.cjs --pair=${{ matrix.pair }} --out=outputs/media-cache-fix/ci-${{ github.run_id }}-${{ github.run_attempt }}-pair-${{ matrix.pair }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -237,7 +269,7 @@ jobs:
           retention-days: 7
   media-cache-acceptance:
     runs-on: ubuntu-latest
-    needs: [media-cache-pairs, synthetic-checks]
+    needs: [media-cache-pairs, synthetic-checks, large-document-safety]
     if: always()
     steps:
       - uses: actions/checkout@v4
@@ -248,11 +280,13 @@ jobs:
         with:
           pattern: media-cache-pair-*
           path: paired-evidence
-      - name: All three pairs and broad regression are required
+      - name: All three pairs, broad regression and all seven safety suites are required
         env:
           BROAD_RESULT: ${{ needs.synthetic-checks.result }}
           PAIRS_RESULT: ${{ needs.media-cache-pairs.result }}
+          SAFETY_RESULT: ${{ needs.large-document-safety.result }}
         run: |
           node work/verify-media-cache-pairs.cjs --aggregate=paired-evidence
           test "$BROAD_RESULT" = success
           test "$PAIRS_RESULT" = success
+          test "$SAFETY_RESULT" = success
