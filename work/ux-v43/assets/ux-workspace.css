@@ -1,0 +1,42 @@
+/* Only applies after the v43 adapter has validated its DOM contract. */
+.bd-ux-enabled .app{grid-template-rows:auto auto minmax(0,1fr) auto}
+.bd-ux-enabled .ux-menu{display:flex;gap:8px;padding:8px 12px;overflow-x:auto;background:#f7faf8;border-bottom:1px solid #d5e2dc;min-width:0}
+.bd-ux-enabled .ux-menu .btn{flex:0 0 auto;min-height:48px;padding:8px 16px;white-space:nowrap}
+.bd-ux-enabled .workspace{grid-template-rows:minmax(0,1fr) auto}
+.bd-ux-enabled .edge-actions{display:none}
+.bd-ux-enabled .ux-writing-bar{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px max(8px,env(safe-area-inset-bottom));background:#f7faf8;border-top:1px solid #d5e2dc;overflow-x:auto;min-width:0}
+.bd-ux-enabled .ux-writing-bar .btn{min-height:48px;min-width:48px;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.bd-ux-enabled .ux-writing-bar svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.bd-ux-enabled .ux-writing-bar .drawing-tools{background:transparent;padding:0;gap:8px}
+.bd-ux-enabled .ux-writing-bar .drawing-tools .btn{width:auto;height:auto;padding:8px 12px}
+.bd-ux-enabled .ux-tool-label{font-size:12px}
+.bd-ux-enabled #toolsDialog[open]{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;width:min(560px,calc(100vw - 24px));height:min(800px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);overflow:hidden;padding:0}
+.bd-ux-enabled #toolsDialog>.tools-heading{min-width:0;background:#fffdf8;position:relative}
+.bd-ux-enabled #toolsDialog>.tools-content{display:block;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 18px}
+.bd-ux-enabled .ux-dialog-nav{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid #d5e2dc;min-width:0}
+.bd-ux-enabled .ux-dialog-nav>.btn{min-height:48px;flex:0 0 auto;white-space:nowrap}
+.bd-ux-enabled .ux-dialog-footer{padding:12px 18px max(12px,env(safe-area-inset-bottom));background:#fffdf8;border-top:1px solid #d5e2dc}
+.bd-ux-enabled #toolsDone{width:100%;min-height:48px}
+.bd-ux-enabled .ux-pane{display:grid;gap:16px;min-width:0}
+.bd-ux-enabled .ux-pane[hidden],.bd-ux-enabled .ux-writing-bar [hidden]{display:none!important}
+.bd-ux-enabled .ux-pane>.btn{min-height:48px;width:100%}
+.bd-ux-enabled .ux-pane .action-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0}
+.bd-ux-enabled .ux-pane .action-group h3{grid-column:1/-1;font-size:12px;color:#49615b;margin:6px 0}
+.bd-ux-enabled .ux-pane .action-group>.btn{white-space:normal;min-height:48px;min-width:0}
+.bd-ux-enabled .ux-pane .action-group>h3:only-child{display:none}
+.bd-ux-enabled .ux-help{font-size:13px;line-height:1.6;color:#49615b;margin:0}
+.bd-ux-enabled .ux-danger-zone{display:grid;gap:10px;border-top:1px solid #d5e2dc;padding-top:18px;margin-top:12px}
+.bd-ux-enabled .ux-danger-zone .btn{min-height:48px}
+.bd-ux-enabled .ux-page-search{display:grid;gap:6px;font-size:13px;margin:8px 0 14px}
+.bd-ux-enabled .ux-page-search input{min-height:48px;width:100%;min-width:0;font:inherit;font-size:16px;border:1px solid #8bada2;background:white;color:#173b36;border-radius:10px;padding:10px}
+@media(max-width:600px){
+ .bd-ux-enabled .ux-menu{gap:6px;padding:6px 8px}
+ .bd-ux-enabled .ux-menu>.btn{font-size:13px;padding:8px 12px}
+ .bd-ux-enabled .ux-writing-bar{justify-content:flex-start;gap:6px;padding-inline:8px}
+ .bd-ux-enabled .ux-writing-bar .drawing-tools{gap:6px}
+ .bd-ux-enabled .ux-writing-bar .drawing-tools .btn{flex-direction:column;gap:3px;padding:6px 8px;min-width:48px}
+ .bd-ux-enabled #toolsDialog[open]{width:calc(100vw - 16px);height:calc(100dvh - 16px);max-height:calc(100dvh - 16px);margin:8px}
+ .bd-ux-enabled #toolsDialog>.tools-content{padding:14px}
+ .bd-ux-enabled .ux-dialog-footer{padding-inline:14px}
+}
+@media(prefers-reduced-motion:reduce){.bd-ux-enabled *{scroll-behavior:auto!important}}
