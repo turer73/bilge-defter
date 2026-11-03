@@ -3,7 +3,7 @@ on:
   pull_request:
   workflow_dispatch:
 env:
-  BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
+  BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v81
 permissions:
   contents: read
 concurrency:
@@ -32,7 +32,7 @@ jobs:
       - name: Historical diagnostic pins (never a quality gate)
         id: legacy_pins
         run: |
-          node -e "const fs=require('fs'),c=require('crypto');const h=c.createHash('sha256').update(fs.readFileSync('work/bilge-defter-invited-v80/SHA256SUMS')).digest('hex');fs.appendFileSync(process.env.GITHUB_OUTPUT,'matches='+(h==='6f172d47680d93b9d39e316a1f1512ee0e0c2e4645b95af9aab33890b34890f9')+'\n')"
+          node -e "const fs=require('fs'),c=require('crypto');const h=c.createHash('sha256').update(fs.readFileSync('work/bilge-defter-invited-v81/SHA256SUMS')).digest('hex');fs.appendFileSync(process.env.GITHUB_OUTPUT,'matches='+(h==='23573bcf22faabb25006798a8f6e85903b94e4176f42ddf1c7f9b412b4cbe025')+'\n')"
       - name: Media selection cache and immediate save lifecycle
         run: |
           node work/verify-media-cache-pairs.cjs --self-test
@@ -40,7 +40,7 @@ jobs:
       - name: Footer zoom controls and touch-only scrolling
         run: npm run test:footer-zoom
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v81
       - name: Numbered PDF and presentation navigation
         run: npm run test:page-navigation
       - name: Recognised device and remembered sync passphrase (real account API)
@@ -53,7 +53,7 @@ jobs:
         id: slide_flow_dpr2
         run: npm run test:slide-flow-dpr2
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v81
       - name: Diagnostic only - scratch lifetime in the original failed scenario
         if: failure() && steps.slide_flow_dpr2.outcome == 'failure' && steps.legacy_pins.outputs.matches == 'true'
         run: node work/diagnose-ink-lifetime.cjs
@@ -113,7 +113,7 @@ jobs:
       - name: Continuous slide flow and guarded ink cache
         run: npm run test:slide-flow
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v81
       - run: npm run prepare:baselines
       - name: Prepare historical and actual published v77 baselines
         run: |
@@ -127,8 +127,8 @@ jobs:
           node work/prepare-v71-baseline.cjs
           node work/prepare-v72-baseline.cjs
           npm run prepare:compat-reader
-      - name: Historical behavior against current v80, updates from actual v79
-        run: node work/verify-v80.cjs
+      - name: Historical behavior against current v81, updates from actual v80
+        run: node work/verify-v81.cjs
       - run: npm run test:reliability
       - run: npm run test:presentations
       - run: npm run test:page-limit
@@ -137,23 +137,23 @@ jobs:
       - run: npm run test:pptx-store
       - run: npm run test:pptx-races
       - name: Native PPTX account, notebook, backup and offline integration (synthetic only)
-        run: node work/verify-v80-check.cjs integration
+        run: node work/verify-v81-check.cjs integration
       - name: Ordinary notebook PPTX imports, UI and guarded storage (synthetic only)
         run: node work/verify-pptx-notebook.cjs
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v81
       - name: Native raster safety and image readiness (synthetic only)
         run: node work/verify-pptx-raster.cjs
-      - name: Real published v79 reader accepts v80 notebook pages (synthetic only)
-        run: node work/verify-v80-check.cjs compat
+      - name: Real published v80 reader accepts v81 notebook pages (synthetic only)
+        run: node work/verify-v81-check.cjs compat
       - name: Marker opacity, persistence and Tabler icons
         run: npm run test:marker-icons
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v81
       - name: Frame-linked logo contrast, preferences and fallback
         run: npm run test:theme-logo
         env:
-          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
+          BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v81
       - run: python -m pytest server-candidate/v49/tests -q
       - run: python -B work/test_deploy_v73.py
       - run: python -B work/test_deploy_v75.py
@@ -161,7 +161,8 @@ jobs:
       - run: python -B work/test_deploy_v77.py
       - run: npm run test:deploy-v78
       - run: npm run test:deploy-v79
-      - run: python -B work/test_deploy_v80.py
+      - run: npm run test:deploy-v80
+      - run: python -B work/test_deploy_v81.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -173,12 +174,14 @@ jobs:
             outputs/page-navigation/
             outputs/pptx-v79-release/
             outputs/pptx-v80-release/
+            outputs/pptx-v81-release/
             outputs/presentations/
             outputs/page-limit/
             outputs/page-limit-sw/
             outputs/v78/
             outputs/v79/
             outputs/v80/
+            outputs/v81/
             outputs/pptx-v78-release/integration-*.json
             outputs/pptx-v78-release/*native-pptx-ready.png
             outputs/pptx-v78-release/v77-baseline/build-proof.json
@@ -222,7 +225,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # The real published v79 rollback reader comes from pinned Git blobs.
+          fetch-depth: 0 # The real published v80 rollback reader comes from pinned Git blobs.
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -233,12 +236,12 @@ jobs:
       # Each runner uses both complete engines. Keep these direct invocations:
       # the npm staging alias also chains other suites and would duplicate them.
       - name: Mandatory local large-document safety - ${{ matrix.suite }}
-        run: node work/verify-${{ matrix.suite }}.cjs --out=outputs/v80-safety/ci-${{ github.run_id }}-${{ github.run_attempt }}/${{ matrix.suite }}
+        run: node work/verify-${{ matrix.suite }}.cjs --out=outputs/v81-safety/ci-${{ github.run_id }}-${{ github.run_attempt }}/${{ matrix.suite }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v80-safety-${{ matrix.suite }}
-          path: outputs/v80-safety/ci-${{ github.run_id }}-${{ github.run_attempt }}/${{ matrix.suite }}/
+          name: v81-safety-${{ matrix.suite }}
+          path: outputs/v81-safety/ci-${{ github.run_id }}-${{ github.run_attempt }}/${{ matrix.suite }}/
           if-no-files-found: error
           retention-days: 7
   media-cache-pairs:
