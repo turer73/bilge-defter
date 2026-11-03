@@ -7,8 +7,11 @@
   const toB64=b=>{let s='';for(const x of b)s+=String.fromCharCode(x);return btoa(s)};
   const fromB64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
   function invited(){return location.hostname==='defter.bilgearena.com'||window.__syncInvited===true}
-  async function deriveKey(pass,salt){const km=await crypto.subtle.importKey('raw',enc.encode(pass),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:ITERATIONS,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
-  async function keyFor(pass,salt){const cacheKey=pass+'|'+toB64(salt);if(keyCache.has(cacheKey))return keyCache.get(cacheKey);const key=await deriveKey(pass,salt);if(keyCache.size>8)keyCache.delete(keyCache.keys().next().value);keyCache.set(cacheKey,key);return key}
+  // A secret is the typed passphrase or the non-extractable PBKDF2 key remembered for it (v81).
+  const secretIds=new WeakMap();let secretSeq=0;
+  const secretId=pass=>typeof pass==='string'?'p:'+pass:'k:'+(secretIds.get(pass)??(secretIds.set(pass,++secretSeq),secretSeq));
+  async function deriveKey(pass,salt){const km=typeof pass==='string'?await crypto.subtle.importKey('raw',enc.encode(pass),'PBKDF2',false,['deriveKey']):pass;return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:ITERATIONS,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+  async function keyFor(pass,salt){const cacheKey=secretId(pass)+'|'+toB64(salt);if(keyCache.has(cacheKey))return keyCache.get(cacheKey);const key=await deriveKey(pass,salt);if(keyCache.size>8)keyCache.delete(keyCache.keys().next().value);keyCache.set(cacheKey,key);return key}
   const MAX_CIPHERTEXT_BYTES=5*1024*1024;
   function tooLarge(){const error=Error('Bu defter 5 MiB sunucu yedeği sınırını aşıyor. Notlar bu cihazda korunur; Dosya ve yedek bölümünden JSON yedeği alın.');error.code='backup-too-large';return error}
   // A notebook certainly too large for the server copy is not rebuilt, hashed and encoded after every
@@ -16,12 +19,54 @@
   const certainlyTooLarge=()=>typeof syncCertainlyTooLarge==='function'?syncCertainlyTooLarge(MAX_CIPHERTEXT_BYTES):typeof lastSaveBytes==='number'&&lastSaveBytes>3*MAX_CIPHERTEXT_BYTES;
   async function encryptPayload(pass,text){const plain=enc.encode(text);if(plain.byteLength+16>MAX_CIPHERTEXT_BYTES)throw tooLarge();const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));const key=await deriveKey(pass,salt);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,plain);return {ciphertext:toB64(new Uint8Array(ct)),iv:toB64(iv),salt:toB64(salt),kdf:KDF}}
   async function decryptPayload(data,pass){if(data.kdf!==KDF)throw Error('kdf');const key=await keyFor(pass,fromB64(data.salt));const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:fromB64(data.iv)},key,fromB64(data.ciphertext));return dec.decode(plain)}
+  // Remembered passphrase (v81). The passphrase itself is never stored: it is imported once as a
+  // non-extractable PBKDF2 key, and that CryptoKey is kept per account in this browser profile's
+  // IndexedDB. Scripts can derive backup keys from it but cannot read the passphrase or export the
+  // key; the server never sees either. It is only as exposed as the notebook already stored on this
+  // device. It is removed on logout, on "forget", when the current server copy no longer opens with
+  // it (changed on another device), and after 180 days without use.
+  const VAULT_DB='bilge-defter-device-trust',VAULT_STORE='passphrases',VAULT_IDLE_MS=180*24*60*60*1000;
+  // Bound to a verified account: without one (private origin, local mode) nothing is remembered.
+  const vaultId=()=>window.BilgeAccount?.required&&window.BilgeAccount.identity?.id||null;
+  let rememberChoice=true,remembered=false,vaultCache=null;
+  function idb(request){return new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)})}
+  async function vault(mode,op){
+    const open=indexedDB.open(VAULT_DB,1);open.onupgradeneeded=()=>open.result.createObjectStore(VAULT_STORE);
+    const handle=await idb(open);
+    try{const tx=handle.transaction(VAULT_STORE,mode),done=new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onerror=tx.onabort=()=>reject(tx.error)});const result=await idb(op(tx.objectStore(VAULT_STORE)));await done;return result}
+    finally{handle.close()}
+  }
+  // Returns the secret sync should keep using: the remembered key when it was stored, else the text.
+  async function rememberPass(pass){
+    const id=vaultId();if(!id)return pass;
+    try{const material=await crypto.subtle.importKey('raw',enc.encode(pass),'PBKDF2',false,['deriveKey']),at=Date.now();
+      await vault('readwrite',store=>store.put({material,savedAt:at,usedAt:at},id));vaultCache={id,material};remembered=true;renderSyncUi();return material}
+    catch(error){remembered=false;console.error(error);renderSyncUi();return pass}
+  }
+  async function forgetPass(id=vaultId()){remembered=false;vaultCache=null;if(id)try{await vault('readwrite',store=>store.delete(id))}catch{}renderSyncUi()}
+  async function recallPass(){
+    const id=vaultId();if(!id)return null;
+    if(vaultCache?.id===id)return vaultCache.material;
+    let record;try{record=await vault('readonly',store=>store.get(id))}catch{return null}
+    if(!record)return null;
+    if(!(record.material instanceof CryptoKey)||record.material.algorithm?.name!=='PBKDF2'||!(Date.now()-record.usedAt<VAULT_IDLE_MS)){await forgetPass(id);return null}
+    if(Date.now()-record.usedAt>24*60*60*1000)void vault('readwrite',store=>store.put({...record,usedAt:Date.now()},id)).catch(()=>{});
+    vaultCache={id,material:record.material};remembered=true;return record.material;
+  }
+  // The remembered secret when there is one, otherwise the dialog. saved tells the caller that a
+  // failure to open the server copy means the passphrase changed elsewhere, not a typing mistake.
+  async function passFor(forPurpose){const saved=await recallPass();if(saved)return {pass:saved,saved:true};return {pass:await askPassphrase(forPurpose),saved:false}}
+  async function keepTyped(entry){
+    if(entry.saved||!rememberChoice)return entry.pass;
+    const secret=await rememberPass(entry.pass);if(syncPass===entry.pass)syncPass=secret;return secret;
+  }
+  window.BilgeAccount?.onLogout?.(()=>forgetPass());
   const passDialog=document.createElement('dialog');passDialog.id='syncPassDialog';passDialog.className='tools-dialog';passDialog.setAttribute('aria-labelledby','syncPassTitle');
-  passDialog.innerHTML='<div class="tools-heading"><h2 id="syncPassTitle">Parola</h2><button class="btn" id="syncPassClose" type="button">× Kapat</button></div><form id="syncPassForm" class="tools-content"><p class="recovery-note">Bu parolayla yedek uçtan uca şifrelenir; sunucu yalnız şifreli yığını saklar. Parola hiçbir yerde saklanmaz; kaybolursa sunucudaki yedek açılamaz. Yüklerken aynı parolayı girmelisiniz.</p><label>Parola (en az 8 karakter)<input id="syncPassInput" type="password" minlength="8" autocomplete="new-password" required></label><label id="syncPassConfirmLabel" hidden>Parolayı tekrar girin<input id="syncPassConfirm" type="password" minlength="8" autocomplete="new-password"></label><p id="syncPassError" role="status"></p><div class="tool-actions"><button class="btn primary" id="syncPassSubmit" type="submit">Devam et</button><button class="btn" id="syncPassCancel" type="button">Vazgeç</button></div></form>';
+  passDialog.innerHTML='<div class="tools-heading"><h2 id="syncPassTitle">Parola</h2><button class="btn" id="syncPassClose" type="button">× Kapat</button></div><form id="syncPassForm" class="tools-content"><p class="recovery-note">Bu parolayla yedek uçtan uca şifrelenir; sunucu yalnız şifreli yığını saklar. Parola sunucuya gönderilmez; kaybolursa sunucudaki yedek açılamaz. Diğer cihazlarda aynı parolayı girmelisiniz.</p><label>Parola (en az 8 karakter)<input id="syncPassInput" type="password" minlength="8" autocomplete="new-password" required></label><label id="syncPassConfirmLabel" hidden>Parolayı tekrar girin<input id="syncPassConfirm" type="password" minlength="8" autocomplete="new-password"></label><label class="sync-remember"><input id="syncPassRemember" type="checkbox" checked> Bu cihazda hatırla (bir daha sorulmaz; çıkış yapınca silinir)</label><p id="syncPassError" role="status"></p><div class="tool-actions"><button class="btn primary" id="syncPassSubmit" type="submit">Devam et</button><button class="btn" id="syncPassCancel" type="button">Vazgeç</button></div></form>';
   document.body.append(passDialog);
   let passResolve=null,passReject=null,purpose='';
-  function askPassphrase(forPurpose){purpose=forPurpose;return new Promise((resolve,reject)=>{passResolve=resolve;passReject=reject;document.querySelector('#syncPassInput').value='';document.querySelector('#syncPassConfirm').value='';document.querySelector('#syncPassConfirmLabel').hidden=forPurpose!=='upload';document.querySelector('#syncPassError').textContent='';document.querySelector('#syncPassTitle').textContent={upload:'Yedeği şifrele',download:'Yedeği aç',sync:'Eşitlemeyi aç'}[forPurpose]||'Parola';passDialog.showModal();document.querySelector('#syncPassInput').focus({preventScroll:true})})}
-  document.querySelector('#syncPassForm').onsubmit=e=>{e.preventDefault();const v=document.querySelector('#syncPassInput').value;if(v.length<8){document.querySelector('#syncPassError').textContent='Parola en az 8 karakter olmalı.';return}if(purpose==='upload'){const c=document.querySelector('#syncPassConfirm').value;if(c!==v){document.querySelector('#syncPassError').textContent='Parolalar eşleşmiyor. Kontrol edip tekrar yazın.';return}}passDialog.close();passResolve(v)};
+  function askPassphrase(forPurpose){purpose=forPurpose;return new Promise((resolve,reject)=>{passResolve=resolve;passReject=reject;document.querySelector('#syncPassInput').value='';document.querySelector('#syncPassConfirm').value='';document.querySelector('#syncPassConfirmLabel').hidden=forPurpose!=='upload';document.querySelector('.sync-remember').hidden=!vaultId();document.querySelector('#syncPassError').textContent='';document.querySelector('#syncPassTitle').textContent={upload:'Yedeği şifrele',download:'Yedeği aç',sync:'Eşitlemeyi aç'}[forPurpose]||'Parola';passDialog.showModal();document.querySelector('#syncPassInput').focus({preventScroll:true})})}
+  document.querySelector('#syncPassForm').onsubmit=e=>{e.preventDefault();const v=document.querySelector('#syncPassInput').value;if(v.length<8){document.querySelector('#syncPassError').textContent='Parola en az 8 karakter olmalı.';return}if(purpose==='upload'){const c=document.querySelector('#syncPassConfirm').value;if(c!==v){document.querySelector('#syncPassError').textContent='Parolalar eşleşmiyor. Kontrol edip tekrar yazın.';return}}rememberChoice=!!vaultId()&&document.querySelector('#syncPassRemember').checked;passDialog.close();passResolve(v)};
   const cancelPass=()=>{passDialog.close();passReject?.(Error('cancelled'))};
   document.querySelector('#syncPassCancel').onclick=cancelPass;document.querySelector('#syncPassClose').onclick=cancelPass;
   passDialog.addEventListener('cancel',event=>{event.preventDefault();cancelPass()});
@@ -78,19 +123,25 @@
   async function exclusive(fn){if(operationBusy)return;operationBusy=true;try{return await fn()}finally{operationBusy=false}}
   document.querySelector('#syncUpload').onclick=async()=>{
     if(!invited()||!state||!validState(state))return;
-    let pass;try{pass=await askPassphrase('upload')}catch{return}
+    let entry;try{entry=await passFor('upload')}catch{return}
     setSyncStatus('Şifreleniyor…');
     try{
       const remote=await readRemote();requireCas(remote);
         const existing=remote.data;
         if(existing?.ciphertext){
-          try{await decryptPayload(existing,pass)}catch{
-            if(!confirm('Sunucudaki mevcut yedek bu parolayla açılamadı. Parolayı değiştirmek istediğinizden emin misiniz? Yanlış parola girdiyseniz eski yedeğin üzerine yazılacaktır.')){
-              setSyncStatus('Yedekleme iptal edildi.');
-              return;
-            }
+          let opens=true;try{await decryptPayload(existing,entry.pass)}catch{opens=false}
+          if(!opens&&entry.saved){
+            // Changed on another device: the remembered one must not silently replace that copy.
+            await forgetPass();setSyncStatus('Sunucudaki yedek bu cihazda kayıtlı parolayla açılmadı; parola başka bir cihazda değişmiş olabilir.');
+            try{entry={pass:await askPassphrase('upload'),saved:false}}catch{setSyncStatus('Yedekleme iptal edildi.');return}
+            setSyncStatus('Şifreleniyor…');try{await decryptPayload(existing,entry.pass);opens=true}catch{}
+          }
+          if(!opens&&!confirm('Sunucudaki mevcut yedek bu parolayla açılamadı. Parolayı değiştirmek istediğinizden emin misiniz? Yanlış parola girdiyseniz eski yedeğin üzerine yazılacaktır.')){
+            setSyncStatus('Yedekleme iptal edildi.');
+            return;
           }
         }
+      const pass=entry.pass;
       if(!await flushSave())throw Error('Önce yerel kaydı tamamlayın.');
       const expected=notebookJSON(state),revision=editRevision,snapshot=notebookSnapshot();
       const payload=await encryptPayload(pass,JSON.stringify(snapshot));
@@ -101,16 +152,23 @@
       // an unknown server tag and raise a conflict against our own upload.
       const switched=syncEnabled&&pass!==syncPass;if(switched)syncPass=pass;
       let recorded=true;try{await acknowledge(expected,revision,tag,snapshot.exportedAt)}catch(error){recorded=false;console.error(error)}
+      await keepTyped(entry);
       setSyncStatus(`Sunucuda şifreli yedek var · ${new Date(snapshot.exportedAt).toLocaleString('tr-TR')}. Sunucu bunun bir önceki kopyasını da saklar.${switched?' Otomatik eşitleme de artık bu parolayı kullanıyor.':''}${recorded?'':' Eşitleme kaydı güncellenemedi; bir sonraki denetimde çakışma uyarısı görülebilir.'}`);
     }catch(error){setSyncStatus(error.message==='cancelled'?'':`Yedek alınamadı. ${error.message} Notlar değişmedi.`)}
   };
   document.querySelector('#syncDownload').onclick=async()=>{
     if(!invited())return;
-    let pass;try{pass=await askPassphrase('download')}catch{return}
+    let entry;try{entry=await passFor('download')}catch{return}
     setSyncStatus('Sunucudan getiriliyor…');
     try{
       const data=await (await syncApi('./api/v1/bilge-defter/backup')).json();
-      let text;try{text=await decryptPayload(data,pass)}catch{setSyncStatus('Parola yanlış veya yedek okunamadı. Mevcut defter değişmedi.');return}
+      let text;try{text=await decryptPayload(data,entry.pass)}catch{
+        if(!entry.saved){setSyncStatus('Parola yanlış veya yedek okunamadı. Mevcut defter değişmedi.');return}
+        await forgetPass();setSyncStatus('Sunucudaki yedek bu cihazda kayıtlı parolayla açılmadı; parola başka bir cihazda değişmiş olabilir.');
+        try{entry={pass:await askPassphrase('download'),saved:false}}catch{setSyncStatus('');return}
+        try{text=await decryptPayload(data,entry.pass)}catch{setSyncStatus('Parola yanlış veya yedek okunamadı. Mevcut defter değişmedi.');return}
+      }
+      await keepTyped(entry);
       let info;try{info=parseBackup(JSON.parse(text))}catch(error){setSyncStatus(error.message);return}
       await validatePdfImages(info.book);await validateMediaImages(info.book);
       setSyncStatus('');
@@ -121,11 +179,17 @@
   // through the same preview as any backup; nothing changes until the student confirms.
   document.querySelector('#syncPrevious').onclick=async()=>{
     if(!invited())return;
-    let pass;try{pass=await askPassphrase('download')}catch{return}
+    let entry;try{entry=await passFor('download')}catch{return}
     setSyncStatus('Önceki sunucu kopyası getiriliyor…');
     try{
       let data;try{data=await (await syncApi(BACKUP+'/previous')).json()}catch(error){if(error.status===404){setSyncStatus('Sunucuda önceki kopya yok. Önceki kopya, sunucudaki yedek ilk kez değiştirildiğinde oluşur. Mevcut defter değişmedi.');return}throw error}
-      let text;try{text=await decryptPayload(data,pass)}catch{setSyncStatus('Parola yanlış veya önceki kopya okunamadı. Önceki kopya, o zamanki parolayla açılır. Mevcut defter değişmedi.');return}
+      // The previous copy may predate a passphrase change, so a remembered one failing here is
+      // not evidence that it is stale: ask once without forgetting it.
+      let text;try{text=await decryptPayload(data,entry.pass)}catch{
+        if(!entry.saved){setSyncStatus('Parola yanlış veya önceki kopya okunamadı. Önceki kopya, o zamanki parolayla açılır. Mevcut defter değişmedi.');return}
+        let older;try{older=await askPassphrase('download')}catch{setSyncStatus('');return}
+        try{text=await decryptPayload(data,older)}catch{setSyncStatus('Parola yanlış veya önceki kopya okunamadı. Önceki kopya, o zamanki parolayla açılır. Mevcut defter değişmedi.');return}
+      }
       let info;try{info=parseBackup(JSON.parse(text))}catch(error){setSyncStatus(error.message);return}
       await validatePdfImages(info.book);await validateMediaImages(info.book);
       setSyncStatus('');
@@ -177,28 +241,62 @@
   const conflictBanner=document.createElement('div');conflictBanner.id='syncConflictBanner';conflictBanner.hidden=true;conflictBanner.setAttribute('role','alert');
   conflictBanner.innerHTML='<strong>Eşitleme çakışması</strong><p>Bu cihazda eşitlenmemiş değişiklikler var ve sunucuda da farklı bir kopya duruyor. Hangisini kullanacağınızı seçin; diğer kopyanın üzerine yazılır.</p><p id="syncConflictDetail"></p><div class="recovery-actions"><button class="btn primary" id="syncConflictServer">Sunucudakini yükle</button><button class="btn" id="syncConflictLocal">Yereldekini gönder</button><button class="btn" id="syncConflictHold">Şimdilik bırak</button></div>';
   document.body.append(conflictBanner);
-  const syncStyle=document.createElement('style');syncStyle.textContent='#syncConflictBanner{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:45;width:min(560px,calc(100% - 24px));padding:14px;border:1px solid #d69974;border-radius:12px;background:#fff5df;box-shadow:0 8px 32px #173b3640;color:#502e18}#syncConflictBanner[hidden]{display:none}#syncConflictBanner p{margin:0 0 10px;font-size:13px;line-height:1.4}';document.head.append(syncStyle);
+  const syncStyle=document.createElement('style');syncStyle.textContent='#syncConflictBanner{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:45;width:min(560px,calc(100% - 24px));padding:14px;border:1px solid #d69974;border-radius:12px;background:#fff5df;box-shadow:0 8px 32px #173b3640;color:#502e18}#syncConflictBanner[hidden]{display:none}#syncConflictBanner p{margin:0 0 10px;font-size:13px;line-height:1.4}.sync-remember{display:flex;gap:8px;align-items:center}.sync-remember[hidden]{display:none}.sync-remember input{width:auto;min-height:0;margin:0;flex:none}';document.head.append(syncStyle);
   const syncArea=document.createElement('div');syncArea.className='tool-actions';
-  syncArea.innerHTML='<button class="btn" id="syncUnlock" hidden>Eşitlemeyi aç</button><p class="recovery-note" id="syncAutoStatus" role="status"></p><p class="recovery-note" id="syncAutoNote">Otomatik eşitleme yalnız davetli adreste ve oturum kilidi açılınca çalışır. Yedekler uçtan uca şifrelidir; sunucu son kopyayı ve ondan bir önceki kopyayı tutar. İki cihaz aynı anda düzenlerse çakışmada siz seçersiniz.</p>';
+  syncArea.innerHTML='<button class="btn" id="syncUnlock" hidden>Eşitlemeyi aç</button><button class="btn" id="syncForget" hidden>Bu cihazdaki kayıtlı parolayı sil</button><p class="recovery-note" id="syncAutoStatus" role="status"></p><p class="recovery-note" id="syncAutoNote">Otomatik eşitleme yalnız davetli adreste ve oturum kilidi açılınca çalışır. Yedekler uçtan uca şifrelidir; sunucu son kopyayı ve ondan bir önceki kopyayı tutar. İki cihaz aynı anda düzenlerse çakışmada siz seçersiniz.</p>';
   syncButtons.after(syncArea);
+  let autoState='idle',autoRetryAt=0,staleNotice=false;
+  const staleMessage='Sunucudaki yedek bu cihazda kayıtlı parolayla açılmadı; parola başka bir cihazda değişmiş olabilir. Eşitlemeyi açmak için parolayı yeniden girin.';
   function renderSyncUi(){
     const invitedNow=invited();
     document.querySelector('#syncUnlock').hidden=!invitedNow||syncEnabled;
+    document.querySelector('#syncForget').hidden=!invitedNow||!remembered;
     document.querySelector('#syncAutoNote').hidden=invitedNow;
     if(!invitedNow){document.querySelector('#syncAutoStatus').textContent='Otomatik eşitleme yalnız defter.bilgearena.com adresinde.';return}
-    document.querySelector('#syncAutoStatus').textContent=syncEnabled?(lastSyncAt?`Eşitleme açık · son: ${new Date(lastSyncAt).toLocaleString('tr-TR')}${localDirty?' · değişiklikler var':''}`:'Eşitleme açık · henüz eşitlenmedi'):'Eşitleme kapalı; açmak için parolayı girin.';
+    document.querySelector('#syncAutoStatus').textContent=syncEnabled?(lastSyncAt?`Eşitleme açık · son: ${new Date(lastSyncAt).toLocaleString('tr-TR')}${localDirty?' · değişiklikler var':''}`:'Eşitleme açık · henüz eşitlenmedi'):staleNotice?staleMessage:autoState==='waiting'?'Eşitleme bağlantı gelince bu cihazda kayıtlı parolayla açılacak; notlar yerelde korunuyor.':'Eşitleme kapalı; açmak için parolayı girin.';
+  }
+  async function enableSync(pass,remote,auto){
+    await refreshReceipt();syncPass=pass;syncEnabled=true;staleNotice=false;renderSyncUi();
+    if(remote.data&&pristineLocal()){nextPollAt=0;document.querySelector('#syncAutoStatus').textContent=`Sunucudaki yedek (${when(remote.data.updated_at)}) bu cihaza açılacak${auto?'.':'; bu pencereyi kapatın.'}`}
+    void retirePush();
   }
   document.querySelector('#syncUnlock').onclick=async()=>{
     if(!invited())return;
-    let pass;try{pass=await askPassphrase('sync')}catch{return}
+    let entry;try{entry=await passFor('sync')}catch{return}
     try{
       const remote=await readRemote();requireCas(remote);
-      if(remote.data)try{await decryptPayload(remote.data,pass)}catch{document.querySelector('#syncAutoStatus').textContent='Parola yanlış; sunucudaki yedek bu parolayla açılamıyor.';return}
-      await refreshReceipt();syncPass=pass;syncEnabled=true;renderSyncUi();
-      if(remote.data&&pristineLocal()){nextPollAt=0;document.querySelector('#syncAutoStatus').textContent=`Sunucudaki yedek (${when(remote.data.updated_at)}) bu cihaza açılacak; bu pencereyi kapatın.`}
-      void retirePush();
+      if(remote.data)try{await decryptPayload(remote.data,entry.pass)}catch{
+        if(!entry.saved){document.querySelector('#syncAutoStatus').textContent='Parola yanlış; sunucudaki yedek bu parolayla açılamıyor.';return}
+        staleNotice=true;await forgetPass();
+        try{entry={pass:await askPassphrase('sync'),saved:false}}catch{return}
+        try{await decryptPayload(remote.data,entry.pass)}catch{document.querySelector('#syncAutoStatus').textContent='Parola yanlış; sunucudaki yedek bu parolayla açılamıyor.';return}
+      }
+      autoState='done';await enableSync(await keepTyped(entry),remote,false);
     }catch(error){document.querySelector('#syncAutoStatus').textContent=`Eşitleme açılamadı. ${error.message}`}
   };
+  // Opening the app with a remembered passphrase turns sync on without a dialog. Network trouble
+  // retries later; a server copy that no longer opens with it removes it and waits for the student.
+  // It changes no notebook data, so it does not take the operation lock: a backup or restore
+  // pressed while it reads the server stays responsive.
+  let autoRunning=false;
+  async function autoUnlock(){
+    if(autoRunning||syncEnabled||!invited()||autoState==='done'||Date.now()<autoRetryAt||window.BilgeAccount?.locked)return;
+    autoRunning=true;try{
+    const pass=await recallPass();if(!pass){autoState='done';renderSyncUi();return}
+    try{
+      const remote=await readRemote();requireCas(remote);
+      if(syncEnabled)return;
+      if(remote.data)try{await decryptPayload(remote.data,pass)}catch{autoState='done';staleNotice=true;await forgetPass();return}
+      autoState='done';await enableSync(pass,remote,true);
+    }catch{autoState='waiting';autoRetryAt=Date.now()+30000;renderSyncUi()}
+    }finally{autoRunning=false}
+  }
+  document.querySelector('#syncForget').onclick=async()=>{
+    if(!confirm('Bu cihazda kayıtlı eşitleme parolası silinsin mi? Açık eşitleme bu oturumda sürer; uygulama yeniden açılınca parola sorulur.'))return;
+    await forgetPass();document.querySelector('#syncAutoStatus').textContent='Kayıtlı parola bu cihazdan silindi. Notlar ve sunucudaki yedek değişmedi.';
+  };
+  const autoKick=setInterval(()=>{if(!ready)return;clearInterval(autoKick);void autoUnlock()},250);
+  addEventListener('online',()=>{if(autoState==='waiting'){autoRetryAt=0;void autoUnlock()}});
   async function syncPush(remote){
     if(!syncEnabled||!invited()||!editorIdle()||!await flushSave())return;
     requireCas(remote);if(certainlyTooLarge())throw tooLarge();
@@ -247,8 +345,8 @@
     document.querySelector('#syncConflictHold').onclick=()=>{conflictBanner.hidden=true;conflictBanner.dataset.open='';conflictHold=Date.now()+30*60*1000;renderSyncUi()};
   }
   window.renderSyncActions=()=>{renderSyncActions();renderSyncUi()};
-  for(const id of ['syncUpload','syncDownload','syncPrevious','syncUnlock']){const button=document.querySelector('#'+id),action=button.onclick;button.onclick=()=>exclusive(action)}
+  for(const id of ['syncUpload','syncDownload','syncPrevious','syncUnlock','syncForget']){const button=document.querySelector('#'+id),action=button.onclick;button.onclick=()=>exclusive(action)}
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&syncEnabled&&ready)void syncTick()});
-  addEventListener('bilge-account-locked',()=>{syncEnabled=false;syncPass=null;keyCache.clear();remoteCache=null;hashMemo=null;conflictPayload=null;conflictBanner.hidden=true;conflictBanner.dataset.open='';passReject?.(Error('cancelled'));renderSyncUi()});
-  setInterval(()=>{if(Date.now()>=nextPollAt)void syncTick()},5000);
+  addEventListener('bilge-account-locked',()=>{autoState='done';vaultCache=null;syncEnabled=false;syncPass=null;keyCache.clear();remoteCache=null;hashMemo=null;conflictPayload=null;conflictBanner.hidden=true;conflictBanner.dataset.open='';passReject?.(Error('cancelled'));renderSyncUi()});
+  setInterval(()=>{if(autoState!=='done'&&!syncEnabled&&ready)void autoUnlock();else if(Date.now()>=nextPollAt)void syncTick()},5000);
 })();

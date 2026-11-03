@@ -43,6 +43,10 @@ jobs:
           BILGE_TEST_ROOT: ${{ github.workspace }}/work/bilge-defter-invited-v80
       - name: Numbered PDF and presentation navigation
         run: npm run test:page-navigation
+      - name: Recognised device and remembered sync passphrase (real account API)
+        run: npm run test:device-trust
+        env:
+          BILGE_PYTHON: python
       # Fail fast on drawing quality before the longer historical suite.
       # These are the same mandatory DPR checks, not a diagnostic bypass.
       - name: Retina continuous flow and strict raster quality (DPR 2)
