@@ -58,14 +58,15 @@ Sayfada çalışan kötü amaçlı bir betik saklanan anahtarla sunucu yedeğini
 metnini elde edemez. Aynı betik parolayı yazılırken de okuyabilirdi; bu risk v80'de de vardı. Ortak cihazda
 kullanıcı çıkış yapmalı. Giriş ekranındaki yardım metni bunu söyler.
 
-## Cloudflare tarafı (elle yapılacak)
+## Cloudflare tarafı
 
-Access uygulaması "Bilge Defter - Davetli" (`ad7dea78-…`) için oturum süresi hâlâ `24h`.
-Sunucudaki token kasıtlı olarak yalnız politika yazabiliyor: uygulama ayarına `PUT` isteği
-`auth.forbidden` döndü ve hiçbir şey değişmedi. Panelden yapılacak adım:
-Zero Trust → Access → Applications → Bilge Defter - Davetli → Edit → Session Duration → **1 month**.
-Böylece e-posta kodu ayda bir istenir. Arada oturum düşerse tanınan cihaz defteri yine açar;
-yalnız eşitleme için giriş istenir.
+Access uygulaması "Bilge Defter - Davetli" (`ad7dea78-…`) için oturum süresi `24h` idi.
+Sunucudaki token kasıtlı olarak yalnız politika yazabiliyor; uygulamaya yapılan `PUT` isteği
+`auth.forbidden` döndü. Ayar 3 Kasım 2026'da kullanıcı tarafından panelden **1 month** yapıldı.
+Canlıda okunan değer `730h`; audience, kimlik sağlayıcı, politika kimliği ve 2 e-postalık liste
+değişmedi. Bu tarihten önce açılmış oturumlar kendi süreleri (24 saat) dolunca biter; sonraki
+girişler ayda bir kod ister. Arada oturum düşerse tanınan cihaz defteri yine açar; yalnız
+eşitleme için giriş istenir.
 
 ## Doğrulama
 
