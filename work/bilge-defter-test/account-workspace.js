@@ -3,10 +3,33 @@
   'use strict';
   const required=location.hostname==='defter.bilgearena.com'||window.__accountRequired===true;
   const nativeFetch=window.fetch.bind(window),base='./api/v1/bilge-defter/';
-  let identity=null,locked=required,started=false,checking=null,resolveReady;
+  let identity=null,locked=required,started=false,checking=null,resolveReady,offline=false;
   const readyPromise=new Promise(resolve=>{resolveReady=resolve});
+  // Recognised device (v81): a live, approved verification is remembered in this browser profile
+  // for 30 days and renewed by every later verification. When a launch cannot verify (no network,
+  // or the Cloudflare session expired) the same account's local notebook still opens; every server
+  // operation keeps requiring live verification. The record is dropped on logout, when the server
+  // reports another account or a non-approved status, and on expiry. A new device always fails closed.
+  const TRUST_KEY='bilge-defter-trusted-device-v1',TRUST_MS=30*24*60*60*1000,logoutHooks=[];
+  function trusted(){try{const t=JSON.parse(localStorage.getItem(TRUST_KEY)||'null'),age=Date.now()-Number(t?.verifiedAt);if(t&&/^[a-f0-9-]{36}$/.test(t.id)&&typeof t.email==='string'&&['admin','student'].includes(t.role)&&age>=-60000&&age<TRUST_MS)return t}catch{}return null}
+  function trust(next){try{localStorage.setItem(TRUST_KEY,JSON.stringify({id:next.id,email:next.email,role:next.role,verifiedAt:Date.now()}))}catch{}}
+  function distrust(){try{localStorage.removeItem(TRUST_KEY)}catch{}}
+  const banner=document.createElement('div');banner.id='accountOfflineBanner';banner.setAttribute('role','status');banner.hidden=true;
+  banner.innerHTML='<span id="accountOfflineText"></span> <a href="./auth-continue.html" id="accountOfflineLogin" hidden>Girişi yenile</a> <button type="button" id="accountOfflineClose" aria-label="Uyarıyı kapat">×</button>';
+  const bannerStyle=document.createElement('style');bannerStyle.textContent='#accountOfflineBanner{position:fixed;left:12px;bottom:12px;z-index:44;max-width:min(520px,calc(100% - 24px));padding:10px 12px;border:1px solid #9bb5ad;border-radius:10px;background:#f3faf7;color:#17312d;box-shadow:0 6px 24px #173b3630;font-size:13px;line-height:1.4}#accountOfflineBanner[hidden]{display:none}#accountOfflineBanner a{color:#20574b;font-weight:600}#accountOfflineBanner button{margin-left:6px;border:0;background:none;font-size:16px;cursor:pointer;color:inherit}';
+  document.head.append(bannerStyle);document.body.append(banner);banner.querySelector('#accountOfflineClose').onclick=()=>{banner.hidden=true};
+  function goOffline(error){
+    offline=true;const expired=error?.status===401;
+    banner.querySelector('#accountOfflineText').textContent=expired?'Bu cihaz tanındı; defter bu cihazda açık. Eşitleme ve sunucu yedeği için girişi yenileyin.':'İnternete ulaşılamıyor; defter bu cihazda açık ve kaydediliyor. Eşitleme bağlantı gelince sürer.';
+    banner.querySelector('#accountOfflineLogin').hidden=!expired;banner.hidden=false;
+  }
+  function openTrusted(t,error){
+    identity=Object.freeze({type:'access',email:t.email,id:t.id,role:t.role,status:'approved'});
+    locked=false;document.body.classList.remove('account-locked');gate.close();goOffline(error);
+    started=true;resolveReady('bilge-defter-account-'+t.id);
+  }
   const gate=document.createElement('dialog');gate.id='accountGate';gate.setAttribute('aria-labelledby','accountTitle');
-  gate.innerHTML='<img class="account-brand" src="icons/brand-horizontal-v51.png" alt="Bilge Defter" width="2172" height="724"><h1 id="accountTitle">Defterine devam et</h1><p id="accountMessage" role="status" aria-live="polite">Hesabınız denetleniyor…</p><p id="accountEmail" hidden></p><div class="account-actions"><a class="btn primary" href="./auth-continue.html" id="accountLogin">E-posta ile giriş yap</a><button class="btn primary" id="accountRegister" hidden>Katılım başvurusu gönder</button><button class="btn" id="accountRetry">Yeniden denetle</button><button class="btn" id="accountGateLogout" hidden>Farklı hesapla giriş</button></div><p class="account-steps">E-postanıza gelen kodu girin. Doğrulama bitince defteriniz otomatik açılır.</p><p class="account-safe">Notlarınız bu cihazda korunur. Güncelleme veya giriş için tarayıcı verilerini silmeyin.</p><details class="account-help"><summary>Giriş ve notlar hakkında</summary><p>Uygulamayı yeniden açarken internetle hesap doğrulaması gerekir. Açık defter bağlantı kesilince yerelde kaydedilir. Öğrenci erişimi yönetici onayıyla açılır. Notlar hesaba göre ayrı tutulur; önceki notlarınız için aynı e-postayı kullanın. Ortak cihazlarda ayrı tarayıcı profili kullanın. Eski hesapsız notlar otomatik aktarılmaz veya silinmez.</p></details>';
+  gate.innerHTML='<img class="account-brand" src="icons/brand-horizontal-v51.png" alt="Bilge Defter" width="2172" height="724"><h1 id="accountTitle">Defterine devam et</h1><p id="accountMessage" role="status" aria-live="polite">Hesabınız denetleniyor…</p><p id="accountEmail" hidden></p><div class="account-actions"><a class="btn primary" href="./auth-continue.html" id="accountLogin">E-posta ile giriş yap</a><button class="btn primary" id="accountRegister" hidden>Katılım başvurusu gönder</button><button class="btn" id="accountRetry">Yeniden denetle</button><button class="btn" id="accountGateLogout" hidden>Farklı hesapla giriş</button></div><p class="account-steps">E-postanıza gelen kodu girin. Doğrulama bitince defteriniz otomatik açılır.</p><p class="account-safe">Notlarınız bu cihazda korunur. Güncelleme veya giriş için tarayıcı verilerini silmeyin.</p><details class="account-help"><summary>Giriş ve notlar hakkında</summary><p>Bu cihazda bir kez giriş yaptıktan sonra 30 gün boyunca internet olmadan da defteriniz açılır; eşitleme ve sunucu yedeği için internet gerekir. Açık defter bağlantı kesilince yerelde kaydedilir. Öğrenci erişimi yönetici onayıyla açılır. Notlar hesaba göre ayrı tutulur; önceki notlarınız için aynı e-postayı kullanın. Ortak cihazlarda ayrı tarayıcı profili kullanın ve işiniz bitince Çıkış yapın; çıkış bu cihazın tanınmasını ve kayıtlı parolayı siler. Eski hesapsız notlar otomatik aktarılmaz veya silinmez.</p></details>';
   document.body.append(gate);gate.addEventListener('cancel',e=>e.preventDefault());
   const message=gate.querySelector('#accountMessage'),email=gate.querySelector('#accountEmail'),register=gate.querySelector('#accountRegister');
   function lock(text){
@@ -42,6 +65,7 @@
       try{
         const body=await json('whoami');if(!valid(body)){const error=Error('Hesap doğrulanamadı');error.status=body?.identity?.type==='device'?401:503;throw error}
         const next=body.identity;email.textContent=next.email;email.hidden=false;
+        if(next.id!==trusted()?.id||next.status!=='approved')distrust();
         if(started&&(next.id!==identity.id||next.status!=='approved')){lock('Hesap veya erişim durumu değişti. Kayıtlı notlar korundu. Uygulamayı kapatıp yeniden açın.');return false}
         if(next.status!=='approved'){
           lock({unregistered:'E-postanız doğrulandı. Sınıfa katılmak için başvurun.',pending:'Başvurunuz alındı. Yönetici onayı bekleniyor.',rejected:'Başvurunuz onaylanmadı. Yöneticinizle görüşün.',suspended:'Erişiminiz askıya alındı. Yöneticinizle görüşün.'}[next.status]);
@@ -52,9 +76,13 @@
         }
         if(started&&locked)return false; // A locked account cannot resume stale in-memory work.
         identity=Object.freeze(next);locked=false;document.body.classList.remove('account-locked');gate.close();
+        trust(next);offline=false;banner.hidden=true;
         if(!started){started=true;resolveReady('bilge-defter-account-'+next.id)}
         return true;
       }catch(error){
+        // A recognised device keeps its own notebook open; only server work waits for verification.
+        const known=trusted(),recognised=known&&(!started||known.id===identity?.id)&&(!error.status||error.status===401||error.status>=500);
+        if(recognised&&!(started&&locked)){if(!started)openTrusted(known,error);else goOffline(error);return false}
         if(!started||[401,403].includes(error.status)){email.hidden=true;lock(friendlyError(error))}
         return false; // Existing offline work stays local; network operations do not continue.
       }finally{checking=null}
@@ -65,8 +93,14 @@
     if(locked||!await check()||locked)throw Error('Hesap doğrulaması gerekli; notlar yerelde korundu.');
     const headers=new Headers(options.headers);headers.set('X-Bilge-Account',identity.id);headers.set('X-Bilge-Request','1');
     const response=await nativeFetch(input,{...options,headers,cache:'no-store',redirect:'error'});
-    if([401,403,409].includes(response.status))lock('Oturum veya hesap izni değişti. Notlar yerelde korundu; yeniden giriş yapın.');
+    if(response.status===401&&trusted()?.id===identity.id)goOffline({status:401});
+    else if([401,403,409].includes(response.status))lock('Oturum veya hesap izni değişti. Notlar yerelde korundu; yeniden giriş yapın.');
     return response;
+  }
+  // Device memory (trusted identity, remembered passphrase) ends with an explicit logout.
+  async function forgetDevice(){
+    distrust();
+    await Promise.race([Promise.allSettled(logoutHooks.map(hook=>hook())),new Promise(resolve=>setTimeout(resolve,3000))]);
   }
   async function logout(){
     if(started&&!locked){
@@ -75,6 +109,7 @@
       if(typeof flushSave==='function'&&!await flushSave()){alert('Kayıt tamamlanamadı. Önce JSON yedeği alın.');return}
     }
     lock('Oturum kapatılıyor. Yerel notlar silinmedi.');
+    await forgetDevice();
     try{localStorage.setItem('bilge-defter-account-logout',String(Date.now()))}catch{}
     // Do not send an already-expired session to Cloudflare's logout error page.
     try{const body=await json('whoami');location.assign(valid(body)?'/cdn-cgi/access/logout':'./auth-continue.html')}
@@ -138,7 +173,7 @@
     addForm.hidden=identity.role!=='admin';
     if(identity.role==='admin')void list();else manager.querySelector('#accountAdminStatus').textContent='Hesabınız aktif. Notlarınız diğer öğrencilerle paylaşılmaz.';
   }
-  window.BilgeAccount={required,get locked(){return locked},get identity(){return identity},ready:readyPromise,check,fetch:accountFetch,open,logout};
+  window.BilgeAccount={required,get locked(){return locked},get identity(){return identity},get offline(){return offline},ready:readyPromise,check,fetch:accountFetch,open,logout,onLogout:hook=>{logoutHooks.push(hook)}};
   addEventListener('storage',event=>{if(required&&event.key==='bilge-defter-account-logout')lock('Başka bir pencerede çıkış yapıldı. Notlar korundu.')});
   document.addEventListener('visibilitychange',()=>{if(required&&document.visibilityState==='visible')void check()});
   addEventListener('online',()=>{if(required)void check()});

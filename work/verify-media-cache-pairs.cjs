@@ -25,7 +25,8 @@ const RUNNER_PROVENANCE=Object.freeze({
   comparisonBoundary:'Historical old-runner results cannot substitute for this pair; baseline reproduction is still required in the new three-pair run.',
   lineEndings:'Raw SHA256 pins are exact; the single approved source delta is compared after CRLF-to-LF normalization.'
 });
-// Older evidence stays historical: v4 declares the v80 package and its safety assets.
+// Older evidence stays historical: v4 declares the v80 package and its safety assets;
+// the v81 contract only adds the recognised-device account module to the declared changes.
 // Raster assertions and the complete case count remain the same for both contracts.
 const SCHEMA='media-cache-pairs-v4',GESTURE_MODES=Object.freeze({baseline:'pinch',candidate:'scroll-only'});
 const CASE='warm ink cache preserves bounded full replay quality after edits undo and zoom',ORDERS={1:['baseline','candidate'],2:['candidate','baseline'],3:['baseline','candidate']};
@@ -57,7 +58,7 @@ function packageMap(root,expectedManifest){
     const m=/^([a-f0-9]{64})  ([^\\:]+)$/.exec(line);assert.ok(m,'Manifest format');const name=m[2];
     assert.ok(!path.isAbsolute(name)&&!name.split('/').some(x=>!x||x==='.'||x==='..'),'Safe package member');assert.ok(!Object.hasOwn(expected,'/'+name),'Unique manifest member');expected['/'+name]=m[1];
   }
-  assert.equal(Object.keys(expected).length,expectedManifest?247:250,'Pinned baseline or v80 with navigator, viewport reader and import stage assets');
+  assert.equal(Object.keys(expected).length,expectedManifest?247:250,'Pinned baseline or v81 with navigator, viewport reader and import stage assets');
   const actual=fileMap(root);assert.deepEqual(actual,Object.fromEntries(Object.entries(expected).sort(([a],[b])=>a.localeCompare(b))),'Complete package bytes and file set match manifest');
   return actual;
 }
@@ -82,7 +83,7 @@ function copyPackage(source,dest){fs.mkdirSync(dest,{recursive:true});for(const 
 function assertDifference(baseline,candidate){
   assert.deepEqual(Object.keys(candidate).sort(),[...Object.keys(baseline),'/page-navigation.js','/viewport-reader.js','/pptx/import-stage.js'].sort(),'Only declared navigator, viewport reader and import stage runtime assets added');
   const changed=Object.keys(baseline).filter(name=>baseline[name]!==candidate[name]);
-  const allowed=new Set(['/media-workspace.js','/pdf-workspace.js','/index.html','/pptx-workspace.js','/sync-workspace.js','/ui-v2/bilge-defter-ui.js','/offline-assets.json','/SHA256SUMS','/sw.js','/release.json']);
+  const allowed=new Set(['/media-workspace.js','/pdf-workspace.js','/index.html','/pptx-workspace.js','/sync-workspace.js','/account-workspace.js','/ui-v2/bilge-defter-ui.js','/offline-assets.json','/SHA256SUMS','/sw.js','/release.json']);
   assert.ok(changed.includes('/media-workspace.js')&&changed.includes('/pdf-workspace.js'),'Both declared rendering changes must be present');
   assert.ok(changed.every(name=>allowed.has(name)),'Only declared rendering, import/recovery, gesture files and deterministic manifests change: '+changed.join(','));return changed;
 }
@@ -99,11 +100,11 @@ function executePair(pair,requestedOutput){
   // Never reuse historical pairN directories or canonical runner tags. An explicit
   // --out names this pair's new directory, not a directory allowed to be emptied.
   const evidenceId=crypto.randomUUID(),outputs=path.join(REPO,'outputs');
-  const output=path.resolve(requestedOutput||path.join(outputs,'media-cache-fix','v80-pair'+pair+'-'+evidenceId));
+  const output=path.resolve(requestedOutput||path.join(outputs,'media-cache-fix','v81-pair'+pair+'-'+evidenceId));
   assert.ok(output.startsWith(outputs+path.sep),'Evidence must stay inside repository outputs');
   for(let ancestor=output;ancestor!==REPO;ancestor=path.dirname(ancestor))if(fs.existsSync(ancestor))assert.ok(fs.lstatSync(ancestor).isDirectory()&&!fs.lstatSync(ancestor).isSymbolicLink(),'No symlink evidence ancestor');
   fresh(output);
-  const runner=path.join(REPO,'work/verify-slide-flow.cjs'),candidate=path.resolve(process.env.BILGE_TEST_ROOT||path.join(REPO,'work/bilge-defter-invited-v80'));
+  const runner=path.join(REPO,'work/verify-slide-flow.cjs'),candidate=path.resolve(process.env.BILGE_TEST_ROOT||path.join(REPO,'work/bilge-defter-invited-v81'));
   const report={schema:SCHEMA,pair:Number(pair),order:ORDERS[pair],gestureModes:GESTURE_MODES,baselineCommit:BASE,baselineManifestSha256:BASE_MANIFEST,canonicalRunnerSha256:RUNNER_SHA,startedAt:new Date().toISOString(),status:'inconclusive',variants:[],releaseEligible:false};
   try{
     report.runnerProvenance=assertRunnerProvenance(runner);report.sourceHead=run('git',['rev-parse','HEAD']).trim();report.sourceTree=run('git',['rev-parse','HEAD^{tree}']).trim();report.workingChanges=run('git',['status','--porcelain']).trim();
@@ -113,11 +114,11 @@ function executePair(pair,requestedOutput){
     const snapshots={baseline:packageMap(roots.baseline,BASE_MANIFEST),candidate:packageMap(roots.candidate)};report.changedAssets=assertDifference(snapshots.baseline,snapshots.candidate);report.packages=snapshots;
     const oldSw=fs.readFileSync(path.join(roots.baseline,'sw.js'),'utf8'),newSw=fs.readFileSync(path.join(roots.candidate,'sw.js'),'utf8');
     assert.equal(oldSw.split("VERSION='v78'").length,2,'Unique old SW version');
-    assert.equal(newSw,oldSw.replace("VERSION='v78'","VERSION='v80'"),'SW behavior unchanged; only v80 version');
-    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(roots.candidate,'release.json'))),{version:'v80'});
-    report.versionContract='v78-to-v80-metadata-only';
+    assert.equal(newSw,oldSw.replace("VERSION='v78'","VERSION='v81'"),'SW behavior unchanged; only v81 version');
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(roots.candidate,'release.json'))),{version:'v81'});
+    report.versionContract='v78-to-v81-metadata-only';
     for(const variant of report.order){
-      const dir=path.join(output,variant),tag='media-cache-v80-p'+pair+'-'+evidenceId+'-'+variant,evidence=path.join(REPO,'outputs/slide-flow','dpr-2-'+tag);
+      const dir=path.join(output,variant),tag='media-cache-v81-p'+pair+'-'+evidenceId+'-'+variant,evidence=path.join(REPO,'outputs/slide-flow','dpr-2-'+tag);
       const gestureMode=GESTURE_MODES[variant];
       assert.ok(!fs.existsSync(evidence),'Never overwrite canonical evidence');fs.writeFileSync(path.join(dir,'fixture.json'),JSON.stringify({variant,gestureMode,source:snapshots[variant],baselineCommit:BASE,runnerSha256:RUNNER_SHA,runnerProvenance:report.runnerProvenance},null,2));
       const child=cp.spawnSync(process.execPath,[runner,'--dpr=2','--gesture='+gestureMode,'--tag='+tag],{cwd:REPO,env:{...process.env,BILGE_TEST_ROOT:roots[variant]},windowsHide:true,encoding:'utf8',timeout:1800000,maxBuffer:16*1024*1024});
@@ -140,7 +141,7 @@ function executePair(pair,requestedOutput){
 function validateAggregate(reports){
   assert.equal(reports.length,3,'All three predeclared pairs required');assert.deepEqual(reports.map(x=>x.pair).sort(),[1,2,3]);const first=reports[0];
   for(const report of reports){
-    assert.equal(report.schema,SCHEMA);assert.equal(report.versionContract,'v78-to-v80-metadata-only');assert.equal(report.status,'pair-passed');assert.ok(!report.error);assert.equal(report.baselineCommit,BASE);assert.equal(report.baselineManifestSha256,BASE_MANIFEST);assert.equal(report.canonicalRunnerSha256,RUNNER_SHA);assert.deepEqual(report.order,ORDERS[report.pair]);assert.deepEqual(report.gestureModes,GESTURE_MODES,'Pair declares both gesture contracts');
+    assert.equal(report.schema,SCHEMA);assert.equal(report.versionContract,'v78-to-v81-metadata-only');assert.equal(report.status,'pair-passed');assert.ok(!report.error);assert.equal(report.baselineCommit,BASE);assert.equal(report.baselineManifestSha256,BASE_MANIFEST);assert.equal(report.canonicalRunnerSha256,RUNNER_SHA);assert.deepEqual(report.order,ORDERS[report.pair]);assert.deepEqual(report.gestureModes,GESTURE_MODES,'Pair declares both gesture contracts');
     assert.deepEqual(report.runnerProvenance,RUNNER_PROVENANCE,'Exact approved runner change and historical comparison boundary are required');
     assert.equal(report.environment.platform,'linux','Linux evidence required');assert.equal(report.environment.playwright,'1.62.1');
     for(const field of ['runId','attempt','image','imageVersion','runnerOS','node']){assert.ok(typeof report.environment[field]==='string'&&report.environment[field].length>0,'Required CI provenance: '+field);assert.equal(report.environment[field],first.environment[field],'Same CI run and environment: '+field);}
@@ -160,7 +161,7 @@ function aggregate(dir){
 function selfTest(){
   const tests=[],check=(name,fn)=>{fn();tests.push(name);},clone=value=>JSON.parse(JSON.stringify(value)),source={'/index.html':'a'.repeat(64)},digest='b'.repeat(64);
   function fixture(failing=false,variant='candidate'){const results=[];for(const engine of ['chromium','webkit'])for(let i=0;i<27;i++)results.push({engine,name:i===26?CASE:'fixture '+i,passed:true});if(failing)Object.assign(results.at(-1),{passed:false,error:'AssertionError: media undo: alpha deviation'});return{dpr:2,diagnoseInk:false,gestureMode:GESTURE_MODES[variant],runnerSha256:RUNNER_SHA,source,results,passed:failing?53:54,failed:failing?1:0,drift:[]};}
-  function pairs(){return[1,2,3].map(pair=>({schema:SCHEMA,versionContract:'v78-to-v80-metadata-only',pair,status:'pair-passed',order:ORDERS[pair],gestureModes:{...GESTURE_MODES},baselineCommit:BASE,baselineManifestSha256:BASE_MANIFEST,canonicalRunnerSha256:RUNNER_SHA,runnerProvenance:{...RUNNER_PROVENANCE},environment:{platform:'linux',node:'v22.23.3',playwright:'1.62.1',browserMetadata:[{name:'chromium',revision:'1'},{name:'webkit',revision:'2'}],runId:'123',attempt:'1',image:'ubuntu24',imageVersion:'fixture',runnerOS:'Linux'},sourceHead:'c'.repeat(40),sourceTree:'d'.repeat(40),workingChanges:'',packages:{baseline:source,candidate:source},baselineReproduced:pair===1,variants:ORDERS[pair].map(variant=>({variant,gestureMode:GESTURE_MODES[variant],reportSha256:digest,exitCode:variant==='baseline'&&pair===1?1:0,passed:variant==='baseline'&&pair===1?53:54,failed:variant==='baseline'&&pair===1?1:0}))}));}
+  function pairs(){return[1,2,3].map(pair=>({schema:SCHEMA,versionContract:'v78-to-v81-metadata-only',pair,status:'pair-passed',order:ORDERS[pair],gestureModes:{...GESTURE_MODES},baselineCommit:BASE,baselineManifestSha256:BASE_MANIFEST,canonicalRunnerSha256:RUNNER_SHA,runnerProvenance:{...RUNNER_PROVENANCE},environment:{platform:'linux',node:'v22.23.3',playwright:'1.62.1',browserMetadata:[{name:'chromium',revision:'1'},{name:'webkit',revision:'2'}],runId:'123',attempt:'1',image:'ubuntu24',imageVersion:'fixture',runnerOS:'Linux'},sourceHead:'c'.repeat(40),sourceTree:'d'.repeat(40),workingChanges:'',packages:{baseline:source,candidate:source},baselineReproduced:pair===1,variants:ORDERS[pair].map(variant=>({variant,gestureMode:GESTURE_MODES[variant],reportSha256:digest,exitCode:variant==='baseline'&&pair===1?1:0,passed:variant==='baseline'&&pair===1?53:54,failed:variant==='baseline'&&pair===1?1:0}))}));}
   const historical='before\n'+PREVIOUS_PAINT+'\nafter',approved='before\n'+APPROVED_PAINT+'\nafter';
   check('only the exact approved paint change validates',()=>assertApprovedRunnerDelta(historical,approved));
   check('unchanged old runner does not meet the new contract',()=>assert.throws(()=>assertApprovedRunnerDelta(historical,historical),/Only the approved/));
@@ -201,8 +202,10 @@ function selfTest(){
   check('historical v2 evidence is rejected',()=>{const x=pairs();x[0].schema='media-cache-pairs-v2';assert.throws(()=>validateAggregate(x));});
   check('historical v3 evidence is rejected',()=>{const x=pairs();x[0].schema='media-cache-pairs-v3';assert.throws(()=>validateAggregate(x));});
   check('historical version contract is rejected',()=>{const x=pairs();x[0].versionContract='v78-to-v79-metadata-only';assert.throws(()=>validateAggregate(x));});
+  check('historical v80 version contract is rejected',()=>{const x=pairs();x[0].versionContract='v78-to-v80-metadata-only';assert.throws(()=>validateAggregate(x));});
   const oldFiles={'/media-workspace.js':'old','/pdf-workspace.js':'old','/sync-workspace.js':'old'},newFiles={'/media-workspace.js':'new','/pdf-workspace.js':'new','/sync-workspace.js':'new','/page-navigation.js':'new','/viewport-reader.js':'new','/pptx/import-stage.js':'new'};
-  check('exact v80 runtime additions and sync recovery changes validate',()=>assert.deepEqual(assertDifference(oldFiles,newFiles),['/media-workspace.js','/pdf-workspace.js','/sync-workspace.js']));
+  check('exact v80 runtime additions and sync recovery changes still validate under v81',()=>assert.deepEqual(assertDifference(oldFiles,newFiles),['/media-workspace.js','/pdf-workspace.js','/sync-workspace.js']));
+  check('v81 recognised-device account change validates',()=>assert.deepEqual(assertDifference({...oldFiles,'/account-workspace.js':'old'},{...newFiles,'/account-workspace.js':'new'}),['/media-workspace.js','/pdf-workspace.js','/sync-workspace.js','/account-workspace.js']));
   check('extra runtime file is rejected',()=>assert.throws(()=>assertDifference(oldFiles,{...newFiles,'/unexpected.js':'new'})));
   check('removed runtime file is rejected',()=>assert.throws(()=>assertDifference({...oldFiles,'/keep.js':'old'},newFiles)));
   check('missing viewport reader is rejected',()=>{const x={...newFiles};delete x['/viewport-reader.js'];assert.throws(()=>assertDifference(oldFiles,x));});
